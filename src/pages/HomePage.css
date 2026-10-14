@@ -1,0 +1,19 @@
+.home {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}
+
+.home__subtitle {
+  margin-bottom: 32px;
+}
+
+.home__status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home__api-url {
+  font-size: 0.9rem;
+}

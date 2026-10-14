@@ -1,0 +1,42 @@
+# Dependencias instaladas con npm install
+node_modules
+
+# Resultado de npm run build
+dist
+dist-ssr
+
+# Variables de entorno (solo se sube el ejemplo)
+.env
+.env.*
+*.local
+!.env.example
+
+# Archivos de Claude Code (solo locales)
+CLAUDE.md
+.claude/
+
+# Caché y reportes de herramientas
+coverage
+*.tsbuildinfo
+.eslintcache
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
