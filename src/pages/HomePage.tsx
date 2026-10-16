@@ -18,7 +18,7 @@ function HomePage() {
       <section className="home__status">
         <h2>Estado del sistema</h2>
         <p className="home__api-url">
-          Backend: <code>{API_URL}</code>
+          Backend: oki
         </p>
         <StatusBadge label="API" result={api} />
         <StatusBadge label="Base de datos" result={db} />
