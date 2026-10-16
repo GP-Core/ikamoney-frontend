@@ -1,6 +1,6 @@
 import StatusBadge from '../components/StatusBadge'
 import { useBackendStatus } from '../hooks/useBackendStatus'
-import { API_URL } from '../services/api'
+//import { API_URL } from '../services/api'
 import { formatMoney } from '../utils/formatMoney'
 import './HomePage.css'
 
