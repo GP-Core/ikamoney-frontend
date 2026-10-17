@@ -199,3 +199,8 @@ export const authMock: AuthService = {
     escribir(CLAVES.recuperacion, tokens)
   },
 }
+
+/** Id del usuario con sesión en el modo de prueba. Lo usan los demás servicios de prueba (T30). */
+export function idUsuarioMock(): number {
+  return usuarioDeLaSesion().id
+}

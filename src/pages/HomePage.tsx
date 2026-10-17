@@ -1,4 +1,4 @@
-import Button from '../components/Button'
+import { Link } from 'react-router'
 import Icon from '../components/Icon'
 import StatusBadge from '../components/StatusBadge'
 import { useAuth } from '../hooks/useAuth'
@@ -7,23 +7,25 @@ import { API_URL } from '../services/api'
 import { formatMoney } from '../utils/formatMoney'
 import './HomePage.css'
 
-/** Pantalla inicial (protegida): saludo, cierre de sesión y estado del backend. */
+/** Pantalla inicial (protegida): saludo, acceso a tarjetas y deudas, y estado del backend. */
 function HomePage() {
-  const { usuario, cerrarSesion } = useAuth()
+  const { usuario } = useAuth()
   const { api, db } = useBackendStatus()
 
   return (
-    <main className="home">
+    <div className="home">
       <header className="home__encabezado">
-        <div>
-          <h1>Hola, {usuario?.nombre.split(' ')[0]}</h1>
-          <p className="home__subtitle">{usuario?.correo}</p>
-        </div>
-        <Button variante="secundario" onClick={() => cerrarSesion('manual')}>
-          <Icon nombre="salir" tamano={20} />
-          Cerrar sesión
-        </Button>
+        <h1>Hola, {usuario?.nombre.split(' ')[0]}</h1>
+        <p className="home__subtitle">{usuario?.correo}</p>
       </header>
+
+      <Link to="/tarjetas" className="home__acceso">
+        <Icon nombre="tarjeta" />
+        <span>
+          <strong>Tarjetas y deudas</strong>
+          <span className="home__acceso-texto">Registra tus tarjetas, compras a MSI y préstamos.</span>
+        </span>
+      </Link>
 
       <p className="home__subtitle">Ejemplo de formato de dinero: {formatMoney(3838)}</p>
 
@@ -35,7 +37,7 @@ function HomePage() {
         <StatusBadge label="API" result={api} />
         <StatusBadge label="Base de datos" result={db} />
       </section>
-    </main>
+    </div>
   )
 }
 
