@@ -1,0 +1,95 @@
+.auth {
+  min-height: 100svh;
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--arena);
+}
+
+.auth__contenedor {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth__marca {
+  text-align: center;
+  font: 700 32px/1 var(--serif);
+}
+
+.auth__marca-ika {
+  color: var(--azul);
+}
+
+.auth__marca-money {
+  color: var(--verde-texto);
+}
+
+/* Tarjeta de contenido de la guía (T20): crema, borde arena y línea superior de 4 px */
+.auth__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 16px;
+  background: var(--crema);
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--azul);
+  border-radius: 10px;
+}
+
+.auth__tarjeta h1 {
+  margin: 0;
+}
+
+.auth__subtitulo {
+  color: var(--gris-azulado);
+}
+
+.auth__pie {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth__modo-prueba {
+  text-align: center;
+  font-size: 13px;
+  color: var(--gris-azulado);
+}
+
+/* Formularios dentro de las pantallas de cuenta */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form__fila {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.auth-form__casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.auth-form__casilla input {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+  accent-color: var(--azul);
+}
+
+/* Área táctil de al menos 44 px en enlaces sueltos (IU-09) */
+.auth-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

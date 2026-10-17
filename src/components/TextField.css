@@ -1,0 +1,66 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo__etiqueta {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.campo__control {
+  position: relative;
+}
+
+.campo__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 8px;
+  background: var(--crema);
+  color: var(--tinta);
+  font: 16px/1.5 var(--sans);
+}
+
+.campo__input:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--dorado);
+}
+
+.campo--error .campo__input {
+  border-color: var(--critico);
+}
+
+/* Deja espacio para el botón de mostrar contraseña */
+.campo__control:has(.campo__ver) .campo__input {
+  padding-right: 52px;
+}
+
+.campo__ver {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--gris-azulado);
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.campo__ayuda {
+  font-size: 13px;
+  color: var(--gris-azulado);
+}
+
+.campo__mensaje-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--critico);
+}

@@ -1,41 +1,53 @@
-/* Estilos globales: variables de color, tipografía y reset básico. */
+/* Estilos globales con los tokens de la guía de estilo (T20). */
 
 :root {
-  --text: #4b5563;
-  --text-strong: #111827;
-  --muted: #9ca3af;
-  --bg: #f9fafb;
-  --surface: #ffffff;
-  --border: #e5e7eb;
-  --code-bg: #f3f4f6;
-  --accent: #0f766e;
-  --success: #16a34a;
-  --danger: #dc2626;
+  /* Colores de la marca */
+  --azul: #043a5e;
+  --verde: #4ea145;
+  --verde-texto: #2f7d32;
+  --dorado: #efbf04;
+  --crema: #fffbf4;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Neutros */
+  --tinta: #1e3347;
+  --gris-azulado: #5b6872;
+  --arena-oscura: #e3d8c3;
+  --arena: #f5efe3;
+
+  /* Semáforo financiero: texto/borde, fondo y gráfica */
+  --sano: #2f7d32;
+  --sano-fondo: #e4f1df;
+  --precaucion: #8a5a00;
+  --precaucion-fondo: #fff0c8;
+  --riesgo: #b34700;
+  --riesgo-fondo: #ffe2ce;
+  --critico: #a61b1b;
+  --critico-fondo: #fadcd9;
+  --critico-grafica: #c62828;
+
+  /* Alias usados por los componentes existentes (StatusBadge, HomePage) */
+  --text: var(--tinta);
+  --text-strong: var(--tinta);
+  --muted: var(--gris-azulado);
+  --bg: var(--arena);
+  --surface: var(--crema);
+  --border: var(--arena-oscura);
+  --code-bg: var(--arena);
+  --accent: var(--azul);
+  --success: var(--sano);
+  --danger: var(--critico);
+
+  /* Tipografía */
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'Source Sans 3', system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 16px/1.5 var(--sans);
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  color-scheme: light;
+  color: var(--tinta);
+  background: var(--arena);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #d1d5db;
-    --text-strong: #f9fafb;
-    --muted: #6b7280;
-    --bg: #111318;
-    --surface: #1a1d24;
-    --border: #2d313b;
-    --code-bg: #232731;
-    --accent: #2dd4bf;
-    --success: #4ade80;
-    --danger: #f87171;
-  }
 }
 
 *,
@@ -53,21 +65,33 @@ h1,
 h2,
 h3 {
   margin: 0 0 8px;
-  color: var(--text-strong);
-  font-weight: 600;
+  font-family: var(--serif);
+  color: var(--azul);
 }
 
 h1 {
-  font-size: 2.5rem;
-  color: var(--accent);
+  font-size: 28px;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: 1.25rem;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 p {
   margin: 0;
+}
+
+a {
+  color: var(--azul);
+  font-weight: 600;
+}
+
+/* Foco visible con el dorado de la guía (nunca como color de texto) */
+:focus-visible {
+  outline: 3px solid var(--dorado);
+  outline-offset: 2px;
 }
 
 code {
@@ -76,4 +100,17 @@ code {
   padding: 2px 6px;
   border-radius: 4px;
   background: var(--code-bg);
+}
+
+/* Texto solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
