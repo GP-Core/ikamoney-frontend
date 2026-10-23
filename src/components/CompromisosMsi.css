@@ -1,0 +1,73 @@
+.msi {
+  grid-area: msi;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.msi__titulo {
+  margin: 0 0 8px;
+  font-size: 1.0625rem;
+}
+
+.msi__porcentaje {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.msi__porcentaje strong {
+  color: var(--c-msi);
+  font-size: 1.25rem;
+}
+
+.msi__barra {
+  height: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--code-bg);
+}
+
+.msi__relleno {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(45deg, var(--c-msi) 0 3px, var(--c-msi-claro) 3px 6px);
+}
+
+.msi__montos {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.msi__datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px 12px;
+  margin: 14px 0 0;
+}
+
+.msi__datos dt {
+  font-size: 0.75rem;
+}
+
+.msi__datos dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.msi__aviso {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  background: var(--code-bg);
+}
+
+.msi__vacio {
+  font-size: 0.9375rem;
+}

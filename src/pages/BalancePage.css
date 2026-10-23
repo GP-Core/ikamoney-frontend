@@ -1,0 +1,161 @@
+/* Colores propios de esta pantalla. Los demás (--surface, --accent, --success…) vienen de index.css. */
+.balance {
+  --c-fijo: #64748b;
+  --c-variable: #cbd5e1;
+  --c-msi: #7c3aed;
+  --c-msi-claro: #ddd6fe;
+
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .balance {
+    --c-fijo: #94a3b8;
+    --c-variable: #475569;
+    --c-msi: #a78bfa;
+    --c-msi-claro: #4c3a7a;
+  }
+}
+
+.balance__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.balance__mes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.balance__titulo {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-strong);
+  text-align: center;
+}
+
+.balance__ejemplo {
+  margin-top: 2px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--code-bg);
+  font-size: 0.6875rem;
+}
+
+.balance__mes-boton {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.balance__mes-boton:focus-visible,
+.balance__reintentar:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Móvil: una sola columna con el orden resumen → gráfica → MSI. */
+.balance__contenido {
+  display: grid;
+  gap: 12px;
+  grid-template-areas:
+    'resumen'
+    'grafica'
+    'msi';
+}
+
+.balance__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.balance__error {
+  padding: 24px 16px;
+  border: 1px solid var(--danger);
+  border-radius: 16px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.balance__error h2 {
+  color: var(--danger);
+}
+
+.balance__reintentar {
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.esqueleto {
+  border-radius: 16px;
+  background: var(--code-bg);
+  animation: pulso 1.4s ease-in-out infinite;
+}
+
+.esqueleto--resumen {
+  grid-area: resumen;
+  height: 200px;
+}
+
+.esqueleto--grafica {
+  grid-area: grafica;
+  height: 380px;
+}
+
+.esqueleto--msi {
+  grid-area: msi;
+  height: 170px;
+}
+
+@keyframes pulso {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    animation: none;
+  }
+}
+
+/* Tablet y escritorio: resumen y MSI a la izquierda, gráfica a la derecha. */
+@media (min-width: 900px) {
+  .balance {
+    max-width: 1040px;
+    padding-top: 32px;
+  }
+
+  .balance__contenido {
+    grid-template-columns: 360px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'resumen grafica'
+      'msi grafica';
+    align-items: start;
+  }
+}

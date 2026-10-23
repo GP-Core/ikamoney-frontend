@@ -10,7 +10,12 @@ export interface PingDbResponse {
   message: string
 }
 
-/** Cuerpo de error que devuelve FastAPI (HTTPException). */
+/**
+ * Cuerpo de error del backend: los endpoints de /api/v1 responden { codigo, mensaje, campos };
+ * los de /api (health, ping-db) usan el `detail` de FastAPI.
+ */
 export interface ApiErrorBody {
   detail?: string
+  codigo?: string
+  mensaje?: string
 }
