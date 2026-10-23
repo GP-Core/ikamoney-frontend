@@ -1,0 +1,191 @@
+/*
+ * Paleta de esta pantalla (solo tema claro). Menta suave y verde profundo (marca) para el resumen; ámbar, violeta y verde menta
+ * para distinguir gastos variables, MSI y dinero libre. El violeta rayado queda reservado a MSI.
+ */
+.balance {
+  --b-fondo: #f4f9f6;
+  --b-hero: #0b3b3c;
+  --b-tinta: #0b3b3c;
+  --b-realce: #eef6f2;
+  --b-linea: #c9ddd5;
+  --b-msi-fondo: #f4f0ff;
+  --b-msi-borde: #e0d7ff;
+  --b-msi-pista: #e6dffc;
+
+  --c-fijo: #4f7a85;
+  --c-variable: #f0b23e;
+  --c-msi: #7c3aed;
+  --c-msi-claro: #ddd6fe;
+  --c-libre: #12a66b;
+
+  --surface: #ffffff;
+  --border: #dbe9e3;
+
+  min-height: 100svh;
+  background: var(--b-fondo);
+  color-scheme: light;
+}
+
+.balance__ancho {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 14px 16px 40px;
+}
+
+/* Selector de mes: píldora con flechas grandes, fáciles de tocar. */
+.balance__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.balance__mes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.balance__titulo {
+  margin: 0;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+  text-align: center;
+}
+
+.balance__ejemplo {
+  margin-top: 3px;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.6875rem;
+}
+
+.balance__mes-boton {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.balance__mes-boton:hover {
+  background: var(--b-realce);
+}
+
+.balance__mes-boton:active {
+  transform: scale(0.94);
+}
+
+.balance__mes-boton:focus-visible,
+.balance__reintentar:focus-visible {
+  outline: 3px solid var(--c-msi);
+  outline-offset: 2px;
+}
+
+/* Móvil: una sola columna con el orden resumen → gráfica → MSI. */
+.balance__contenido {
+  display: grid;
+  gap: 14px;
+  grid-template-areas:
+    'resumen'
+    'grafica'
+    'msi';
+}
+
+.balance__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.balance__error {
+  padding: 28px 18px;
+  border: 1px solid var(--danger);
+  border-radius: 24px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.balance__error h2 {
+  color: var(--danger);
+}
+
+.balance__reintentar {
+  min-height: 46px;
+  margin-top: 14px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--b-hero);
+  color: #f2fbf9;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.esqueleto {
+  border-radius: 24px;
+  background: var(--b-linea);
+  opacity: 0.45;
+  animation: pulso 1.4s ease-in-out infinite;
+}
+
+.esqueleto--resumen {
+  grid-area: resumen;
+  height: 520px;
+}
+
+.esqueleto--grafica {
+  grid-area: grafica;
+  height: 380px;
+}
+
+.esqueleto--msi {
+  grid-area: msi;
+  height: 170px;
+}
+
+@keyframes pulso {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    animation: none;
+  }
+
+  .balance__mes-boton {
+    transition: none;
+  }
+}
+
+/* Tablet y escritorio: resumen y MSI a la izquierda, gráfica a la derecha. */
+@media (min-width: 900px) {
+  .balance__ancho {
+    max-width: 1060px;
+    padding-top: 32px;
+  }
+
+  .balance__contenido {
+    grid-template-columns: 380px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'resumen grafica'
+      'msi grafica';
+    align-items: start;
+  }
+}

@@ -1,0 +1,218 @@
+/* Tarjeta principal: menta suave con el anillo sobre un disco blanco. El dinero libre es lo primero que se ve. */
+.resumen {
+  --t-fijo: #5b8b95;
+  --t-variable: #f0b23e;
+  --t-msi: #7c3aed;
+  --t-libre: #12a66b;
+  --t-texto: #0b3b3c;
+  --t-suave: #3f6563;
+
+  grid-area: resumen;
+  padding: 20px 18px 18px;
+  border: 1px solid #c8e8d9;
+  border-radius: 28px;
+  background: #ddf3e8;
+  color: var(--t-suave);
+  box-shadow: 0 16px 30px -18px rgba(18, 166, 107, 0.55);
+}
+
+.resumen--justo {
+  border-color: #f3dfae;
+  background: #fff3d6;
+  box-shadow: 0 16px 30px -18px rgba(240, 178, 62, 0.6);
+}
+
+.resumen--mal {
+  border-color: #f6cfca;
+  background: #ffe6e2;
+  box-shadow: 0 16px 30px -18px rgba(214, 69, 58, 0.5);
+}
+
+.resumen__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 6px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--t-texto);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.resumen__icono {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--t-libre);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.resumen--justo .resumen__icono {
+  background: #e29a14;
+}
+
+.resumen--mal .resumen__icono {
+  background: #d6453a;
+}
+
+.resumen__ayuda {
+  max-width: 34ch;
+  margin-top: 8px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.resumen__anillo {
+  position: relative;
+  width: min(100%, 250px);
+  aspect-ratio: 1;
+  margin: 12px auto 8px;
+}
+
+.resumen__anillo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.resumen__disco {
+  fill: #ffffff;
+}
+
+.resumen__pista,
+.resumen__arco {
+  fill: none;
+  stroke-width: 17;
+}
+
+.resumen__pista {
+  stroke: rgba(11, 59, 60, 0.08);
+}
+
+.resumen__arco--fijo {
+  stroke: var(--t-fijo);
+}
+
+.resumen__arco--variable {
+  stroke: var(--t-variable);
+}
+
+.resumen__arco--msi {
+  stroke: var(--t-msi);
+}
+
+.resumen__arco--libre {
+  stroke: var(--t-libre);
+}
+
+/* Único movimiento "de entrada" de la pantalla: el anillo se dibuja una vez al cargar. */
+.resumen__arco {
+  animation: dibujar 900ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+@keyframes dibujar {
+  from {
+    stroke-dasharray: 0 var(--circunferencia);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resumen__arco {
+    animation: none;
+  }
+}
+
+.resumen__centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18%;
+  text-align: center;
+}
+
+.resumen__etiqueta {
+  margin: 0;
+  color: var(--t-suave);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.resumen__cifra {
+  margin: 2px 0;
+  color: var(--t-texto);
+  font-size: clamp(1.9rem, 9.5vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumen--mal .resumen__cifra {
+  color: #c2362c;
+}
+
+.resumen__de {
+  font-size: 0.75rem;
+}
+
+.resumen__desglose {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resumen__parte {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.resumen__punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.resumen__punto--fijo {
+  background: var(--t-fijo);
+}
+
+.resumen__punto--variable {
+  background: var(--t-variable);
+}
+
+.resumen__punto--msi {
+  background: var(--t-msi);
+}
+
+.resumen__punto--libre {
+  background: var(--t-libre);
+}
+
+.resumen__nombre {
+  font-size: 0.75rem;
+}
+
+.resumen__monto {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  color: var(--t-texto);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

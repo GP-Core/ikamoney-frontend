@@ -1,0 +1,92 @@
+.vacio {
+  padding: 24px 16px;
+  border: 1px dashed var(--b-linea);
+  border-radius: 28px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.vacio__vista {
+  width: 200px;
+  max-width: 70%;
+  margin: 0 auto 8px;
+  display: block;
+}
+
+.vacio__vista rect {
+  fill: var(--c-fijo);
+  opacity: 0.28;
+}
+
+.vacio__vista rect:nth-of-type(3n + 2) {
+  fill: var(--c-variable);
+}
+
+.vacio__vista rect:nth-of-type(3n) {
+  fill: var(--c-msi);
+}
+
+.vacio__vista polyline {
+  fill: none;
+  stroke: var(--c-libre);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
+.vacio__titulo {
+  margin: 0 0 8px;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+}
+
+.vacio__texto {
+  max-width: 44ch;
+  margin: 0 auto 20px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.vacio__pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+  text-align: left;
+}
+
+.vacio__pasos li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px 10px 48px;
+  border-radius: 16px;
+  background: var(--b-realce);
+  font-size: 0.875rem;
+  counter-increment: paso;
+}
+
+.vacio__pasos li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: var(--b-hero);
+  color: #f2fbf9;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+.vacio__pasos strong {
+  color: var(--text-strong);
+}

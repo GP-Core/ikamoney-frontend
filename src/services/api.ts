@@ -1,4 +1,5 @@
 import type { ApiErrorBody } from '../types/api'
+import { getToken } from './session'
 
 /** URL base del backend. Se configura en .env con VITE_API_URL. */
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -24,6 +25,11 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   if (init?.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
+  // Los endpoints de /api/v1 exigen el token JWT del usuario.
+  const token = getToken()
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
 
   const response = await fetch(`${API_URL}/api${path}`, { ...init, headers })
 
@@ -31,7 +37,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     const body = (await response.json().catch(() => ({}))) as ApiErrorBody
     throw new ApiError(
       response.status,
-      body.detail ?? `Error ${response.status} al llamar a ${path}`,
+      body.mensaje ?? body.detail ?? `Error ${response.status} al llamar a ${path}`,
     )
   }
 
