@@ -1,0 +1,185 @@
+.grafica {
+  grid-area: grafica;
+  padding: 18px 16px 16px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--surface);
+}
+
+.grafica__titulo {
+  margin: 0 0 10px;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+.grafica__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+}
+
+.grafica__leyenda li,
+.grafica__filas dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.muestra {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.muestra--ingreso {
+  height: 3px;
+  background: var(--c-libre);
+}
+
+.muestra--fijo {
+  background: var(--c-fijo);
+}
+
+.muestra--variable {
+  background: var(--c-variable);
+}
+
+.muestra--msi {
+  background: repeating-linear-gradient(45deg, var(--c-msi) 0 2px, var(--c-msi-claro) 2px 4px);
+}
+
+.grafica__svg {
+  display: block;
+  width: 100%;
+  max-width: 560px; /* en pantallas anchas evita que los textos del SVG se agranden de más */
+  margin: 0 auto;
+  height: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.grafica__rejilla {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.grafica__eje,
+.grafica__mes {
+  fill: var(--text);
+  font-size: 10px;
+  font-family: var(--sans);
+}
+
+.grafica__mes {
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.grafica__mes--elegido {
+  fill: var(--text-strong);
+  font-weight: 700;
+}
+
+.grafica__mes--negativo {
+  fill: var(--danger);
+}
+
+.grafica__seleccion {
+  fill: var(--b-realce);
+}
+
+.grafica__fijo {
+  fill: var(--c-fijo);
+}
+
+.grafica__variable {
+  fill: var(--c-variable);
+}
+
+.grafica__msi-fondo {
+  fill: var(--c-msi-claro);
+}
+
+.grafica__msi-raya {
+  fill: var(--c-msi);
+}
+
+.grafica__linea {
+  stroke: var(--c-libre);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.grafica__punto {
+  fill: var(--c-libre);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+
+.grafica__zona {
+  fill: transparent;
+  cursor: pointer;
+}
+
+.grafica__zona:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.grafica__detalle {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--b-realce);
+}
+
+.grafica__detalle-titulo {
+  margin: 0 0 6px;
+  font-size: 0.9375rem;
+}
+
+.grafica__filas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.grafica__filas > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.grafica__filas dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.grafica__total {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.grafica__filas dd.grafica__positivo {
+  color: var(--c-libre);
+}
+
+.grafica__filas dd.grafica__negativo {
+  color: var(--danger);
+}
+
+.grafica__nota {
+  margin-top: 10px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
