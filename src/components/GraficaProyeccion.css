@@ -53,6 +53,10 @@
   background: repeating-linear-gradient(45deg, var(--c-msi) 0 2px, var(--c-msi-claro) 2px 4px);
 }
 
+.muestra--tarjetas {
+  background: var(--c-tarjetas);
+}
+
 .grafica__svg {
   display: block;
   width: 100%;
@@ -106,6 +110,10 @@
 
 .grafica__msi-raya {
   fill: var(--c-msi);
+}
+
+.grafica__tarjetas {
+  fill: var(--c-tarjetas);
 }
 
 .grafica__linea {

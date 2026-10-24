@@ -25,7 +25,7 @@ function estadoDelMes(libre: number, ingresos: number): { tono: Tono; texto: str
 
 /** Resumen del mes: el anillo reparte el ingreso entre gastos fijos, variables, MSI y lo que queda libre. */
 function ResumenMes({ datos }: ResumenMesProps) {
-  const { ingresos, gastos_fijos, gastos_variables, msi, libre } = datos
+  const { ingresos, gastos_fijos, gastos_variables, msi, libre, tarjetas = 0 } = datos
   const negativo = libre < 0
   const estado = estadoDelMes(libre, ingresos)
   const cifra = useContador(Math.abs(libre))
@@ -34,10 +34,11 @@ function ResumenMes({ datos }: ResumenMesProps) {
     { clave: 'fijo', nombre: 'Gastos fijos', valor: gastos_fijos },
     { clave: 'variable', nombre: 'Gastos variables', valor: gastos_variables },
     { clave: 'msi', nombre: 'MSI', valor: msi },
+    { clave: 'tarjetas', nombre: 'Tarjetas y cuotas', valor: tarjetas },
     { clave: 'libre', nombre: 'Libre', valor: Math.max(libre, 0) },
   ]
   // Base del anillo: lo mayor entre lo que entra y lo que sale, para que nunca pase de una vuelta.
-  const base = Math.max(ingresos, gastos_fijos + gastos_variables + msi, 1)
+  const base = Math.max(ingresos, gastos_fijos + gastos_variables + tarjetas + msi, 1)
 
   let acumulado = 0
   const arcos = partes
@@ -51,9 +52,10 @@ function ResumenMes({ datos }: ResumenMesProps) {
 
   const descripcion =
     `Del ingreso de ${pesos(ingresos)}: ${pesos(gastos_fijos)} en gastos fijos, ` +
-    `${pesos(gastos_variables)} en gastos variables, ${pesos(msi)} en MSI` +
+    `${pesos(gastos_variables)} en gastos variables, ${pesos(tarjetas)} en tarjetas y cuotas, ` +
+    `${pesos(msi)} en MSI` +
     (negativo ? `; faltan ${pesos(-libre)}.` : ` y ${pesos(libre)} libres.`)
-
+    
   return (
     <section className={`resumen resumen--${estado.tono}`} aria-labelledby="resumen-titulo">
       <p className="resumen__estado">

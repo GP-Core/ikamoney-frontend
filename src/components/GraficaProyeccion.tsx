@@ -15,7 +15,7 @@ const ANCHO = 340
 const ALTO = 220
 const MARGEN = { izq: 42, der: 10, arriba: 14, abajo: 28 }
 
-const egresos = (m: MesBalance) => m.gastos_fijos + m.gastos_variables + m.msi
+const egresos = (m: MesBalance) => m.gastos_fijos + m.gastos_variables + (m.tarjetas ?? 0) + m.msi
 
 /** Techo del eje Y con 2 a 5 divisiones "redondas" (1, 2 o 5 por potencia de 10). */
 function escalaEjeY(maximo: number): { techo: number; marcas: number[] } {
@@ -26,7 +26,7 @@ function escalaEjeY(maximo: number): { techo: number; marcas: number[] } {
   return { techo: paso * divisiones, marcas: Array.from({ length: divisiones + 1 }, (_, i) => i * paso) }
 }
 
-/** Barras apiladas de lo que sale cada mes (gastos fijos, variables y MSI) y línea de lo que entra. */
+/** Barras apiladas de lo que sale cada mes (gastos fijos, variables, tarjetas y cuotas, y MSI) y línea de lo que entra. */
 function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
   const idPatron = `msi-${useId().replace(/:/g, '')}`
   const [elegido, setElegido] = useState(0)
@@ -68,6 +68,9 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
           <span className="muestra muestra--variable" aria-hidden="true" /> Gastos variables
         </li>
         <li>
+          <span className="muestra muestra--tarjetas" aria-hidden="true" /> Tarjetas y cuotas
+        </li>
+        <li>
           <span className="muestra muestra--msi" aria-hidden="true" /> MSI comprometido
         </li>
       </ul>
@@ -93,8 +96,9 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
           const base = MARGEN.arriba + areaAlto
           const hFijo = alto(m.gastos_fijos)
           const hVar = alto(m.gastos_variables)
+          const hTar = alto(m.tarjetas ?? 0)
           const hMsi = alto(m.msi)
-          const total = hFijo + hVar + hMsi
+          const total = hFijo + hVar + hTar + hMsi
           const x = centro(i) - anchoBarra / 2
           const recorte = `${idPatron}-barra-${i}`
           return (
@@ -108,6 +112,7 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
               <g clipPath={`url(#${recorte})`}>
                 <rect className="grafica__fijo" x={x} y={base - hFijo} width={anchoBarra} height={hFijo} />
                 <rect className="grafica__variable" x={x} y={base - hFijo - hVar} width={anchoBarra} height={hVar} />
+                <rect className="grafica__tarjetas" x={x} y={base - hFijo - hVar - hTar} width={anchoBarra} height={hTar} />
                 <rect className="grafica__msi" x={x} y={base - total} width={anchoBarra} height={hMsi} fill={`url(#${idPatron})`} />
               </g>
               <text
@@ -169,6 +174,14 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
               <dd>{pesos(detalle.gastos_variables)}</dd>
             </div>
           )}
+          {(detalle.tarjetas ?? 0) > 0 && (
+            <div>
+              <dt>
+                <span className="muestra muestra--tarjetas" aria-hidden="true" /> Tarjetas y cuotas
+              </dt>
+              <dd>{pesos(detalle.tarjetas ?? 0)}</dd>
+            </div>
+          )}
           <div>
             <dt>
               <span className="muestra muestra--msi" aria-hidden="true" /> MSI comprometido
@@ -183,8 +196,8 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
       </div>
 
       <p className="grafica__nota">
-        La proyección suma tus ingresos y gastos fijos recurrentes y las mensualidades de MSI. Los gastos variables
-        solo cuentan en el mes actual, porque no se pueden prever.
+        La proyección suma tus ingresos, tus gastos, los pagos mínimos de tus tarjetas y las mensualidades de MSI.
+        Son estimaciones: los intereses se calculan sobre el saldo al corte.
       </p>
     </section>
   )

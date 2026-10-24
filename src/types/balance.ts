@@ -12,6 +12,20 @@ export interface MesBalance {
   libre: number
 }
 
+
+export interface MesBalance {
+  mes: string
+  ingresos: number
+  gastos_fijos: number
+  gastos_variables: number
+  msi: number
+  /** Pagos mínimos de tarjetas + otras cuotas de deuda (T33). */
+  tarjetas?: number
+  libre: number
+}
+
+
+
 /** Foto de todos los planes a meses sin intereses que siguen activos. */
 export interface ResumenMsi {
   saldo_pendiente: number
