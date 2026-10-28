@@ -29,11 +29,18 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ApiErrorBody
-    throw new ApiError(
-      response.status,
-      body.detail ?? `Error ${response.status} al llamar a ${path}`,
-    )
+    throw new ApiError(response.status, errorDetail(body) ?? `Error ${response.status} al llamar a ${path}`)
   }
 
+  // 204 No Content (típico en DELETE): no hay JSON que leer.
+  if (response.status === 204) return undefined as T
+
   return (await response.json()) as T
+}
+
+/** FastAPI manda `detail` como texto (HTTPException) o como lista (errores 422 de validación). */
+function errorDetail(body: ApiErrorBody): string | undefined {
+  if (typeof body.detail === 'string') return body.detail
+  if (Array.isArray(body.detail)) return body.detail.map((item) => item.msg).join('. ')
+  return undefined
 }

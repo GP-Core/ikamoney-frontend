@@ -95,6 +95,7 @@ ikamoney-frontend/
 │   ├── main.tsx          # Punto de entrada: monta React en el HTML
 │   ├── index.css         # Estilos globales y colores (modo claro/oscuro)
 │   └── vite-env.d.ts     # Tipos de las variables de entorno
+├── docs/                 # Guías del proyecto (cómo hacer peticiones a la API…)
 ├── index.html            # HTML base donde se monta la app
 ├── .env.example          # Plantilla de variables de entorno
 ├── vite.config.ts        # Configuración de Vite
@@ -126,6 +127,8 @@ Cada capa tiene una sola responsabilidad:
 4. **`components/`** y **`pages/`** solo muestran datos. Las páginas combinan hooks y componentes, y los componentes reciben todo por props.
 
 ## Cómo agregar algo nuevo
+
+> Guía completa con ejemplos de GET, POST, PUT y DELETE, manejo de errores y problemas frecuentes: [docs/guia-peticiones-api.md](docs/guia-peticiones-api.md).
 
 **Un endpoint nuevo del backend** (por ejemplo, transacciones):
 
