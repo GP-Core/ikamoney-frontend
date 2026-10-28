@@ -1,4 +1,5 @@
 import type { ApiErrorBody } from '../types/api'
+import { getToken } from './session'
 
 /** URL base del backend. Se configura en .env con VITE_API_URL. */
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -24,23 +25,23 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   if (init?.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
+  // Los endpoints de /api/v1 exigen el token JWT del usuario.
+  const token = getToken()
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
 
   const response = await fetch(`${API_URL}/api${path}`, { ...init, headers })
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ApiErrorBody
-    throw new ApiError(response.status, errorDetail(body) ?? `Error ${response.status} al llamar a ${path}`)
+    throw new ApiError(
+      response.status,
+      body.mensaje ?? body.detail ?? `Error ${response.status} al llamar a ${path}`,
+    )
   }
-
   // 204 No Content (típico en DELETE): no hay JSON que leer.
   if (response.status === 204) return undefined as T
 
   return (await response.json()) as T
-}
-
-/** FastAPI manda `detail` como texto (HTTPException) o como lista (errores 422 de validación). */
-function errorDetail(body: ApiErrorBody): string | undefined {
-  if (typeof body.detail === 'string') return body.detail
-  if (Array.isArray(body.detail)) return body.detail.map((item) => item.msg).join('. ')
-  return undefined
 }

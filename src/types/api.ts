@@ -10,14 +10,8 @@ export interface PingDbResponse {
   message: string
 }
 
-/** Un error de validación de FastAPI (respuesta 422). */
-export interface ValidationErrorItem {
-  loc: (string | number)[]
-  msg: string
-  type: string
-}
-
-/** Cuerpo de error que devuelve FastAPI: texto (HTTPException) o lista (422). */
+/** Cuerpo de error que devuelve FastAPI (HTTPException). */
 export interface ApiErrorBody {
-  detail?: string | ValidationErrorItem[]
+  mensaje?: string
+  detail?: string
 }
