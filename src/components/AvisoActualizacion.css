@@ -1,0 +1,55 @@
+/* Tarjeta de la guía de estilo T20: fondo crema, borde arena, línea superior azul de 4 px y radio de 10 px. */
+.aviso-pwa {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(420px, calc(100% - 32px));
+  padding: 16px;
+  border: 1px solid var(--marca-arena-oscura);
+  border-top: 4px solid var(--marca-azul);
+  border-radius: 10px;
+  background: var(--marca-crema);
+  color: var(--marca-tinta);
+  box-shadow: 0 8px 24px rgb(4 58 94 / 18%);
+  transform: translateX(-50%);
+}
+
+.aviso-pwa__texto {
+  flex: 1 1 200px;
+  font-weight: 600;
+}
+
+.aviso-pwa__acciones {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botones de la guía: alto mínimo de 44 px y radio de 8 px. El secundario va con contorno azul. */
+.aviso-pwa__boton {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--marca-azul);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--marca-azul);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aviso-pwa__boton--primario {
+  background: var(--marca-azul);
+  color: #ffffff;
+}
+
+/* Foco dorado de la guía con un contorno azul por fuera, para que se distinga sobre el crema. */
+.aviso-pwa__boton:focus-visible {
+  outline: 3px solid var(--marca-dorado);
+  box-shadow: 0 0 0 5px var(--marca-azul);
+}

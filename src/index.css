@@ -12,6 +12,13 @@
   --success: #16a34a;
   --danger: #dc2626;
 
+  /* Colores de marca de la guía de estilo T20. Son los mismos en modo oscuro. */
+  --marca-azul: #043a5e;
+  --marca-dorado: #efbf04;
+  --marca-crema: #fffbf4;
+  --marca-tinta: #1e3347;
+  --marca-arena-oscura: #e3d8c3;
+
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 

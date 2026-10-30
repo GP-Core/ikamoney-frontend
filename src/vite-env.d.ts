@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/react" />
 
 // Variables de entorno disponibles en import.meta.env (deben empezar con VITE_).
 interface ImportMetaEnv {

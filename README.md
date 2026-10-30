@@ -42,8 +42,18 @@ Abre <http://localhost:5173> en el navegador.
 | `npm run build` | Revisa los tipos con TypeScript (`tsc -b`) y genera la versión de producción en `dist/`. **Si hay errores de tipos, falla aquí** (en `dev` no se revisan). |
 | `npm run lint` | Revisa el código con ESLint. |
 | `npm run preview` | Sirve la carpeta `dist/` para probar la versión de producción en local (primero hay que correr `npm run build`). |
+| `npm run generar-iconos` | Regenera los íconos de la app instalable a partir de `public/favicon.svg`. |
 
 Por ahora no hay pruebas automáticas configuradas.
+
+## App instalable (PWA)
+
+La app se puede instalar en el celular y abre sin conexión: un manifest con nombre, colores e íconos, y un service worker que guarda la interfaz (HTML, CSS, JS e íconos). Las respuestas de la API **no** se guardan. Cuando se publica una versión nueva, aparece un aviso para actualizar sin reinstalar.
+
+- El service worker solo existe en el build: pruébalo con `npm run build` y `npm run preview`, no con `npm run dev`.
+- Para instalarla en un celular hace falta HTTPS (Vercel); por la red local con `http://` no funciona.
+
+Detalles, pruebas en Android y iPhone y problemas frecuentes: [docs/PWA.md](docs/PWA.md).
 
 ## Variables de entorno
 
@@ -80,7 +90,7 @@ Si aparecen en rojo con el mensaje *"No se pudo conectar con el backend"*, el ba
 
 ```
 ikamoney-frontend/
-├── public/               # Archivos estáticos que se sirven tal cual (favicon…)
+├── public/               # Archivos estáticos que se sirven tal cual (favicon e íconos de la PWA)
 ├── src/
 │   ├── assets/           # Imágenes e íconos que se importan desde el código
 │   ├── components/       # Piezas de interfaz reutilizables (StatusBadge…)
@@ -98,7 +108,8 @@ ikamoney-frontend/
 ├── docs/                 # Guías del proyecto (cómo hacer peticiones a la API…)
 ├── index.html            # HTML base donde se monta la app
 ├── .env.example          # Plantilla de variables de entorno
-├── vite.config.ts        # Configuración de Vite
+├── vite.config.ts        # Configuración de Vite y de la PWA (manifest y service worker)
+├── pwa-assets.config.ts  # Configuración del generador de íconos
 ├── eslint.config.js      # Configuración de ESLint
 └── tsconfig*.json        # Configuración de TypeScript
 ```
