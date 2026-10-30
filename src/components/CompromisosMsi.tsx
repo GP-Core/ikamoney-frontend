@@ -12,7 +12,7 @@ interface CompromisosMsiProps {
 /** Cuánto de lo proyectado ya está comprometido en mensualidades de MSI, y cuándo se libera. */
 function CompromisosMsi({ meses, msi }: CompromisosMsiProps) {
   const totalMsi = meses.reduce((suma, m) => suma + m.msi, 0)
-  const totalEgresos = meses.reduce((suma, m) => suma + m.gastos_fijos + m.gastos_variables + m.msi, 0)
+  const totalEgresos = meses.reduce((suma, m) => suma + m.gastos_fijos + m.gastos_variables + (m.tarjetas ?? 0) + m.msi,0,)  
   const porcentaje = totalEgresos > 0 ? Math.round((totalMsi / totalEgresos) * 100) : 0
 
   // Primer mes en que baja el MSI: ahí se libera dinero.

@@ -4,6 +4,7 @@
   --t-variable: #f6c76b;
   --t-msi: #b79cff;
   --t-libre: #5ee0a0;
+  --t-tarjetas: #ff9aa8;
   --t-texto: #f2fbf9;
   --t-suave: rgba(242, 251, 249, 0.74);
 
@@ -80,6 +81,14 @@
 
 .resumen__arco--msi {
   stroke: var(--t-msi);
+}
+
+.resumen__arco--tarjetas {
+  stroke: var(--t-tarjetas);
+}
+
+.resumen__punto--tarjetas {
+  background: var(--t-tarjetas);
 }
 
 .resumen__arco--libre {
