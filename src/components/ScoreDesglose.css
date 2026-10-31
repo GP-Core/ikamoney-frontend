@@ -230,6 +230,10 @@
   color: var(--c-resta);
 }
 
+.factor--omitido {
+  opacity: 0.8;
+}
+
 .factor__nombre {
   flex: 1;
   min-width: 0;
@@ -267,40 +271,37 @@
   line-height: 1.45;
 }
 
-/* Barra que sale del centro: a la derecha suma, a la izquierda resta. */
+/* Barra de aporte: el tramo claro es lo máximo que puede aportar el factor y el relleno, lo que aporta. */
 .factor__barra {
-  position: relative;
-  height: 8px;
+  height: 10px;
   margin: 0 0 0 38px;
-  border-radius: 999px;
-  background: var(--b-realce);
 }
 
-.factor__barra::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  bottom: -3px;
-  left: 50%;
-  width: 2px;
-  margin-left: -1px;
-  background: var(--b-linea);
+.factor__peso {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--b-realce) 0,
+    var(--b-realce) 4px,
+    var(--b-linea) 4px,
+    var(--b-linea) 6px
+  );
 }
 
 .factor__relleno {
-  position: absolute;
-  top: 0;
-  bottom: 0;
+  display: block;
+  height: 100%;
   border-radius: 999px;
 }
 
 .factor--suma .factor__relleno {
-  left: 50%;
   background: var(--c-suma);
 }
 
 .factor--resta .factor__relleno {
-  right: 50%;
   background: var(--c-resta);
 }
 
@@ -389,4 +390,61 @@
   .score-resumen {
     padding: 26px 24px 22px;
   }
+}
+
+.score-resumen__periodo {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+}
+
+.factor__detalle {
+  margin: 10px 0 0 38px;
+  font-size: 0.875rem;
+}
+
+.factor__detalle summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.factor__detalle summary:focus-visible {
+  outline: 3px solid var(--c-suma);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.factor__detalle p {
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
+.score-supuestos {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.score-supuestos__titulo {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.score-supuestos .score-avisos {
+  padding: 0;
+}
+
+.score-supuestos__modelo {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+}
+
+.faltantes__opcional {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 600;
 }

@@ -3,7 +3,8 @@ import FactoresScore from '../components/FactoresScore'
 import ScoreResumen from '../components/ScoreResumen'
 import { useScore } from '../hooks/useScore'
 import { SCORE_USANDO_EJEMPLO } from '../services/score'
-import { efectoDe, ordenarPorImpacto } from '../utils/score'
+import type { ScoreResponse } from '../types/score'
+import { efectoDe, TEXTO_TOPE, tonoDelNivel } from '../utils/score'
 import './BalancePage.css'
 import '../components/ScoreDesglose.css'
 
@@ -49,50 +50,65 @@ function ScorePage() {
           </div>
         )}
 
-        {estado === 'ok' && data && data.estado === 'completo' && data.score !== null && (
-          <ScoreCompleto data={data} />
+        {estado === 'ok' && data && data.estado === 'calculado' && data.puntaje !== null && (
+          <ScoreCalculado data={data} puntaje={data.puntaje} />
         )}
       </div>
     </main>
   )
 }
 
-function ScoreCompleto({ data }: { data: NonNullable<ReturnType<typeof useScore>['data']> }) {
+function ScoreCalculado({ data, puntaje }: { data: ScoreResponse; puntaje: number }) {
   const factores = data.factores
-  const suman = factores.filter((f) => efectoDe(f.puntos) === 'suma').length
-  const restan = factores.filter((f) => efectoDe(f.puntos) === 'resta').length
-  // Sugerencia principal: la de la API; si no viene, la del factor que más resta.
-  const sugerencia =
-    data.sugerencia ?? ordenarPorImpacto(factores).find((f) => efectoDe(f.puntos) === 'resta' && f.sugerencia)?.sugerencia
+  const suman = factores.filter((f) => efectoDe(f) === 'suma').length
+  const restan = factores.filter((f) => efectoDe(f) === 'resta').length
+
+  // Sugerencia principal: la del factor que más puntos deja de sumar.
+  const prioritario = factores.find((f) => f.clave === data.orden_mejora[0])
+  // Datos opcionales que faltan (por ejemplo los gastos): el score se calcula, pero se avisa.
+  const opcionales = data.faltantes.filter((d) => !d.obligatorio)
 
   return (
     <div className="score-contenido">
       <ScoreResumen
-        score={data.score ?? 0}
-        nivel={data.nivel}
+        puntaje={puntaje}
+        nivelTexto={data.nivel_texto}
+        tono={tonoDelNivel(data.nivel)}
+        periodo={data.periodo}
         suman={suman}
         restan={restan}
-        scoreCalculado={data.tope_aplicado ? data.score_calculado : null}
-        motivoTope={data.tope_aplicado ? data.motivo_tope : null}
+        puntajeBruto={data.tope_aplicado ? data.puntaje_bruto : null}
+        textoTope={data.tope_aplicado && data.motivo_tope ? TEXTO_TOPE[data.motivo_tope] : null}
       />
 
-      {sugerencia && (
+      {prioritario && (
         <section className="sugerencia" aria-labelledby="sugerencia-titulo">
           <h2 id="sugerencia-titulo" className="sugerencia__titulo">
             Lo que más te ayudaría
           </h2>
-          <p className="sugerencia__texto">{sugerencia}</p>
+          <p className="sugerencia__texto">
+            <strong>{prioritario.nombre}.</strong> {prioritario.como_mejorar}
+          </p>
         </section>
       )}
 
-      <FactoresScore factores={factores} sugerenciaPrincipal={sugerencia} />
+      <FactoresScore factores={factores} ordenMejora={data.orden_mejora} claveDestacada={prioritario?.clave} />
 
-      {data.avisos.length > 0 && (
-        <ul className="score-avisos">
-          {data.avisos.map((aviso) => (
-            <li key={aviso}>{aviso}</li>
-          ))}
-        </ul>
+      {(data.supuestos.length > 0 || opcionales.length > 0) && (
+        <section className="score-supuestos" aria-labelledby="supuestos-titulo">
+          <h2 id="supuestos-titulo" className="score-supuestos__titulo">
+            Qué supusimos para calcularlo
+          </h2>
+          <ul className="score-avisos">
+            {data.supuestos.map((texto) => (
+              <li key={texto}>{texto}</li>
+            ))}
+            {opcionales.map((dato) => (
+              <li key={dato.dato}>{dato.mensaje}</li>
+            ))}
+          </ul>
+          <p className="score-supuestos__modelo">Modelo de cálculo {data.version_modelo}</p>
+        </section>
       )}
     </div>
   )

@@ -3,9 +3,8 @@ import { apiFetch } from './api'
 import { leerEscenarioScore, scoreEjemplo } from './scoreEjemplo'
 
 /**
- * true = datos simulados de la hoja de T26; false = GET /api/v1/score.
- * Se controla con VITE_SCORE_USAR_EJEMPLO, aparte de la del balance, para poder
- * conectar una pantalla sin tocar la otra.
+ * true = datos de ejemplo (sin backend); false = GET /api/v1/score (T35).
+ * Se controla con VITE_SCORE_USAR_EJEMPLO, aparte de la del balance.
  */
 export const SCORE_USANDO_EJEMPLO = import.meta.env.VITE_SCORE_USAR_EJEMPLO !== 'false'
 
@@ -17,6 +16,6 @@ export async function obtenerScore(): Promise<ScoreResponse> {
     return scoreEjemplo(escenario)
   }
 
-  // Cuando exista el endpoint, aquí se adapta su respuesta a ScoreResponse si la forma es distinta.
+  // La respuesta del backend ya tiene la forma de ScoreResponse: no hace falta adaptarla.
   return apiFetch<ScoreResponse>('/v1/score')
 }
