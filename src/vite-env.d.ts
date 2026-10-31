@@ -5,6 +5,7 @@
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string
   readonly VITE_USAR_DATOS_EJEMPLO?: string
+  readonly VITE_SCORE_USAR_EJEMPLO?: string
 }
 
 interface ImportMeta {
