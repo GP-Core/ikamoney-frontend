@@ -1,0 +1,59 @@
+/* Colores del semáforo de T20: texto/borde y gráfica */
+.uso {
+  --uso-texto: var(--sano);
+  --uso-grafica: #4ea145;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.uso--precaucion {
+  --uso-texto: var(--precaucion);
+  --uso-grafica: #f2b705;
+}
+
+.uso--riesgo {
+  --uso-texto: var(--riesgo);
+  --uso-grafica: #e8590c;
+}
+
+.uso--critico {
+  --uso-texto: var(--critico);
+  --uso-grafica: #c62828;
+}
+
+.uso__encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 14px;
+  color: var(--gris-azulado);
+}
+
+.uso__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--uso-texto);
+}
+
+.uso__barra {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--arena-oscura);
+  overflow: hidden;
+}
+
+.uso__relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--uso-grafica);
+}
+
+.uso__sin-limite {
+  font-size: 14px;
+  color: var(--gris-azulado);
+}
