@@ -1,0 +1,237 @@
+/* Ranking de deudas (T44). Semáforo de T20: color + forma de ícono + etiqueta de texto. */
+.ranking {
+  --sem-sano-texto: #2f7d32;
+  --sem-sano-fondo: #e4f1df;
+  --sem-prec-texto: #8a5a00;
+  --sem-prec-fondo: #fff0c8;
+  --sem-riesgo-texto: #b34700;
+  --sem-riesgo-fondo: #ffe2ce;
+  --sem-crit-texto: #a61b1b;
+  --sem-crit-fondo: #fadcd9;
+  --sem-sano: #4ea145;
+  --sem-prec: #f2b705;
+  --sem-riesgo: #e8590c;
+  --sem-crit: #c62828;
+}
+
+.ranking__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Lo que debe hacer el usuario: la primera deuda. */
+.accion {
+  padding: 18px 16px;
+  border-radius: 28px;
+  background: var(--b-hero);
+  color: rgba(242, 251, 249, 0.85);
+}
+
+.accion__etiqueta {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f6c76b;
+}
+
+.accion__titulo {
+  margin: 0 0 6px;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+  color: #f2fbf9;
+}
+
+.accion__texto {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.accion__total {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(242, 251, 249, 0.2);
+  font-size: 0.875rem;
+}
+
+.ranking__lista-titulo {
+  margin: 4px 0 0;
+  font-size: 1.125rem;
+}
+
+.ranking__ayuda {
+  margin: -8px 0 0;
+  font-size: 0.875rem;
+}
+
+.ranking__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deuda {
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--sem-color, var(--border));
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.deuda--sano { --sem-color: var(--sem-sano); }
+.deuda--precaucion { --sem-color: var(--sem-prec); }
+.deuda--riesgo { --sem-color: var(--sem-riesgo); }
+.deuda--critico { --sem-color: var(--sem-crit); }
+
+/* La primera: borde y sombra para que se note sin depender solo del color. */
+.deuda--primera {
+  border-width: 2px;
+  border-top-width: 6px;
+  border-color: var(--sem-color);
+  box-shadow: 0 6px 20px rgba(11, 59, 60, 0.12);
+}
+
+.deuda__cabeza {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.deuda__posicion {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--b-hero);
+  color: #f2fbf9;
+  font-weight: 700;
+}
+
+.deuda__nombre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.semaforo {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.semaforo--sano { color: var(--sem-sano-texto); background: var(--sem-sano-fondo); }
+.semaforo--precaucion { color: var(--sem-prec-texto); background: var(--sem-prec-fondo); }
+.semaforo--riesgo { color: var(--sem-riesgo-texto); background: var(--sem-riesgo-fondo); }
+.semaforo--critico { color: var(--sem-crit-texto); background: var(--sem-crit-fondo); }
+
+.deuda__explicacion {
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-strong);
+}
+
+.deuda__cifras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.deuda__cifras div {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--b-realce);
+}
+
+.deuda__cifras dt {
+  font-size: 0.75rem;
+}
+
+.deuda__cifras dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.deuda__barra {
+  height: 8px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--b-linea);
+  overflow: hidden;
+}
+
+.deuda__barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sem-color);
+}
+
+.deuda__aviso {
+  margin-top: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sem-crit-texto);
+}
+
+@media (min-width: 520px) {
+  .deuda__cifras {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* En modo oscuro las etiquetas pasan a fondo translúcido para conservar el contraste. */
+@media (prefers-color-scheme: dark) {
+  .ranking {
+    --sem-sano-texto: #8fd98a;
+    --sem-prec-texto: #f5cf5f;
+    --sem-riesgo-texto: #ffa56b;
+    --sem-crit-texto: #ff8f8f;
+  }
+  .semaforo--sano { background: rgba(78, 161, 69, 0.2); }
+  .semaforo--precaucion { background: rgba(242, 183, 5, 0.18); }
+  .semaforo--riesgo { background: rgba(232, 89, 12, 0.2); }
+  .semaforo--critico { background: rgba(198, 40, 40, 0.24); }
+}
+
+/* Estado sin deudas */
+.ranking-vacio {
+  padding: 28px 16px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--surface);
+  text-align: center;
+  color: var(--sem-sano-texto);
+}
+
+.ranking-vacio__titulo {
+  margin: 8px 0;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+}
+
+.ranking-vacio__texto {
+  max-width: 44ch;
+  margin: 0 auto;
+  font-size: 0.9375rem;
+  color: var(--text);
+}
