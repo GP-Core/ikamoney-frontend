@@ -1,4 +1,3 @@
-import type { DeudaRanking } from '../types/ranking'
 import { pesos } from './pesos'
 
 /** Los cuatro estados del semáforo de T20. */
@@ -24,61 +23,20 @@ export function nivelDeTasa(tasaAnual: number): NivelSemaforo {
   return 'sano'
 }
 
-/** 5.8 → "5.8"; 60 → "60". */
-function pct(valor: number): string {
-  return String(Math.round(valor * 10) / 10)
-}
-
 /** "$1,160" (redondea a pesos enteros). */
-function dinero(monto: number): string {
+export function dinero(monto: number): string {
   return pesos(Math.round(monto))
 }
 
-/**
- * Explicación de la posición en lenguaje de dinero. Usa solo los números que manda el motor
- * y nunca fórmulas ni índices: "te cuesta $X al mes", no "costo real 0.87".
- */
-export function explicarPosicion(d: DeudaRanking, total: number): string {
-  const partes: string[] = []
-
-  partes.push(
-    d.interes_mensual > 0
-      ? `Esta ${d.tipo === 'tarjeta' ? 'tarjeta' : 'deuda'} te cuesta ${dinero(d.interes_mensual)} al mes en intereses (con IVA), con una tasa de ${pct(d.tasa_anual)} % anual.`
-      : `Esta deuda no te genera intereses este mes.`,
-  )
-
-  if (d.desempate) {
-    const { criterio, contra, gana } = d.desempate
-    const igual = `Tiene la misma tasa que ${contra}`
-    if (criterio === 'utilizacion') {
-      partes.push(
-        gana
-          ? `${igual}, pero va antes porque tienes usado una mayor parte de su límite.`
-          : `${igual}, pero ${contra} va antes porque tiene usado una mayor parte de su límite.`,
-      )
-    } else {
-      partes.push(
-        gana
-          ? `${igual} y la misma utilización, así que va antes por tener menos saldo: se liquida más rápido.`
-          : `${igual} y la misma utilización, pero ${contra} va antes por tener menos saldo.`,
-      )
-    }
-  } else if (d.posicion === 1) {
-    partes.push(
-      total > 1
-        ? `Es la que más intereses genera por cada peso que debes, por eso es la primera.`
-        : `Es tu única deuda con saldo.`,
-    )
-  } else {
-    partes.push(`Cada peso que debes aquí te cuesta menos en intereses que en las deudas de arriba.`)
-  }
-
-  return partes.join(' ')
+/** 5.8 → "5.8"; 60 → "60". */
+export function numero(valor: number): string {
+  return String(Math.round(valor * 10) / 10)
 }
 
-/** Acción concreta de la primera deuda. Nunca dice cuánto pagar si el motor no lo calculó. */
-export function accionPrincipal(d: DeudaRanking): string {
-  return `Destina todo lo que puedas extra a ${d.nombre}, además de su pago mínimo de ${dinero(d.pago_minimo)}. Es la que más dinero te quita cada mes.`
+/** "2026-03" → "marzo de 2026". */
+export function nombrePeriodo(periodo: string): string {
+  const [anio, mes] = periodo.split('-').map(Number)
+  if (!anio || !mes) return periodo
+  const texto = new Date(anio, mes - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+  return texto
 }
-
-export { dinero }

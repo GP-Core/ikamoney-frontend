@@ -15,6 +15,6 @@ export async function obtenerRanking(): Promise<RankingResponse> {
     if (escenario === 'error') throw new Error('No se pudo cargar tu ranking (escenario de prueba).')
     return rankingEjemplo(escenario)
   }
-  // Se muestra tal cual llega: el orden es del motor y no se toca.
+  // La respuesta del backend ya tiene la forma de RankingResponse: se muestra tal cual, sin reordenar.
   return apiFetch<RankingResponse>('/v1/priorizador')
 }
