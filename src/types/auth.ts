@@ -41,6 +41,11 @@ export interface RestablecerPayload {
   contrasena: string
 }
 
+/** DELETE /api/v1/cuenta (T56): la contraseña actual confirma el borrado. */
+export interface EliminarCuentaPayload {
+  contrasena: string
+}
+
 /** Respuesta genérica con un mensaje para mostrar. */
 export interface MensajeResponse {
   mensaje: string
@@ -49,4 +54,4 @@ export interface MensajeResponse {
 }
 
 /** Motivo por el que se cerró la sesión, para avisar al usuario. */
-export type MotivoCierre = 'manual' | 'expirada' | 'no_autorizada'
+export type MotivoCierre = 'manual' | 'expirada' | 'no_autorizada' | 'cuenta_eliminada'

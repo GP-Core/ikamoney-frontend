@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
+import { conCopia } from '../services/offline'
 import { obtenerScore } from '../services/score'
 import type { ScoreResponse } from '../types/score'
+import { useConexion } from './useConexion'
 
 export type EstadoScore = 'cargando' | 'ok' | 'error'
 
 interface Resultado {
-  intento: number
+  /** Identifica la petición: el reintento y si había conexión. */
+  clave: string
   data?: ScoreResponse
+  /** Fecha y hora de la copia mostrada; null si son datos de ahora (T60). */
+  copiaDe?: Date | null
   error?: string
 }
 
@@ -21,24 +26,28 @@ function mensajeDeError(error: unknown): string {
 export function useScore() {
   const [intento, setIntento] = useState(0)
   const [resultado, setResultado] = useState<Resultado | null>(null)
+  const enLinea = useConexion()
+  // Al perder o recuperar la conexión se vuelve a consultar (datos de ahora o copia guardada).
+  const clave = `${intento}#${enLinea}`
 
   useEffect(() => {
     // Evita aplicar una respuesta vieja si el componente se desmontó o se reintentó.
     let activo = true
-    obtenerScore()
-      .then((data) => activo && setResultado({ intento, data }))
-      .catch((error) => activo && setResultado({ intento, error: mensajeDeError(error) }))
+    conCopia('score', enLinea, obtenerScore)
+      .then(({ datos, copiaDe }) => activo && setResultado({ clave, data: datos, copiaDe }))
+      .catch((error) => activo && setResultado({ clave, error: mensajeDeError(error) }))
     return () => {
       activo = false
     }
-  }, [intento])
+  }, [clave, enLinea])
 
-  const actual = resultado?.intento === intento ? resultado : null
+  const actual = resultado?.clave === clave ? resultado : null
   const estado: EstadoScore = actual === null ? 'cargando' : actual.error ? 'error' : 'ok'
 
   return {
     estado,
     data: actual?.data ?? null,
+    copiaDe: actual?.copiaDe ?? null,
     error: actual?.error ?? null,
     reintentar: () => setIntento((n) => n + 1),
   }

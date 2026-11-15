@@ -1,0 +1,68 @@
+/* Todo lo de "sin conexión" (T60). Los colores salen de las variables de index.css. */
+
+/* Franja global bajo la barra superior */
+.sin-conexion__franja {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--precaucion-fondo);
+  border-bottom: 1px solid var(--precaucion);
+  color: var(--precaucion);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Línea "Datos guardados el…" arriba de cada pantalla que muestra una copia */
+.sin-conexion__fecha {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: var(--precaucion-fondo);
+  border-left: 6px solid var(--precaucion);
+  border-radius: 8px;
+  color: var(--tinta);
+  font-size: 14px;
+}
+
+.sin-conexion__fecha svg {
+  flex: none;
+  color: var(--precaucion);
+}
+
+/* La razón visible bajo los botones que escriben */
+.sin-conexion__nota {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--precaucion);
+}
+
+/* Enlaces que escriben (agregar, editar), apagados sin conexión: igual que `.boton:disabled`.
+   Llevan dos clases para ganarle a .boton--primario y .boton--secundario, que cargan después. */
+.boton.sin-conexion__apagado {
+  cursor: not-allowed;
+  background: #93a5b1;
+  border-color: #93a5b1;
+  color: #ffffff;
+}
+
+.boton.sin-conexion__apagado:hover {
+  filter: none;
+}
+
+/* Las acciones pequeñas de las fichas (Editar, Eliminar) también se apagan */
+.accion:disabled,
+.accion:disabled:hover,
+.accion.sin-conexion__apagado,
+.accion.sin-conexion__apagado:hover {
+  cursor: not-allowed;
+  background: transparent;
+  border: 0;
+  color: var(--gris-azulado);
+  opacity: 0.7;
+}

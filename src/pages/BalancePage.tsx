@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import BalanceVacio from '../components/BalanceVacio'
 import CompromisosMsi from '../components/CompromisosMsi'
+import FechaCopia from '../components/FechaCopia'
 import GraficaProyeccion from '../components/GraficaProyeccion'
 import ResumenMes from '../components/ResumenMes'
 import { useBalance } from '../hooks/useBalance'
@@ -11,7 +12,7 @@ import './BalancePage.css'
 /** Pantalla principal: balance del mes y proyección de los meses siguientes. */
 function BalancePage() {
   const [mes, setMes] = useState(mesActual)
-  const { estado, data, error, reintentar } = useBalance(mes)
+  const { estado, data, copiaDe, error, reintentar } = useBalance(mes)
 
   return (
     <main className="balance">
@@ -28,6 +29,8 @@ function BalancePage() {
           ›
         </button>
       </header>
+
+      {estado === 'ok' && <FechaCopia fecha={copiaDe} />}
 
       {estado === 'cargando' && (
         <div className="balance__contenido" aria-busy="true" aria-live="polite">

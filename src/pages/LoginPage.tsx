@@ -18,6 +18,7 @@ const AVISOS_CIERRE = {
   manual: 'Cerraste tu sesión. Tus datos se borraron de este dispositivo.',
   expirada: 'Tu sesión expiró por seguridad. Vuelve a iniciar sesión.',
   no_autorizada: 'Tu sesión ya no es válida. Vuelve a iniciar sesión.',
+  cuenta_eliminada: 'Tu cuenta y todos tus datos se eliminaron.',
 } as const
 
 /** Iniciar sesión con correo y contraseña (REQ-CU-04). */

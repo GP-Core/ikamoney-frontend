@@ -1,7 +1,10 @@
 import { ApiError } from '../services/api'
 
 /** Convierte un error de las peticiones de cuenta en un mensaje claro para el usuario. */
-export function mensajeErrorAuth(error: unknown, contexto: 'login' | 'registro' | 'recuperar' | 'restablecer'): string {
+export function mensajeErrorAuth(
+  error: unknown,
+  contexto: 'login' | 'registro' | 'recuperar' | 'restablecer' | 'eliminar',
+): string {
   if (error instanceof TypeError) {
     return 'No pudimos conectarnos con el servidor. Revisa tu conexión e inténtalo de nuevo.'
   }
@@ -19,6 +22,12 @@ export function mensajeErrorAuth(error: unknown, contexto: 'login' | 'registro' 
   }
   if (contexto === 'restablecer' && (error.status === 400 || error.status === 410)) {
     return 'El enlace no es válido o ya expiró. Solicita uno nuevo.'
+  }
+  if (contexto === 'eliminar' && error.status === 403) {
+    return 'La contraseña no es correcta. Tu cuenta no se eliminó.'
+  }
+  if (contexto === 'eliminar' && error.status === 401) {
+    return 'Tu sesión expiró. Inicia sesión de nuevo para eliminar tu cuenta.'
   }
   if (error.status >= 500) return 'El servidor tuvo un problema. Inténtalo de nuevo en unos minutos.'
   return error.message

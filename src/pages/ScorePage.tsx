@@ -1,5 +1,6 @@
 import DatosFaltantes from '../components/DatosFaltantes'
 import FactoresScore from '../components/FactoresScore'
+import FechaCopia from '../components/FechaCopia'
 import ScoreResumen from '../components/ScoreResumen'
 import { useScore } from '../hooks/useScore'
 import { SCORE_USANDO_EJEMPLO } from '../services/score'
@@ -10,7 +11,7 @@ import '../components/ScoreDesglose.css'
 
 /** Pantalla de score (T37): por qué tienes ese score, qué lo sube, qué lo baja y qué puede ayudar. */
 function ScorePage() {
-  const { estado, data, error, reintentar } = useScore()
+  const { estado, data, copiaDe, error, reintentar } = useScore()
 
   return (
     <main className="balance">
@@ -25,6 +26,8 @@ function ScorePage() {
           </div>
           <span className="score-volver score-volver--vacio" aria-hidden="true" />
         </header>
+
+        {estado === 'ok' && <FechaCopia fecha={copiaDe} />}
 
         {estado === 'cargando' && (
           <div className="balance__contenido" aria-busy="true" aria-live="polite">

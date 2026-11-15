@@ -1,0 +1,23 @@
+/* Pantalla "Mi cuenta" (T56). Lo demás viene de Finanzas.css. */
+
+/* La zona de eliminar se distingue con el color de estado crítico, no solo con el texto. */
+.cuenta__peligro {
+  border-top-color: var(--critico);
+}
+
+.cuenta__peligro h2 {
+  color: var(--critico);
+}
+
+.cuenta__lista {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Un correo largo no debe ensanchar la ficha en el celular. */
+.cuenta__correo {
+  overflow-wrap: anywhere;
+}

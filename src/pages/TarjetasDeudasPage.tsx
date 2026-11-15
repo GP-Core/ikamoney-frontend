@@ -4,9 +4,13 @@ import BarraUso from '../components/BarraUso'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EncabezadoPagina from '../components/EncabezadoPagina'
+import EnlaceEscritura from '../components/EnlaceEscritura'
 import EstadoCarga from '../components/EstadoCarga'
+import FechaCopia from '../components/FechaCopia'
 import FormAlert from '../components/FormAlert'
 import Icon from '../components/Icon'
+import NotaSinConexion from '../components/NotaSinConexion'
+import { useConexion } from '../hooks/useConexion'
 import { useTarjetasYDeudas } from '../hooks/useFinanzas'
 import { MODO_PRUEBA } from '../services/auth'
 import { finanzasService } from '../services/finanzas'
@@ -82,6 +86,7 @@ function TarjetaResumen({ tarjeta }: { tarjeta: Tarjeta }) {
 }
 
 function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => void }) {
+  const enLinea = useConexion()
   return (
     <div className="ficha">
       <div className="ficha__titulo">
@@ -126,11 +131,17 @@ function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => v
         )}
       </dl>
       <div className="ficha__acciones">
-        <Link to={`/deudas/${deuda.id}/editar`} className="accion">
+        <EnlaceEscritura to={`/deudas/${deuda.id}/editar`} className="accion">
           <Icon nombre="editar" tamano={18} />
           Editar
-        </Link>
-        <button type="button" className="accion accion--peligro" onClick={onEliminar}>
+        </EnlaceEscritura>
+        <button
+          type="button"
+          className="accion accion--peligro"
+          onClick={onEliminar}
+          disabled={!enLinea}
+          title={enLinea ? undefined : 'Sin conexión'}
+        >
           <Icon nombre="basura" tamano={18} />
           Eliminar
         </button>
@@ -141,7 +152,8 @@ function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => v
 
 /** Lista de tarjetas y deudas con su saldo, uso del límite y próxima fecha de pago (REQ-TD-10). */
 function TarjetasDeudasPage() {
-  const { datos, error, cargando, recargar } = useTarjetasYDeudas()
+  const { datos, copiaDe, error, cargando, recargar } = useTarjetasYDeudas()
+  const enLinea = useConexion()
   const aviso = (useLocation().state as { aviso?: string } | null)?.aviso
   const [porEliminar, setPorEliminar] = useState<Deuda | null>(null)
   const [eliminando, setEliminando] = useState(false)
@@ -185,23 +197,25 @@ function TarjetasDeudasPage() {
     <div className="pagina">
       <EncabezadoPagina titulo="Tarjetas y deudas" subtitulo="Todo lo que debes, en un solo lugar." />
 
+      <FechaCopia fecha={copiaDe} />
       {(mensaje ?? aviso) && <FormAlert tipo="sano">{mensaje ?? aviso}</FormAlert>}
       {errorAccion && <FormAlert tipo="critico">{errorAccion}</FormAlert>}
 
       <div className="pagina__acciones">
-        <Link to="/tarjetas/nueva" className="boton boton--primario">
+        <EnlaceEscritura to="/tarjetas/nueva" className="boton boton--primario">
           <Icon nombre="mas" tamano={20} />
           Agregar tarjeta
-        </Link>
-        <Link to="/deudas/nueva" className="boton boton--secundario">
+        </EnlaceEscritura>
+        <EnlaceEscritura to="/deudas/nueva" className="boton boton--secundario">
           <Icon nombre="mas" tamano={20} />
           Agregar otra deuda
-        </Link>
+        </EnlaceEscritura>
         <Button variante="secundario" disabled title="Disponible en una próxima versión (T31)">
           <Icon nombre="subir" tamano={20} />
           Subir estado de cuenta
         </Button>
       </div>
+      <NotaSinConexion />
       <p className="pagina__nota">Subir el estado de cuenta en PDF estará disponible pronto. Por ahora captura tus datos a mano.</p>
 
       {sinDatos ? (
@@ -213,7 +227,12 @@ function TarjetasDeudasPage() {
             cuándo pagar.
           </p>
           {MODO_PRUEBA && (
-            <Button variante="secundario" onClick={usarEjemplo}>
+            <Button
+              variante="secundario"
+              onClick={usarEjemplo}
+              disabled={!enLinea}
+              title={enLinea ? undefined : 'Sin conexión'}
+            >
               Cargar datos de ejemplo
             </Button>
           )}

@@ -1,24 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import { finanzasService } from '../services/finanzas'
+import { conCopia } from '../services/offline'
+import type { ConCopia } from '../services/offline'
 import { mensajeError } from '../utils/errores'
+import { useConexion } from './useConexion'
 
 interface Estado<T> {
   /** Función que produjo estos datos; si cambia, los datos son de otra consulta. */
   para: unknown
   datos: T | null
+  /** Fecha y hora de la copia mostrada; null si son datos de ahora (T60). */
+  copiaDe: Date | null
   error: string | null
 }
 
 /** Ejecuta `cargar` al montar y cada vez que se llama a `recargar`. */
-function useCarga<T>(cargar: () => Promise<T>) {
-  const [estado, setEstado] = useState<Estado<T>>({ para: null, datos: null, error: null })
+function useCarga<T>(cargar: () => Promise<ConCopia<T>>) {
+  const [estado, setEstado] = useState<Estado<T>>({ para: null, datos: null, copiaDe: null, error: null })
   const [version, setVersion] = useState(0)
 
   useEffect(() => {
     let activo = true
     cargar()
-      .then((datos) => activo && setEstado({ para: cargar, datos, error: null }))
-      .catch((error) => activo && setEstado({ para: cargar, datos: null, error: mensajeError(error) }))
+      .then(({ datos, copiaDe }) => activo && setEstado({ para: cargar, datos, copiaDe, error: null }))
+      .catch((error) => activo && setEstado({ para: cargar, datos: null, copiaDe: null, error: mensajeError(error) }))
     return () => {
       activo = false
     }
@@ -29,29 +34,49 @@ function useCarga<T>(cargar: () => Promise<T>) {
 
   return {
     datos: vigente ? estado.datos : null,
+    copiaDe: vigente ? estado.copiaDe : null,
     error: vigente ? estado.error : null,
     cargando: !vigente,
     recargar,
   }
 }
 
+// Cada `cargar` depende de `enLinea`: al perder o recuperar la conexión se vuelve a consultar,
+// y la pantalla pasa sola de los datos de ahora a la copia guardada (o al revés).
+
 /** Tarjetas (con sus compras a MSI) y otras deudas del usuario. */
 export function useTarjetasYDeudas() {
-  const cargar = useCallback(async () => {
-    const [tarjetas, deudas] = await Promise.all([finanzasService.listarTarjetas(), finanzasService.listarDeudas()])
-    return { tarjetas, deudas }
-  }, [])
+  const enLinea = useConexion()
+  const cargar = useCallback(
+    () =>
+      conCopia('tarjetas-deudas', enLinea, async () => {
+        const [tarjetas, deudas] = await Promise.all([finanzasService.listarTarjetas(), finanzasService.listarDeudas()])
+        return { tarjetas, deudas }
+      }),
+    [enLinea],
+  )
   return useCarga(cargar)
 }
 
 /** Una tarjeta con sus compras a MSI. Con id null no carga nada (formulario de alta). */
 export function useTarjeta(id: number | null) {
-  const cargar = useCallback(() => (id === null ? Promise.resolve(null) : finanzasService.obtenerTarjeta(id)), [id])
+  const enLinea = useConexion()
+  const cargar = useCallback(
+    () =>
+      id === null
+        ? Promise.resolve({ datos: null, copiaDe: null })
+        : conCopia(`tarjeta:${id}`, enLinea, () => finanzasService.obtenerTarjeta(id)),
+    [id, enLinea],
+  )
   return useCarga(cargar)
 }
 
 /** Una deuda. Con id null no carga nada (formulario de alta). */
 export function useDeuda(id: number | null) {
-  const cargar = useCallback(() => (id === null ? Promise.resolve(null) : finanzasService.obtenerDeuda(id)), [id])
+  const cargar = useCallback(
+    () =>
+      Promise.resolve(id === null ? null : finanzasService.obtenerDeuda(id)).then((datos) => ({ datos, copiaDe: null })),
+    [id],
+  )
   return useCarga(cargar)
 }

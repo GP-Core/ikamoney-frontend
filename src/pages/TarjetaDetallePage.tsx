@@ -1,12 +1,16 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import BarraUso from '../components/BarraUso'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EncabezadoPagina from '../components/EncabezadoPagina'
+import EnlaceEscritura from '../components/EnlaceEscritura'
 import EstadoCarga from '../components/EstadoCarga'
+import FechaCopia from '../components/FechaCopia'
 import FormAlert from '../components/FormAlert'
 import Icon from '../components/Icon'
+import NotaSinConexion from '../components/NotaSinConexion'
+import { useConexion } from '../hooks/useConexion'
 import { useTarjeta } from '../hooks/useFinanzas'
 import { finanzasService } from '../services/finanzas'
 import type { PlanMsi } from '../types/finanzas'
@@ -31,6 +35,7 @@ import './Finanzas.css'
 type PorEliminar = { tipo: 'tarjeta' } | { tipo: 'msi'; plan: PlanMsi } | null
 
 function PlanMsiItem({ plan, tarjetaId, onEliminar }: { plan: PlanMsi; tarjetaId: number; onEliminar: () => void }) {
+  const enLinea = useConexion()
   const restantes = mensualidadesRestantes(plan)
   const avance = (plan.mensualidades_pagadas / plan.num_mensualidades) * 100
   const liquidado = plan.estatus !== 'activo' || restantes === 0
@@ -77,11 +82,17 @@ function PlanMsiItem({ plan, tarjetaId, onEliminar }: { plan: PlanMsi; tarjetaId
         <div className="avance__relleno" style={{ width: `${avance}%` }} />
       </div>
       <div className="ficha__acciones">
-        <Link to={`/tarjetas/${tarjetaId}/msi/${plan.id}/editar`} className="accion">
+        <EnlaceEscritura to={`/tarjetas/${tarjetaId}/msi/${plan.id}/editar`} className="accion">
           <Icon nombre="editar" tamano={18} />
           Editar
-        </Link>
-        <button type="button" className="accion accion--peligro" onClick={onEliminar}>
+        </EnlaceEscritura>
+        <button
+          type="button"
+          className="accion accion--peligro"
+          onClick={onEliminar}
+          disabled={!enLinea}
+          title={enLinea ? undefined : 'Sin conexión'}
+        >
           <Icon nombre="basura" tamano={18} />
           Eliminar
         </button>
@@ -95,7 +106,8 @@ function TarjetaDetallePage() {
   const id = Number(useParams().id)
   const navegar = useNavigate()
   const aviso = (useLocation().state as { aviso?: string } | null)?.aviso
-  const { datos: tarjeta, error, cargando, recargar } = useTarjeta(id)
+  const { datos: tarjeta, copiaDe, error, cargando, recargar } = useTarjeta(id)
+  const enLinea = useConexion()
   const [porEliminar, setPorEliminar] = useState<PorEliminar>(null)
   const [eliminando, setEliminando] = useState(false)
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
@@ -137,6 +149,7 @@ function TarjetaDetallePage() {
         regresar={{ a: '/tarjetas', texto: 'Tarjetas y deudas' }}
       />
 
+      <FechaCopia fecha={copiaDe} />
       {(mensaje ?? aviso) && <FormAlert tipo="sano">{mensaje ?? aviso}</FormAlert>}
       {errorAccion && <FormAlert tipo="critico">{errorAccion}</FormAlert>}
 
@@ -221,10 +234,10 @@ function TarjetaDetallePage() {
       <section className="seccion" aria-labelledby="msi-titulo">
         <div className="seccion__encabezado">
           <h2 id="msi-titulo">Compras a meses sin intereses</h2>
-          <Link to={`/tarjetas/${tarjeta.id}/msi/nueva`} className="boton boton--primario">
+          <EnlaceEscritura to={`/tarjetas/${tarjeta.id}/msi/nueva`} className="boton boton--primario">
             <Icon nombre="mas" tamano={20} />
             Agregar compra a MSI
-          </Link>
+          </EnlaceEscritura>
         </div>
         {planes.length === 0 ? (
           <p className="pagina__nota">No tienes compras a MSI en esta tarjeta.</p>
@@ -240,15 +253,21 @@ function TarjetaDetallePage() {
       </section>
 
       <div className="pagina__acciones">
-        <Link to={`/tarjetas/${tarjeta.id}/editar`} className="boton boton--secundario">
+        <EnlaceEscritura to={`/tarjetas/${tarjeta.id}/editar`} className="boton boton--secundario">
           <Icon nombre="editar" tamano={20} />
           Editar tarjeta
-        </Link>
-        <Button variante="destructivo" onClick={() => setPorEliminar({ tipo: 'tarjeta' })}>
+        </EnlaceEscritura>
+        <Button
+          variante="destructivo"
+          onClick={() => setPorEliminar({ tipo: 'tarjeta' })}
+          disabled={!enLinea}
+          title={enLinea ? undefined : 'Sin conexión'}
+        >
           <Icon nombre="basura" tamano={20} />
           Eliminar tarjeta
         </Button>
       </div>
+      <NotaSinConexion />
 
       <ConfirmDialog
         abierto={porEliminar !== null}

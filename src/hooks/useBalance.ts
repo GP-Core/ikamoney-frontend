@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import { obtenerBalance } from '../services/balance'
+import { conCopia } from '../services/offline'
 import type { BalanceResponse } from '../types/balance'
+import { useConexion } from './useConexion'
 
 export type EstadoBalance = 'cargando' | 'ok' | 'error'
 
 interface Resultado {
   clave: string
   data?: BalanceResponse
+  /** Fecha y hora de la copia mostrada; null si son datos de ahora (T60). */
+  copiaDe?: Date | null
   error?: string
 }
 
@@ -21,18 +25,20 @@ function mensajeDeError(error: unknown): string {
 export function useBalance(mes: string) {
   const [intento, setIntento] = useState(0)
   const [resultado, setResultado] = useState<Resultado | null>(null)
-  const clave = `${mes}#${intento}`
+  const enLinea = useConexion()
+  // Al perder o recuperar la conexión se vuelve a consultar (datos de ahora o copia guardada).
+  const clave = `${mes}#${intento}#${enLinea}`
 
   useEffect(() => {
     // Evita aplicar una respuesta vieja si el usuario ya cambió de mes o el componente se desmontó.
     let activo = true
-    obtenerBalance(mes)
-      .then((data) => activo && setResultado({ clave, data }))
+    conCopia(`balance:${mes}`, enLinea, () => obtenerBalance(mes))
+      .then(({ datos, copiaDe }) => activo && setResultado({ clave, data: datos, copiaDe }))
       .catch((error) => activo && setResultado({ clave, error: mensajeDeError(error) }))
     return () => {
       activo = false
     }
-  }, [mes, clave])
+  }, [mes, clave, enLinea])
 
   // Si lo guardado no corresponde a la petición actual, todavía se está cargando.
   const actual = resultado?.clave === clave ? resultado : null
@@ -41,6 +47,7 @@ export function useBalance(mes: string) {
   return {
     estado,
     data: actual?.data ?? null,
+    copiaDe: actual?.copiaDe ?? null,
     error: actual?.error ?? null,
     reintentar: () => setIntento((n) => n + 1),
   }

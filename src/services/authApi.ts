@@ -1,4 +1,5 @@
 import type {
+  EliminarCuentaPayload,
   LoginPayload,
   MensajeResponse,
   RecuperarPayload,
@@ -20,6 +21,8 @@ export interface AuthService {
   cerrarSesion(): Promise<void>
   recuperarContrasena(datos: RecuperarPayload): Promise<MensajeResponse>
   restablecerContrasena(datos: RestablecerPayload): Promise<void>
+  /** Borra la cuenta y todos sus datos en el servidor (T56). Contraseña incorrecta: error 403. */
+  eliminarCuenta(datos: EliminarCuentaPayload): Promise<void>
 }
 
 /**
@@ -59,4 +62,7 @@ export const authApi: AuthService = {
       body: JSON.stringify(datos),
       conToken: false,
     }),
+
+  // DELETE /api/v1/cuenta (ikamoney-backend/docs/ELIMINAR_CUENTA.md). Responde 204 sin cuerpo.
+  eliminarCuenta: (datos) => apiFetch<void>('/v1/cuenta', { method: 'DELETE', body: JSON.stringify(datos) }),
 }

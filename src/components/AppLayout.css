@@ -34,6 +34,47 @@
   color: var(--verde-texto);
 }
 
+.app__acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Acceso a "Mi cuenta" (T56): solo ícono para que la barra quepa en el celular. */
+.app__cuenta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  color: var(--azul);
+}
+
+.app__cuenta:hover,
+.app__cuenta--activo {
+  background: var(--arena);
+}
+
+/* Celulares angostos: menos margen para que marca, cuenta y cerrar sesión quepan en una fila. */
+@media (max-width: 380px) {
+  .app__barra {
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .app__acciones {
+    gap: 4px;
+  }
+}
+
+/* Pantallas muy angostas: las acciones bajan a una segunda fila en vez de desbordar. */
+@media (max-width: 349px) {
+  .app__barra {
+    flex-wrap: wrap;
+  }
+}
+
 /* Deja espacio abajo para la navegación fija */
 .app__contenido {
   flex: 1;

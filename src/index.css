@@ -8,16 +8,13 @@
   --dorado: #efbf04;
   --crema: #fffbf4;
 
-<<<<<<< HEAD
-  /* Colores de marca de la guía de estilo T20. Son los mismos en modo oscuro. */
+  /* Colores de marca (T20) usados por las pantallas de balance y score */
   --marca-azul: #043a5e;
   --marca-dorado: #efbf04;
   --marca-crema: #fffbf4;
   --marca-tinta: #1e3347;
   --marca-arena-oscura: #e3d8c3;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-=======
   /* Neutros */
   --tinta: #1e3347;
   --gris-azulado: #5b6872;
@@ -50,7 +47,6 @@
   /* Tipografía */
   --serif: 'Playfair Display', Georgia, serif;
   --sans: 'Source Sans 3', system-ui, 'Segoe UI', Roboto, sans-serif;
->>>>>>> Ramon-Branch
   --mono: ui-monospace, Consolas, monospace;
 
   font: 16px/1.5 var(--sans);

@@ -198,6 +198,25 @@ export const authMock: AuthService = {
     tokens[token] = { ...registro, usado: true } // un solo uso
     escribir(CLAVES.recuperacion, tokens)
   },
+
+  async eliminarCuenta({ contrasena }) {
+    await esperar(400)
+    const usuario = usuarioDeLaSesion()
+    if ((await hashContrasena(contrasena, usuario.sal)) !== usuario.hash) {
+      // 403 como el backend: un 401 significaría que la sesión ya no sirve.
+      throw new ApiError(403, 'La contraseña no es correcta.')
+    }
+    // Igual que el borrado en cascada del backend: no queda nada de este usuario.
+    const deOtros = <T extends { usuarioId: number }>(registros: Record<string, T>) =>
+      Object.fromEntries(Object.entries(registros).filter(([, r]) => r.usuarioId !== usuario.id))
+    escribir(CLAVES.usuarios, leer<UsuarioMock[]>(CLAVES.usuarios, []).filter((u) => u.id !== usuario.id))
+    escribir(CLAVES.sesiones, deOtros(leer<Record<string, SesionMock>>(CLAVES.sesiones, {})))
+    escribir(CLAVES.recuperacion, deOtros(leer<Record<string, TokenRecuperacion>>(CLAVES.recuperacion, {})))
+    const intentos = leer<IntentosFallidos>(CLAVES.intentos, {})
+    delete intentos[usuario.correo]
+    escribir(CLAVES.intentos, intentos)
+    localStorage.removeItem(`ikamoney-mock:finanzas:${usuario.id}`) // tarjetas, MSI y deudas (finanzasMock.ts)
+  },
 }
 
 /** Id del usuario con sesión en el modo de prueba. Lo usan los demás servicios de prueba (T30). */
