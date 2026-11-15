@@ -1,0 +1,121 @@
+.mlist {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mlist__item {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.mlist__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mlist__row--foot {
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.mlist__name {
+  color: var(--text-strong);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.mlist__meta {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.mlist__amount {
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--text-strong);
+}
+
+.mlist__amount--ingreso {
+  color: var(--success);
+}
+
+.mlist__badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Distinguir con borde punteado además del color. */
+.mlist__badge--variable {
+  border-style: dashed;
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.mlist__actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.mlist__actions button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mlist__actions .mlist__delete {
+  color: var(--danger);
+}
+
+.empty {
+  padding: 36px 12px;
+  text-align: center;
+}
+
+.empty__icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.empty p {
+  max-width: 300px;
+  margin: 0 auto 12px;
+}
+
+.empty__link {
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}

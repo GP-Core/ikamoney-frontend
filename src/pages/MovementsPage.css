@@ -1,0 +1,120 @@
+.movements {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 0;
+}
+
+.movements h1 {
+  font-size: 2rem;
+}
+
+.movements__summary {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.movements__eyebrow {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.movements__balance {
+  color: var(--text-strong);
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.movements__summary dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.movements__summary dt {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.movements__summary dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.movements__warn {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.movements__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--code-bg);
+}
+
+.movements__tabs button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.movements__tabs button[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+}
+
+/* Botón fijo abajo para que siempre esté al alcance del pulgar. */
+.movements__bar {
+  position: sticky;
+  bottom: 0;
+  padding: 16px 0;
+  background: linear-gradient(transparent, var(--bg) 35%);
+}
+
+.movements__bar .btn {
+  width: 100%;
+}
+
+.movements__confirm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.movements__toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--text-strong);
+  color: var(--bg);
+  font-weight: 600;
+}

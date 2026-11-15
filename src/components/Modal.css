@@ -1,0 +1,43 @@
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92svh;
+  margin: auto auto 0;
+  padding: 20px 16px;
+  border: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.modal::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+@media (min-width: 640px) {
+  .modal {
+    margin: auto;
+    border-radius: 16px;
+  }
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal__head h2 {
+  margin: 0;
+}
+
+.modal__close {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--text-strong);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
