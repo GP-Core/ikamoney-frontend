@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_SCORE_USAR_EJEMPLO?: string
   /** 'true' para usar la autenticación de prueba sin backend. */
   readonly VITE_AUTH_MOCK?: string
+  readonly VITE_RANKING_USAR_EJEMPLO?: string
 }
 
 interface ImportMeta {
