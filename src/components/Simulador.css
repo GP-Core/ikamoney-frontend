@@ -1,0 +1,366 @@
+/*
+ * Pantalla del simulador (T42). El semáforo es el de la guía T20: cada estado tiene color de texto
+ * y borde, fondo, color de gráfica y una forma de icono propia. Los tres veredictos del backend
+ * usan Sano, Precaución y Riesgo. Las tarjetas siguen los componentes base de T20.
+ */
+.balance {
+  --v-bien-texto: #2f7d32;
+  --v-bien-fondo: #e4f1df;
+  --v-bien: #4ea145;
+  --v-atencion-texto: #8a5a00;
+  --v-atencion-fondo: #fff0c8;
+  --v-atencion: #f2b705;
+  --v-riesgo-texto: #b34700;
+  --v-riesgo-fondo: #ffe2ce;
+  --v-riesgo: #e8590c;
+
+  --sim-tarjeta: var(--marca-crema);
+  --sim-borde: var(--marca-arena-oscura);
+}
+
+/* T20 no define modo oscuro: los colores de gráfica pasan a ser texto y el fondo es su tinte. */
+@media (prefers-color-scheme: dark) {
+  .balance {
+    --v-bien-texto: #7fcf84;
+    --v-bien-fondo: rgba(78, 161, 69, 0.2);
+    --v-atencion-texto: #f2b705;
+    --v-atencion-fondo: rgba(242, 183, 5, 0.18);
+    --v-riesgo-texto: #ff8a4d;
+    --v-riesgo-fondo: rgba(232, 89, 12, 0.2);
+
+    --sim-tarjeta: var(--surface);
+    --sim-borde: var(--border);
+  }
+}
+
+.sim-contenido {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.sim-contenido > * {
+  min-width: 0;
+}
+
+.sim-titulo {
+  margin: 0 0 10px;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+}
+
+.sim-esqueleto--resumen {
+  height: 210px;
+}
+
+.sim-esqueleto--cards {
+  height: 260px;
+}
+
+.sim-vacio {
+  border-color: var(--border);
+}
+
+.sim-vacio h2 {
+  color: var(--text-strong);
+}
+
+/* ---------- Veredicto general ---------- */
+.sim-resumen {
+  --s-texto: #f2fbf9;
+  --s-suave: rgba(242, 251, 249, 0.8);
+  --s-acento: #4ea145;
+
+  padding: 20px 18px;
+  border-radius: 28px;
+  background: var(--b-hero);
+  color: var(--s-suave);
+  box-shadow: 0 14px 30px -12px rgba(11, 59, 60, 0.55);
+}
+
+.sim-resumen--atencion {
+  --s-acento: #f2b705;
+}
+
+.sim-resumen--riesgo {
+  --s-acento: #e8590c;
+}
+
+.sim-resumen p {
+  margin: 0;
+}
+
+.sim-resumen__compra {
+  font-size: 0.8125rem;
+}
+
+.sim-resumen__veredicto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 10px;
+  color: var(--s-texto);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.sim-resumen .sim-icono {
+  flex: none;
+  --v-color: var(--s-acento);
+}
+
+.sim-resumen__sugerida {
+  color: var(--s-texto);
+  font-size: 0.9375rem;
+}
+
+.sim-resumen__apoyo {
+  margin-top: 6px !important;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.sim-resumen__score {
+  margin-top: 14px !important;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.875rem;
+}
+
+.sim-resumen__score strong {
+  color: var(--s-texto);
+}
+
+/* ---------- Comparativa: tarjetas lado a lado ---------- */
+.sim-comparativa__lista {
+  display: flex;
+  gap: 10px;
+  margin: 0 -16px;
+  padding: 4px 16px 10px;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 16px;
+}
+
+.sim-card {
+  position: relative;
+  display: flex;
+  flex: 0 0 188px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 14px 14px;
+  border: 1px solid var(--sim-borde);
+  border-top: 4px solid var(--v-color);
+  border-radius: 10px;
+  background: var(--sim-tarjeta);
+  scroll-snap-align: start;
+}
+
+.sim-card--bien,
+.sim-pastilla--bien {
+  --v-color: var(--v-bien);
+  --v-fondo: var(--v-bien-fondo);
+  --v-texto: var(--v-bien-texto);
+}
+
+.sim-card--atencion,
+.sim-pastilla--atencion {
+  --v-color: var(--v-atencion);
+  --v-fondo: var(--v-atencion-fondo);
+  --v-texto: var(--v-atencion-texto);
+}
+
+.sim-card--riesgo,
+.sim-pastilla--riesgo {
+  --v-color: var(--v-riesgo);
+  --v-fondo: var(--v-riesgo-fondo);
+  --v-texto: var(--v-riesgo-texto);
+}
+
+.sim-card--destacada {
+  /* T20: el dorado marca las recomendaciones, como relleno o borde. */
+  border-color: var(--marca-dorado);
+  box-shadow: 0 0 0 2px var(--marca-dorado);
+}
+
+.sim-card__sello {
+  position: absolute;
+  top: -13px;
+  left: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--marca-dorado);
+  color: var(--marca-tinta);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sim-card__sello--neutro {
+  background: var(--marca-azul);
+  color: #fff;
+}
+
+.sim-card__nombre {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.sim-card__tarjeta {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.sim-card__monto {
+  margin: 6px 0 0;
+  color: var(--text-strong);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.sim-card__monto span {
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.sim-card__score {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.sim-card__score strong {
+  color: var(--text-strong);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.sim-card__score small {
+  font-size: 0.75rem;
+}
+
+.sim-pastilla {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 3px 10px 3px 6px;
+  border: 1px solid var(--v-texto);
+  border-radius: 999px;
+  background: var(--v-fondo);
+  color: var(--v-texto);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.sim-pastilla .sim-icono {
+  flex: none;
+}
+
+.sim-card__dato {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* ---------- No viables ---------- */
+.sim-noviables {
+  padding: 16px;
+  border: 1px dashed var(--sim-borde);
+  border-radius: 10px;
+}
+
+.sim-noviables__lista {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sim-noviables__lista li {
+  display: grid;
+  gap: 2px;
+  font-size: 0.875rem;
+}
+
+.sim-noviables__lista strong {
+  color: var(--text-strong);
+}
+
+/* ---------- Explicación de la IA: acompaña, no decide ---------- */
+.sim-ia {
+  padding: 14px 16px;
+  border-left: 3px solid var(--b-linea);
+  background: var(--b-realce);
+  border-radius: 0 16px 16px 0;
+}
+
+.sim-ia__titulo {
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+}
+
+.sim-ia__texto {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.sim-ia__nota {
+  margin-top: 8px !important;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.sim-card:focus-within,
+.sim-comparativa__lista:focus-visible {
+  outline: 3px solid var(--marca-dorado);
+  outline-offset: 2px;
+}
+
+/* Escritorio: veredicto y gráfica arriba, tarjetas en rejilla debajo. */
+@media (min-width: 900px) {
+  .sim-contenido {
+    grid-template-columns: 380px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .sim-contenido > * {
+    grid-column: 1 / -1;
+  }
+
+  .sim-contenido > .sim-resumen {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .sim-contenido > .ge {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .sim-contenido > .sim-comparativa {
+    grid-row: 3;
+  }
+
+  .sim-comparativa__lista {
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 14px 0 0;
+    overflow: visible;
+  }
+
+  .sim-card {
+    flex: 1 1 180px;
+    max-width: 240px;
+  }
+}
