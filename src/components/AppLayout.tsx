@@ -12,6 +12,7 @@ const SECCIONES: { ruta: string; texto: string; icono: NombreIcono }[] = [
   { ruta: '/balance', texto: 'Balance', icono: 'calendario' },
   { ruta: '/score', texto: 'Score', icono: 'sano' },
   { ruta: '/tarjetas', texto: 'Tarjetas', icono: 'tarjeta' },
+  { ruta: '/estado-cuenta', texto: 'Estado', icono: 'recibo' },
 ]
 
 /**

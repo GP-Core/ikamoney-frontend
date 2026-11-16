@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router'
+import { Navigate, Route, Routes, useNavigate } from 'react-router'
 import AppLayout from './components/AppLayout'
 import AvisoActualizacion from './components/AvisoActualizacion'
 import { RutaProtegida, RutaPublica } from './components/RutaProtegida'
@@ -15,6 +15,7 @@ import MovementsPage from './pages/MovementsPage'
 import PlanMsiFormPage from './pages/PlanMsiFormPage'
 import PlanPage from './pages/PlanPage'
 import RegisterPage from './pages/RegisterPage'
+import RevisionEstadoCuenta from './pages/RevisionEstadoCuenta'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ScorePage from './pages/ScorePage'
 import TarjetaDetallePage from './pages/TarjetaDetallePage'
@@ -26,6 +27,7 @@ import SimuladorPage from './pages/SimuladorPage'
 /** Rutas de la app. Las de cuenta son públicas; el resto requiere sesión y usa AppLayout. */
 function App() {
   const pwa = useActualizacionPwa()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -54,6 +56,10 @@ function App() {
           <Route path="/deudas/nueva" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/deudas/:id/editar" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/movimientos" element={<MovementsPage />} />
+          <Route
+            path="/estado-cuenta"
+            element={<SoloConConexion><RevisionEstadoCuenta onGuardado={() => navigate('/movimientos')} /></SoloConConexion>}
+          />
           <Route path="/cuenta" element={<CuentaPage />} />
         </Route>
 

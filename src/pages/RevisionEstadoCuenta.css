@@ -1,0 +1,77 @@
+.rev {
+  --ia: #2563eb; --ia-fondo: #eff6ff;
+  --editado: #d97706; --editado-fondo: #fffbeb;
+  --agregado: #059669; --agregado-fondo: #ecfdf5;
+  --error: #dc2626; --borde: #d1d5db; --texto: #111827; --suave: #6b7280;
+  max-width: 880px; margin: 0 auto; padding: 16px; color: var(--texto);
+}
+.rev h1 { font-size: 1.5rem; margin: 0 0 8px; }
+.rev h2 { font-size: 1.1rem; margin: 24px 0 8px; }
+.rev-ayuda { color: var(--suave); margin: 0 0 12px; }
+
+/* Botones */
+.rev-btn {
+  border: 1px solid var(--borde); background: #fff; color: var(--texto);
+  padding: 8px 14px; border-radius: 8px; cursor: pointer; font: inherit;
+}
+.rev-btn:disabled { opacity: .5; cursor: not-allowed; }
+.rev-btn--principal { background: #111827; color: #fff; border-color: #111827; padding: 10px 20px; }
+.rev-btn--sec { background: #fff; }
+.rev-btn--peligro { color: var(--error); border-color: #fecaca; padding: 4px 10px; }
+.rev-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+
+/* Avisos */
+.rev-aviso { border-radius: 8px; padding: 12px 16px; margin: 12px 0; border: 1px solid var(--borde); }
+.rev-aviso p { margin: 0 0 8px; }
+.rev-aviso--error { background: #fef2f2; border-color: #fecaca; }
+.rev-aviso--ok { background: var(--agregado-fondo); border-color: var(--agregado); }
+.rev-aviso--vacio { background: #f9fafb; }
+.rev-error { color: var(--error); font-size: .875rem; margin: 4px 0 0; }
+
+/* Cargando */
+.rev-cargando { text-align: center; padding: 48px 0; }
+.rev-spinner {
+  width: 36px; height: 36px; margin: 0 auto 16px; border-radius: 50%;
+  border: 4px solid var(--borde); border-top-color: var(--ia); animation: rev-giro 1s linear infinite;
+}
+@keyframes rev-giro { to { transform: rotate(360deg); } }
+
+/* Marcas IA / editado / agregado */
+.rev-leyenda { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0; margin: 0 0 16px; font-size: .875rem; color: var(--suave); }
+.rev-marca { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+.rev-marca--ia { background: var(--ia-fondo); color: var(--ia); }
+.rev-marca--editado { background: var(--editado-fondo); color: var(--editado); }
+.rev-marca--agregado { background: var(--agregado-fondo); color: var(--agregado); }
+
+/* Tarjeta */
+.rev-tarjeta { border: 1px solid var(--borde); border-left: 4px solid var(--ia); border-radius: 8px; padding: 12px 16px; }
+.rev-tarjeta--editado { border-left-color: var(--editado); }
+.rev-tarjeta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+
+/* Filas */
+.rev-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.rev-fila { border: 1px solid var(--borde); border-left: 4px solid var(--ia); border-radius: 8px; padding: 12px; background: #fff; }
+.rev-fila--ia { border-left-color: var(--ia); }
+.rev-fila--editado { border-left-color: var(--editado); background: var(--editado-fondo); }
+.rev-fila--agregado { border-left-color: var(--agregado); background: var(--agregado-fondo); }
+.rev-fila-cabecera { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.rev-fila-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: start; }
+.rev-campo--concepto { grid-column: span 2; }
+
+/* Campos */
+.rev label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--suave); }
+.rev input[type="text"], .rev input[type="number"], .rev input[type="date"] {
+  font: inherit; color: var(--texto); padding: 8px; border: 1px solid var(--borde); border-radius: 6px; background: #fff;
+}
+.rev-cambiado input { border-color: var(--editado); box-shadow: 0 0 0 1px var(--editado); }
+.rev input[aria-invalid="true"] { border-color: var(--error); box-shadow: 0 0 0 1px var(--error); }
+.rev-msi { flex-direction: row !important; align-items: center; gap: 8px !important; color: var(--texto) !important; font-size: .9rem !important; padding-top: 18px; }
+
+/* Pie */
+.rev-pie { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--borde); display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.rev-resumen { margin: 0; color: var(--suave); }
+
+@media (max-width: 520px) {
+  .rev-campo--concepto { grid-column: span 1; }
+  .rev-pie { align-items: stretch; }
+}
