@@ -11,6 +11,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
 import LegalPage from './pages/LegalPage'
 import LoginPage from './pages/LoginPage'
+import MovementsPage from './pages/MovementsPage'
 import PlanMsiFormPage from './pages/PlanMsiFormPage'
 import RegisterPage from './pages/RegisterPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
@@ -47,6 +48,7 @@ function App() {
           <Route path="/tarjetas/:id/msi/:msiId/editar" element={<SoloConConexion><PlanMsiFormPage /></SoloConConexion>} />
           <Route path="/deudas/nueva" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/deudas/:id/editar" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
+          <Route path="/movimientos" element={<MovementsPage />} />
           <Route path="/cuenta" element={<CuentaPage />} />
         </Route>
 
