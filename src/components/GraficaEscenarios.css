@@ -1,0 +1,149 @@
+/* Gráfica del simulador: solo líneas, la referencia de $0 y una etiqueta por línea. */
+.ge {
+  padding: 16px 14px 14px;
+  border: 1px solid var(--sim-borde);
+  border-top: 4px solid var(--marca-azul);
+  border-radius: 10px;
+  background: var(--sim-tarjeta);
+}
+
+.ge__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ge__ayuda {
+  margin: 0 0 6px;
+  font-size: 0.8125rem;
+}
+
+.ge__ventana {
+  display: flex;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.ge__ventana button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.ge__ventana button[aria-pressed='true'] {
+  background: var(--b-hero);
+  color: #f2fbf9;
+  font-weight: 700;
+}
+
+.ge__ventana button:focus-visible {
+  outline: 3px solid var(--marca-dorado);
+  outline-offset: 1px;
+}
+
+.ge__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ge__bajo-cero {
+  fill: var(--v-riesgo-fondo);
+  opacity: 0.8;
+}
+
+.ge__cero {
+  stroke: var(--text);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+
+.ge__texto {
+  fill: var(--text);
+  font-size: 9.5px;
+}
+
+.ge__texto--cero {
+  font-weight: 700;
+}
+
+.ge__serie polyline {
+  stroke: var(--v-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.ge__serie circle {
+  fill: var(--surface);
+  stroke: var(--v-color);
+  stroke-width: 2;
+}
+
+.ge__guia {
+  stroke: var(--v-color);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.ge__etiqueta {
+  fill: var(--text);
+  font-size: 9.5px;
+}
+
+.ge__cifra {
+  fill: var(--text-strong);
+  font-weight: 700;
+}
+
+.ge__serie--sugerida polyline {
+  stroke-width: 3.5;
+  opacity: 1;
+}
+
+.ge__serie--sugerida .ge__etiqueta {
+  fill: var(--text-strong);
+  font-weight: 700;
+}
+
+.ge__serie--bien {
+  --v-color: var(--v-bien);
+}
+
+.ge__serie--atencion {
+  --v-color: var(--v-atencion);
+}
+
+.ge__serie--riesgo {
+  --v-color: var(--v-riesgo);
+}
+
+.ge__nota {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* La tabla es solo para lectores de pantalla. */
+.ge__tabla {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ge__tabla table {
+  width: max-content;
+}

@@ -20,6 +20,7 @@ import TarjetaDetallePage from './pages/TarjetaDetallePage'
 import TarjetaFormPage from './pages/TarjetaFormPage'
 import TarjetasDeudasPage from './pages/TarjetasDeudasPage'
 import RankingPage from './pages/RankingPage'
+import SimuladorPage from './pages/SimuladorPage'
 
 /** Rutas de la app. Las de cuenta son públicas; el resto requiere sesión y usa AppLayout. */
 function App() {
@@ -39,6 +40,8 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/balance" element={<BalancePage />} />
           <Route path="/score" element={<ScorePage />} />
+          <Route path="/ranking" element={<RankingPage />} />
+          <Route path="/simulador" element={<SimuladorPage />} />
           <Route path="/tarjetas" element={<TarjetasDeudasPage />} />
           {/* Los formularios escriben datos: sin conexión no se muestran (T60, solo lectura). */}
           <Route path="/tarjetas/nueva" element={<SoloConConexion><TarjetaFormPage /></SoloConConexion>} />
@@ -62,14 +65,6 @@ function App() {
       )}
     </>
   )
-  const params = new URLSearchParams(window.location.search)
-  // La pantalla de estado del sistema sigue disponible en /?sistema
-  if (params.has('sistema')) return <HomePage />
-  // Desglose del score (T37) en /?score
-  if (params.has('score')) return <ScorePage />
-  // Ranking de usuarios en /?ranking
-  if (params.has('ranking')) return <RankingPage />
-  return <BalancePage />
 }
 
 export default App
