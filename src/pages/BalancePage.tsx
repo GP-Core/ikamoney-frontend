@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import BalanceVacio from '../components/BalanceVacio'
 import CompromisosMsi from '../components/CompromisosMsi'
 import FechaCopia from '../components/FechaCopia'
@@ -17,6 +18,12 @@ function BalancePage() {
   return (
     <main className="balance">
       <div className="balance__ancho">
+      <nav className="balance__acciones" aria-label="Acciones">
+        <Link className="balance__simular" to="/simulador">
+          <span aria-hidden="true">＋</span> Simular una compra
+        </Link>
+      </nav>
+
       <header className="balance__encabezado">
         <button type="button" className="balance__mes-boton" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">
           ‹

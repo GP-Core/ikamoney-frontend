@@ -1,20 +1,20 @@
 /**
  * Contrato de POST /api/v1/simulador/calcular (T40, motor de T41). Es app/schemas/simulacion.py
- * del backend, con los mismos nombres en snake_case: si cambia allá, se actualiza aquí.
+ * del backend, con los mismos nombres en snake_case: si cambia allÃ¡, se actualiza aquÃ­.
  */
 import type { NivelScore } from './score'
 
 export type Prioridad = 'alta' | 'media' | 'baja'
 export type Veredicto = 'recomendable' | 'con_precaucion' | 'no_recomendable'
 
-/** Una forma de pago a comparar. Si se omite `escenarios`, el backend arma los de por omisión. */
+/** Una forma de pago a comparar. Si se omite `escenarios`, el backend arma los de por omisiÃ³n. */
 export interface EscenarioPedido {
   tipo: 'contado' | 'msi'
   tarjeta_id?: number
   meses?: number
 }
 
-/** Cuerpo de la petición. */
+/** Cuerpo de la peticiÃ³n. */
 export interface PedidoSimulacion {
   descripcion: string
   precio: number
@@ -30,7 +30,7 @@ export interface MotivoSimulacion {
   mensaje: string
 }
 
-/** Un mes de la proyección con la compra incluida. */
+/** Un mes de la proyecciÃ³n con la compra incluida. */
 export interface MesSimulado {
   /** 1 = mes en curso. */
   mes: number
@@ -42,7 +42,7 @@ export interface MesSimulado {
   /** Lo que cuesta la compra ese mes. */
   compra: number
   flujo: number
-  /** Dinero disponible: ahorro inicial + flujos. Es lo que dibuja la gráfica. */
+  /** Dinero disponible: ahorro inicial + flujos. Es lo que dibuja la grÃ¡fica. */
   acumulado: number
 }
 
@@ -61,7 +61,7 @@ export interface ScoreSimulado {
   nivel_texto: string
   tope_aplicado: boolean
   motivo_tope: string | null
-  /** Puntaje simulado − puntaje actual. */
+  /** Puntaje simulado âˆ’ puntaje actual. */
   cambio: number
 }
 
@@ -75,9 +75,9 @@ export interface EscenarioSimulacion {
   aplica: boolean
   /** Solo si aplica = false. */
   motivo: MotivoSimulacion | null
-  /** Contado: el precio completo este mes. MSI: precio ÷ meses. null si no aplica. */
+  /** Contado: el precio completo este mes. MSI: precio Ã· meses. null si no aplica. */
   mensualidad: number | null
-  /** Vacío si no aplica. */
+  /** VacÃ­o si no aplica. */
   balance: MesSimulado[]
   indicadores: IndicadoresSimulacion | null
   score: ScoreSimulado | null
@@ -85,7 +85,7 @@ export interface EscenarioSimulacion {
   veredicto: Veredicto | null
   veredicto_texto: string | null
   regla: 'RN-15' | 'RN-16' | null
-  /** Por qué, con reglas fijas. No es la explicación de la IA. */
+  /** Por quÃ©, con reglas fijas. No es la explicaciÃ³n de la IA. */
   razon: string | null
   menor_impacto: boolean
 }
@@ -110,7 +110,7 @@ export interface SimulacionResponse {
   descripcion: string
   precio: number
   prioridad: Prioridad
-  /** Horizonte de la proyección, en meses. */
+  /** Horizonte de la proyecciÃ³n, en meses. */
   meses: number
   score_actual: ScoreActual | null
   escenarios: EscenarioSimulacion[]
