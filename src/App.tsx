@@ -2,16 +2,20 @@ import AvisoActualizacion from './components/AvisoActualizacion'
 import { useActualizacionPwa } from './hooks/useActualizacionPwa'
 import BalancePage from './pages/BalancePage'
 import HomePage from './pages/HomePage'
+import RegistrarTarjetaPage from './pages/RegistrarTarjetaPage'
 import ScorePage from './pages/ScorePage'
+import SimuladorPage from './pages/SimuladorPage'
 
 function App() {
   const params = new URLSearchParams(window.location.search)
   const pwa = useActualizacionPwa()
 
-  // /?sistema -> estado del sistema; /?score -> desglose del score (T37); resto -> balance
+  // /?sistema -> estado del sistema; /?score -> desglose del score (T37); /?simulador -> simulador de compras (T39); /?tarjeta-nueva -> registrar tarjeta; resto -> balance
   let pagina = <BalancePage />
   if (params.has('sistema')) pagina = <HomePage />
   else if (params.has('score')) pagina = <ScorePage />
+  else if (params.has('simulador')) pagina = <SimuladorPage />
+  else if (params.has('tarjeta-nueva')) pagina = <RegistrarTarjetaPage />
 
   return (
     <>

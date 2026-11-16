@@ -7,11 +7,13 @@ export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 /** Error lanzado cuando el backend responde con un código distinto de 2xx. */
 export class ApiError extends Error {
   status: number
+  codigo?: string
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, codigo?: string) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.codigo = codigo
   }
 }
 
@@ -38,6 +40,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     throw new ApiError(
       response.status,
       body.mensaje ?? body.detail ?? `Error ${response.status} al llamar a ${path}`,
+      body.codigo,
     )
   }
   // 204 No Content (típico en DELETE): no hay JSON que leer.

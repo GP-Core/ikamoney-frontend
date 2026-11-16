@@ -1,0 +1,49 @@
+/* Formulario de captura rápida (T39). Reutiliza la paleta de .balance. */
+.sim-form, .sim-vacio { display: flex; flex-direction: column; gap: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+.sim-vacio h2 { margin: 0; }
+.sim-campo { display: flex; flex-direction: column; gap: 6px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.sim-campo label, .sim-campo legend { font-weight: 600; color: var(--text-strong); padding: 0; }
+.sim-opcional { font-weight: 400; color: var(--muted); }
+.sim-form input, .sim-form select { width: 100%; min-height: 48px; padding: 0 12px; font: inherit; color: var(--text-strong); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.sim-form input:focus-visible, .sim-form select:focus-visible, .sim-chip:focus-visible, .sim-segmento:focus-visible, .sim-boton:focus-visible { outline: 3px solid var(--c-msi); outline-offset: 2px; }
+.sim-form [aria-invalid='true'] { border-color: var(--danger); }
+.sim-precio { display: flex; align-items: center; gap: 8px; }
+.sim-precio span { font-size: 1.75rem; color: var(--muted); }
+.sim-precio input { font-size: 1.75rem; font-weight: 600; min-height: 56px; }
+.sim-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-chip, .sim-segmento { min-height: 44px; padding: 0 16px; font: inherit; font-weight: 600; color: var(--text-strong); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; cursor: pointer; }
+.sim-chip[aria-pressed='true'] { color: #fff; background: var(--b-hero); border-color: var(--b-hero); }
+.sim-chip--msi[aria-pressed='true'] { background: var(--c-msi); border-color: var(--c-msi); }
+.sim-segmentos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sim-segmento { border-radius: 10px; }
+.sim-segmento[aria-checked='true'] { color: #fff; background: var(--b-hero); border-color: var(--b-hero); }
+.sim-nota { font-size: 0.875rem; color: var(--text); }
+.sim-error { font-size: 0.875rem; color: var(--danger); font-weight: 600; }
+.sim-boton { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px; font: inherit; font-weight: 700; color: #fff; background: var(--b-hero); border: 0; border-radius: 12px; cursor: pointer; text-decoration: none; }
+.sim-boton:disabled { opacity: 0.6; cursor: progress; }
+.sim-resultados { display: grid; gap: 12px; }
+.sim-escenario { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-left: 5px solid var(--c-libre); border-radius: 12px; }
+.sim-escenario--no, .sim-escenario--no_recomendable { border-left-color: var(--danger); }
+.sim-escenario--con_precaucion { border-left-color: var(--c-variable); }
+.sim-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+.sim-mejor { margin-left: 8px; padding: 2px 8px; font-size: 0.75rem; color: var(--c-msi); background: var(--b-msi-fondo); border: 1px solid var(--b-msi-borde); border-radius: 999px; }
+.sim-etiqueta { font-weight: 600; color: var(--text-strong); }
+.sim-veredicto { display: flex; flex-direction: column; gap: 4px; padding: 16px; color: #fff; background: var(--c-libre); border-radius: 14px; }
+.sim-veredicto--con_precaucion { color: #1f1500; background: var(--c-variable); }
+.sim-veredicto--no_recomendable { background: var(--danger); }
+.sim-veredicto strong { font-size: 1.25rem; }
+.sim-supuestos { margin: 0; padding-left: 18px; font-size: 0.8125rem; color: var(--muted); }
+.sim-escenario h3 { margin: 0; font-size: 1rem; }
+.sim-mensualidad { font-size: 1.25rem; font-weight: 700; color: var(--text-strong); }
+.sim-viable { color: var(--c-libre); font-weight: 600; }
+.sim-no-viable { color: var(--danger); font-weight: 600; }
+
+/* Registro de tarjeta */
+.sim-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sim-boton--suave { color: var(--text-strong); background: transparent; border: 1px solid var(--border); }
+.sim-mas summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; color: var(--text-strong); cursor: pointer; }
+.sim-mas__campos { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+
+.sim-enlace { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--c-msi); text-decoration: none; }
+.sim-enlace:hover { text-decoration: underline; }
+.sim-enlace:focus-visible { outline: 3px solid var(--c-msi); outline-offset: 2px; }

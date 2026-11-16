@@ -16,6 +16,12 @@ function BalancePage() {
   return (
     <main className="balance">
       <div className="balance__ancho">
+      <nav className="balance__acciones" aria-label="Acciones">
+        <a className="balance__simular" href="/?simulador">
+          <span aria-hidden="true">＋</span> Simular una compra
+        </a>
+      </nav>
+
       <header className="balance__encabezado">
         <button type="button" className="balance__mes-boton" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">
           ‹

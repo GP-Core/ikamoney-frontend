@@ -12,6 +12,7 @@ export interface PingDbResponse {
 
 /** Cuerpo de error que devuelve FastAPI (HTTPException). */
 export interface ApiErrorBody {
+  codigo?: string
   mensaje?: string
   detail?: string
 }
