@@ -13,6 +13,7 @@ import LegalPage from './pages/LegalPage'
 import LoginPage from './pages/LoginPage'
 import MovementsPage from './pages/MovementsPage'
 import PlanMsiFormPage from './pages/PlanMsiFormPage'
+import PlanPage from './pages/PlanPage'
 import RegisterPage from './pages/RegisterPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import ScorePage from './pages/ScorePage'
@@ -40,6 +41,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/balance" element={<BalancePage />} />
           <Route path="/score" element={<ScorePage />} />
+          <Route path="/plan" element={<PlanPage />} />
           <Route path="/ranking" element={<RankingPage />} />
           <Route path="/simulador" element={<SimuladorPage />} />
           <Route path="/tarjetas" element={<TarjetasDeudasPage />} />

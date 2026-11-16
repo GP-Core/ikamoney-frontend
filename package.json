@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generar-iconos": "pwa-assets-generator"
+    "generar-iconos": "pwa-assets-generator",
+    "test": "node --test --experimental-strip-types tests/planVista.test.ts"
   },
   "dependencies": {
     "react": "^19.2.8",

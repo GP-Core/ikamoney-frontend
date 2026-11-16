@@ -1,0 +1,387 @@
+/* Pantalla de plan de pago. Reutiliza la paleta y el encabezado de BalancePage.css. */
+.plan-volver {
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+}
+
+.plan-volver--vacio {
+  flex: none;
+  width: 46px;
+  height: 46px;
+}
+
+.plan__contenido {
+  display: grid;
+  gap: 14px;
+}
+
+.plan__titulo {
+  margin: 0 0 6px;
+  font-size: 1.0625rem;
+}
+
+.plan__esqueleto--fecha {
+  height: 210px;
+}
+
+.plan__esqueleto--bloque {
+  height: 320px;
+}
+
+.plan__vacio,
+.extra,
+.ahorro,
+.porDeuda,
+.fuera,
+.supuestos {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+}
+
+.plan__vacio {
+  text-align: center;
+}
+
+/* ---------- Fecha de liquidación: lo primero y lo más grande ---------- */
+.fecha {
+  padding: 24px 20px 22px;
+  border-radius: 28px;
+  background: var(--b-hero);
+  color: rgba(242, 251, 249, 0.78);
+  text-align: center;
+  box-shadow: 0 14px 30px -12px rgba(11, 59, 60, 0.55);
+}
+
+.fecha__etiqueta {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.fecha__valor {
+  margin: 4px 0 10px;
+  color: #f2fbf9;
+  font-size: clamp(2.25rem, 11vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.fecha__valor--sin {
+  font-size: clamp(1.75rem, 8vw, 2.5rem);
+}
+
+.fecha__detalle {
+  font-size: 0.9375rem;
+}
+
+.fecha__detalle strong {
+  color: #5ee0a0;
+}
+
+/* ---------- Control de extraMensual ---------- */
+.extra__ayuda {
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+}
+
+.extra__campo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 2px solid var(--b-linea);
+  border-radius: 16px;
+  background: var(--b-realce);
+}
+
+.extra__campo:focus-within {
+  border-color: var(--c-msi);
+}
+
+.extra__signo,
+.extra__input {
+  color: var(--text-strong);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.extra__input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: inherit;
+}
+
+.extra__sufijo {
+  font-size: 0.9375rem;
+}
+
+.extra__slider {
+  width: 100%;
+  height: 44px;
+  margin: 8px 0 0;
+  accent-color: var(--c-libre);
+  cursor: pointer;
+}
+
+.extra__marcas {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+/* ---------- Ahorro y su comparación ---------- */
+.ahorro__cifra {
+  color: var(--c-libre);
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.ahorro__compara {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--b-realce);
+  font-size: 0.875rem;
+}
+
+.ahorro__referencia {
+  margin-bottom: 10px;
+}
+
+.ahorro__tabla {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.ahorro__tabla > div {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.ahorro__tabla dt {
+  color: var(--text);
+}
+
+.ahorro__tabla dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ---------- Plan por deuda ---------- */
+.porDeuda__ayuda {
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+}
+
+.porDeuda__lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deuda {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--b-realce);
+}
+
+.deuda__cabeza {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.deuda__num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--b-hero);
+  color: #f2fbf9;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.deuda__nombre h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.deuda__nombre p,
+.deuda__nota,
+.deuda__pie {
+  font-size: 0.8125rem;
+}
+
+.deuda__abono {
+  color: var(--text-strong);
+}
+
+.deuda__nota {
+  margin-top: 2px;
+}
+
+.deuda__barra {
+  height: 10px;
+  margin: 10px 0 6px;
+  border-radius: 999px;
+  background: var(--b-linea);
+  overflow: hidden;
+}
+
+.deuda__relleno {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--c-libre);
+  transition: width 200ms ease;
+}
+
+.deuda__relleno--sin {
+  background: var(--c-tarjetas);
+}
+
+/* ---------- Supuestos ---------- */
+.supuestos__lista {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.875rem;
+}
+
+.extra__slider:focus-visible {
+  outline: 3px solid var(--c-msi);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deuda__relleno {
+    transition: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .plan__contenido {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .fecha,
+  .supuestos,
+  .fuera {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Avisos, sugerido y estado del control ---------- */
+.extra__estado {
+  min-height: 1.25rem;
+  margin-top: 6px;
+  font-size: 0.8125rem;
+}
+
+.extra__sugerido {
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 0 16px;
+  border: 1px solid var(--b-linea);
+  border-radius: 999px;
+  background: var(--b-realce);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.extra__sugerido:hover {
+  background: var(--b-linea);
+}
+
+.plan__aviso {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--b-realce);
+  border-left: 4px solid var(--c-variable);
+  font-size: 0.875rem;
+}
+
+.plan__aviso--error {
+  border-left-color: var(--c-tarjetas);
+}
+
+.plan__enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.extra__sugerido:focus-visible,
+.plan__enlace:focus-visible,
+.deuda__porque summary:focus-visible {
+  outline: 3px solid var(--c-msi);
+  outline-offset: 2px;
+}
+
+/* ---------- Por qué va en ese lugar ---------- */
+.deuda__porque {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+}
+
+.deuda__porque summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.deuda__porque p {
+  margin-top: 6px;
+}
+
+/* ---------- Fuera del plan ---------- */
+.fuera__msi {
+  margin-bottom: 8px;
+  font-size: 0.9375rem;
+}
+
+.fuera__lista {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.fuera__lista span {
+  font-size: 0.8125rem;
+}
