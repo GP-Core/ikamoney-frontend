@@ -14,7 +14,8 @@ dist-ssr
 # Archivos de Claude Code (solo locales)
 CLAUDE.md
 .claude/
-
+contexto/
+PLAN.md
 # Caché y reportes de herramientas
 coverage
 *.tsbuildinfo
