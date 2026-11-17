@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import DeudaRanking from '../components/DeudaRanking'
 import RankingVacio from '../components/RankingVacio'
 import { useRanking } from '../hooks/useRanking'
@@ -16,9 +17,9 @@ function RankingPage() {
     <main className="balance ranking">
       <div className="balance__ancho">
         <header className="balance__encabezado">
-          <a className="balance__mes-boton score-volver" href="/" aria-label="Volver al balance">
+          <Link className="balance__mes-boton score-volver" to="/" aria-label="Volver al inicio">
             ‹
-          </a>
+          </Link>
           <div className="balance__mes">
             <h1 className="balance__titulo">Tus deudas</h1>
             {RANKING_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}
@@ -66,6 +67,10 @@ function RankingLista({ data }: { data: RankingResponse }) {
           Tus deudas te cuestan {dinero(data.intereses_mes_total)} al mes en intereses.
         </p>
       </section>
+
+      <Link className="balance__simular" to="/plan">
+        Ver plan mes a mes
+      </Link>
 
       <h2 className="ranking__lista-titulo">El orden en que conviene pagarlas</h2>
       <p className="ranking__ayuda">De la que más dinero te quita cada mes a la que menos.</p>

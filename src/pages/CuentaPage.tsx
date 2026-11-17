@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EncabezadoPagina from '../components/EncabezadoPagina'
@@ -70,6 +71,14 @@ function CuentaPage() {
             <dd className="cuenta__correo">{usuario?.correo}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="ficha" aria-labelledby="avisos-titulo">
+        <h2 id="avisos-titulo">Avisos</h2>
+        <p>Elige a partir de qué uso de tus tarjetas, con cuántos días de anticipación y por qué canales quieres que te avisemos.</p>
+        <Link to="/alertas/configuracion" className="pagina__enlace">
+          Elegir cuándo avisarme
+        </Link>
       </section>
 
       <section className="ficha cuenta__peligro" aria-labelledby="eliminar-titulo">

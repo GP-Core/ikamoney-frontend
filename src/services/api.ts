@@ -45,8 +45,9 @@ export async function apiFetch<T>(path: string, init: OpcionesApi = {}): Promise
   const { conToken = true, ...opciones } = init
 
   // Content-Type solo cuando hay cuerpo: en un GET provocaría un preflight CORS innecesario.
+  // Con un FormData (subida de archivos) tampoco: el navegador pone el boundary del multipart.
   const headers = new Headers(opciones.headers)
-  if (opciones.body && !headers.has('Content-Type')) {
+  if (opciones.body && !(opciones.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
   // Manejo de sesión (IC-10): el token viaja en el encabezado Authorization.

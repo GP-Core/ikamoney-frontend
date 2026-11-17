@@ -7,6 +7,7 @@ import '../pages/SimuladorPage.css'
 
 interface Errores {
   precio?: string
+  ahorro?: string
   tarjeta?: string
   escenarios?: string
 }
@@ -30,6 +31,7 @@ export function SinTarjetas() {
 export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
   const [descripcion, setDescripcion] = useState('')
   const [precioTexto, setPrecioTexto] = useState('')
+  const [ahorroTexto, setAhorroTexto] = useState('')
   const [prioridad, setPrioridad] = useState<Prioridad>('media')
   const [contado, setContado] = useState(true)
   const [plazos, setPlazos] = useState<number[]>([6, 12, 18])
@@ -45,6 +47,7 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
   // Al aparecer un error, se manda el foco al primer campo con problema.
   useEffect(() => {
     if (errores.precio) document.getElementById('sim-precio')?.focus()
+    else if (errores.ahorro) document.getElementById('sim-ahorro')?.focus()
     else if (errores.tarjeta) document.getElementById('sim-tarjeta')?.focus()
   }, [errores])
 
@@ -60,6 +63,7 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
     if (precioTexto.trim() === '') e.precio = 'Escribe cuánto cuesta.'
     else if (Number.isNaN(precio)) e.precio = 'Escribe solo números, por ejemplo 12500.'
     else if (precio <= 0) e.precio = 'El precio debe ser mayor a cero.'
+    if (ahorroTexto.trim() !== '' && Number.isNaN(leerPrecio(ahorroTexto))) e.ahorro = 'Escribe solo números, por ejemplo 5000.'
     if (!contado && !hayMsi) e.escenarios = 'Elige al menos una forma de pago para comparar.'
     if (hayMsi && tarjetaId === '') e.tarjeta = 'Elige la tarjeta para pagar a meses.'
     return e
@@ -82,6 +86,8 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
       escenarios: escenariosAUrl(escenarios),
     })
     if (descripcion.trim()) params.set('descripcion', descripcion.trim())
+    const ahorro = leerPrecio(ahorroTexto)
+    if (ahorro > 0) params.set('ahorro', String(ahorro))
     navigate(`/simulador?${params}`)
   }
 
@@ -110,6 +116,36 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
           {errores.precio && (
             <p id="sim-precio-error" className="sim-error" role="alert">
               {errores.precio}
+            </p>
+          )}
+        </div>
+
+        <div className="sim-campo">
+          <label htmlFor="sim-ahorro">
+            ¿Cuánto tienes ahorrado para esto? <span className="sim-opcional">(opcional)</span>
+          </label>
+          <div className="sim-precio">
+            <span aria-hidden="true">$</span>
+            <input
+              id="sim-ahorro"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="0"
+              value={ahorroTexto}
+              aria-invalid={!!errores.ahorro}
+              aria-describedby="sim-ahorro-ayuda"
+              onChange={(e) => {
+                setAhorroTexto(e.target.value)
+                setErrores((x) => ({ ...x, ahorro: undefined }))
+              }}
+            />
+          </div>
+          <p id="sim-ahorro-ayuda" className="sim-nota">
+            Sin este dato, pagar de contado casi siempre saldrá como no recomendable.
+          </p>
+          {errores.ahorro && (
+            <p className="sim-error" role="alert">
+              {errores.ahorro}
             </p>
           )}
         </div>

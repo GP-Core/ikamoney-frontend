@@ -1,0 +1,28 @@
+.alertas-config__bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alertas-config__bloque h2 {
+  margin: 0;
+}
+
+.alertas-config__etiqueta {
+  font-weight: 700;
+}
+
+.alertas-config__rango {
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--azul);
+}
+
+.alertas-config__ayuda {
+  font-size: 14px;
+  color: var(--gris-azulado);
+}
+
+.alertas-config__correo {
+  overflow-wrap: anywhere;
+}

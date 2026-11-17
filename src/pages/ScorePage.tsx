@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import DatosFaltantes from '../components/DatosFaltantes'
 import FactoresScore from '../components/FactoresScore'
 import FechaCopia from '../components/FechaCopia'
@@ -17,9 +18,9 @@ function ScorePage() {
     <main className="balance">
       <div className="balance__ancho">
         <header className="balance__encabezado">
-          <a className="balance__mes-boton score-volver" href="/" aria-label="Volver al balance">
+          <Link className="balance__mes-boton score-volver" to="/" aria-label="Volver al inicio">
             ‹
-          </a>
+          </Link>
           <div className="balance__mes">
             <h1 className="balance__titulo">Tu score</h1>
             {SCORE_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}

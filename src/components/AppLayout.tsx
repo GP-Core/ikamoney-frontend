@@ -1,18 +1,20 @@
-import { Link, NavLink, Outlet } from 'react-router'
+import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { useAuth } from '../hooks/useAuth'
+import { useAlertas } from '../hooks/useAlertas'
 import { useConexion } from '../hooks/useConexion'
+import { textoContador } from '../utils/alertas'
 import AvisoSinConexion from './AvisoSinConexion'
 import Button from './Button'
 import Icon from './Icon'
 import type { NombreIcono } from './Icon'
 import './AppLayout.css'
 
-const SECCIONES: { ruta: string; texto: string; icono: NombreIcono }[] = [
+/** Las cuatro pestañas del prototipo (T21). `tambien` son pantallas hijas que dejan la pestaña marcada. */
+const SECCIONES: { ruta: string; texto: string; icono: NombreIcono; tambien?: string[] }[] = [
   { ruta: '/', texto: 'Inicio', icono: 'inicio' },
-  { ruta: '/balance', texto: 'Balance', icono: 'calendario' },
+  { ruta: '/simulador', texto: 'Simulador', icono: 'calculadora' },
+  { ruta: '/ranking', texto: 'Deudas', icono: 'recibo', tambien: ['/plan'] },
   { ruta: '/score', texto: 'Score', icono: 'sano' },
-  { ruta: '/tarjetas', texto: 'Tarjetas', icono: 'tarjeta' },
-  { ruta: '/estado-cuenta', texto: 'Estado', icono: 'recibo' },
 ]
 
 /**
@@ -22,6 +24,8 @@ const SECCIONES: { ruta: string; texto: string; icono: NombreIcono }[] = [
 function AppLayout() {
   const { cerrarSesion } = useAuth()
   const enLinea = useConexion()
+  const { pathname } = useLocation()
+  const { sinLeer } = useAlertas()
 
   return (
     <div className="app">
@@ -31,6 +35,20 @@ function AppLayout() {
           <span className="app__marca-money">Money</span>
         </Link>
         <div className="app__acciones">
+          <NavLink
+            to="/alertas"
+            aria-label={sinLeer > 0 ? `Avisos, ${sinLeer} sin leer` : 'Avisos'}
+            className={({ isActive }) => (isActive ? 'app__cuenta app__cuenta--activo' : 'app__cuenta')}
+          >
+            <span className="app__campana">
+              <Icon nombre="campana" />
+              {sinLeer > 0 && (
+                <span className="app__contador" aria-hidden="true">
+                  {textoContador(sinLeer)}
+                </span>
+              )}
+            </span>
+          </NavLink>
           <NavLink
             to="/cuenta"
             aria-label="Mi cuenta"
@@ -57,7 +75,11 @@ function AppLayout() {
             key={s.ruta}
             to={s.ruta}
             end={s.ruta === '/'}
-            className={({ isActive }) => (isActive ? 'app__nav-item app__nav-item--activo' : 'app__nav-item')}
+            className={({ isActive }) =>
+              isActive || s.tambien?.some((r) => pathname.startsWith(r))
+                ? 'app__nav-item app__nav-item--activo'
+                : 'app__nav-item'
+            }
           >
             <Icon nombre={s.icono} />
             <span>{s.texto}</span>

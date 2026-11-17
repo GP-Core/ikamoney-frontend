@@ -35,7 +35,7 @@ function CapturaCompra() {
     <main className="balance">
       <div className="balance__ancho">
         <header className="balance__encabezado">
-          <Link className="balance__mes-boton score-volver" to="/" aria-label="Volver al balance">
+          <Link className="balance__mes-boton score-volver" to="/balance" aria-label="Volver al balance">
             ‹
           </Link>
           <div className="balance__mes">
@@ -80,9 +80,9 @@ function ResultadoSimulador() {
     <main className="balance">
       <div className="balance__ancho">
         <header className="balance__encabezado">
-          <a className="balance__mes-boton score-volver" href="/" aria-label="Volver al balance">
+          <Link className="balance__mes-boton score-volver" to="/balance" aria-label="Volver al balance">
             ‹
-          </a>
+          </Link>
           <div className="balance__mes">
             <h1 className="balance__titulo">¿Debería comprarlo?</h1>
             {SIMULADOR_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}

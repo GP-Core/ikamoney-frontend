@@ -2,7 +2,7 @@
 // Una "fila" une los movimientos y los MSI que devuelve la IA en una sola lista editable.
 import type {
   MovimientoExtraido, MsiExtraido, PayloadConfirmar, RespuestaExtraccion,
-} from '../api/estadosCuenta'
+} from '../types/estadoCuenta'
 
 // ---------- Tipos ----------
 /** Lo que puede haber en un input: texto mientras se escribe, número si vino de la IA, null si no hay. */

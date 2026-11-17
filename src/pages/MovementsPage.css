@@ -8,6 +8,34 @@
   font-size: 2rem;
 }
 
+.movements__mes {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.movements__mes p {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+
+.movements__mes button {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.movements__estado {
+  margin: 16px 0;
+  color: var(--muted);
+}
+
 .movements__summary {
   margin: 16px 0;
   padding: 16px;

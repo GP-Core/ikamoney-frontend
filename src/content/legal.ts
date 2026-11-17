@@ -1,0 +1,260 @@
+// Texto del aviso de privacidad y de los términos de uso (T55, RNF-20 y RNF-21).
+//
+// Texto redactado por el equipo (IKASOFT). Los campos [ENTRE CORCHETES] siguen pendientes de definir,
+// y la cláusula de responsabilidad está marcada para revisión con asesoría legal.
+
+/** Un bloque de texto: párrafo, lista con viñetas o lista numerada. */
+export type Bloque = { p: string } | { ul: string[] } | { ol: string[] }
+
+export interface SeccionLegal {
+  /** Sin título, la sección es una introducción. */
+  titulo?: string
+  bloques: Bloque[]
+}
+
+export interface DocumentoLegal {
+  titulo: string
+  secciones: SeccionLegal[]
+}
+
+export type ClaveDocumentoLegal = 'privacidad' | 'terminos'
+
+const CONTACTO = 'ikasoft_empresa@gmail.com'
+const PROVEEDOR_IA = '[PROVEEDOR DE IA]'
+
+export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
+  privacidad: {
+    titulo: 'Aviso de privacidad',
+    secciones: [
+      {
+        titulo: 'Nuestra promesa',
+        bloques: [
+          {
+            p: 'IKAMONEY nunca te pide el usuario, la contraseña ni las claves de tu banco. No nos conectamos a tus cuentas bancarias. Tú decides qué datos nos das: los capturas a mano o subes tu estado de cuenta en PDF.',
+          },
+          {
+            p: 'Este aviso te explica, sin letra chica, qué datos guardamos, quién más interviene, cómo los protegemos y cómo puedes borrarlos.',
+          },
+        ],
+      },
+      {
+        titulo: '1. Quién es responsable de tus datos',
+        bloques: [{ p: `IKASOFT es responsable de tus datos. Puedes escribirnos a ${CONTACTO}.` }],
+      },
+      {
+        titulo: '2. Qué datos recabamos',
+        bloques: [
+          { p: 'Para tu cuenta: tu correo y tu contraseña.' },
+          { p: 'Lo que tú registras:' },
+          {
+            ul: [
+              'Ingresos: monto, fecha, descripción y si se repiten.',
+              'Gastos fijos y variables: monto, fecha o día de pago, descripción y categoría.',
+              'Tarjetas de crédito: nombre, saldo, límite, tasa de interés, fecha de corte y fecha límite de pago.',
+              'Deudas que no son de tarjeta: saldo, tasa y pago mensual.',
+              'Planes a meses sin intereses (MSI): monto total, número de meses y mes de inicio.',
+            ],
+          },
+          {
+            p: 'Lo que sacamos de tu estado de cuenta, si decides subirlo: los datos de la tarjeta (saldo, límite, tasa, fecha de corte y fecha límite de pago), los movimientos del periodo (fecha, descripción y monto) y los planes MSI vigentes.',
+          },
+          {
+            p: 'Lo que calculamos con lo anterior: tu balance, tu proyección de los próximos meses, tu Índice de Salud Financiera, el orden de tus deudas, tus alertas y los límites de alerta que tú configures.',
+          },
+        ],
+      },
+      {
+        titulo: '3. Lo que no recabamos',
+        bloques: [
+          {
+            ul: [
+              'Nunca pedimos usuario, contraseña ni claves de tu banco.',
+              'No te pedimos el número de tu tarjeta.',
+              'Tu nombre, número de tarjeta, CLABE, RFC y CURP, que vienen en el estado de cuenta, se quitan antes de enviar el texto a la inteligencia artificial (ver sección 5) y no forman parte de lo que guardamos.',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: '4. Qué pasa con tu estado de cuenta en PDF',
+        bloques: [
+          {
+            ol: [
+              'Subes el PDF.',
+              'Lo leemos en nuestro servidor solo el tiempo que hace falta.',
+              'Le quitamos tus datos de identificación.',
+              'Enviamos el texto resultante al proveedor de inteligencia artificial.',
+              'Borramos el archivo en cuanto termina la lectura, o en cuanto falla. Si cierras la aplicación a la mitad, se borra al pasar el tiempo máximo de procesamiento.',
+              'Ves lo que se leyó en una pantalla de revisión. Puedes corregirlo todo, y solo se guarda lo que confirmes. Si sales sin confirmar, no se guarda nada.',
+            ],
+          },
+          { p: 'No guardamos tu PDF.' },
+        ],
+      },
+      {
+        titulo: '5. Un tercero participa: el proveedor de inteligencia artificial',
+        bloques: [
+          {
+            p: `Para leer tu estado de cuenta usamos un servicio de inteligencia artificial de ${PROVEEDOR_IA}. Es una empresa distinta a IKAMONEY, y tienes derecho a saberlo.`,
+          },
+          {
+            p: 'Qué le enviamos: solo el texto del estado de cuenta, no el archivo PDF. Antes de enviarlo le quitamos tu nombre, número de tarjeta, CLABE, RFC y CURP.',
+          },
+          {
+            p: 'Qué sí va en ese texto: saldos, fechas, tasas, movimientos (con sus descripciones y montos) y planes MSI, porque es justo lo que hay que leer.',
+          },
+          {
+            p: 'Qué hace el proveedor con él: leerlo y devolvernos los datos. Con el proveedor tenemos el acuerdo de que no conserva el estado de cuenta ni lo usa para otros fines.',
+          },
+          {
+            p: 'Qué no hace la inteligencia artificial: tu score, tu proyección y el orden de tus deudas se calculan con reglas fijas y visibles, no con IA.',
+          },
+          {
+            p: 'Si prefieres que ningún tercero procese tu estado de cuenta, no lo subas. Puedes capturar todos tus datos a mano y la aplicación funciona igual.',
+          },
+        ],
+      },
+      {
+        titulo: '6. Cómo protegemos tu información',
+        bloques: [
+          {
+            ul: [
+              'Toda la aplicación usa conexión segura (HTTPS).',
+              'Tu contraseña no se guarda tal cual: se guarda transformada con un método de un solo sentido (hash), de modo que nadie del equipo puede leerla.',
+              'Tus saldos, límites y movimientos se guardan cifrados.',
+              'Cada persona ve únicamente su propia información.',
+              'Si ocurre un incidente de seguridad que te afecte, te lo avisaremos por correo.',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: '7. Datos que se guardan en tu dispositivo',
+        bloques: [
+          {
+            p: 'Para que puedas consultar tus últimos datos sin internet (balance, tarjetas, deudas y score), la aplicación guarda una copia en tu celular o computadora. Sin conexión solo puedes verlos, no modificarlos.',
+          },
+          {
+            ul: [
+              'Al cerrar sesión, esa copia se borra de tu dispositivo.',
+              'Al eliminar tu cuenta, también se borra.',
+              'Si limpias los datos del navegador, se borra.',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: '8. Notificaciones y correos',
+        bloques: [
+          {
+            ul: [
+              'Las alertas siempre aparecen dentro de la aplicación.',
+              'Por correo las recibes solo si lo activas.',
+              'Como notificación en tu celular solo si lo activas y das permiso en tu dispositivo. Puedes retirarlo cuando quieras.',
+              'Las alertas dicen qué pasó, por ejemplo el mes en que te faltaría dinero o el nombre de la tarjeta que está muy usada. No incluyen saldos ni montos.',
+              'Además, te escribimos al correo para recuperar tu contraseña cuando lo pidas.',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: '9. Tus derechos y cómo eliminar tu cuenta',
+        bloques: [
+          {
+            p: `Puedes ver, corregir, eliminar tus datos y oponerte a que los usemos. Casi todo lo haces tú mismo desde la aplicación: editas o borras cualquier ingreso, gasto, tarjeta, deuda o plan MSI. Para cualquier otra solicitud, escríbenos a ${CONTACTO} y responderemos lo más pronto posible.`,
+          },
+          {
+            p: 'Eliminar tu cuenta: entra a tu perfil y elige “Eliminar cuenta”. Te pediremos confirmar, porque no se puede deshacer. Al confirmar:',
+          },
+          {
+            ul: [
+              'Se borran tus datos del servidor, no solo se ocultan.',
+              'Se borran los datos guardados en tu dispositivo.',
+              'Se cierra tu sesión, y ese correo ya no tendrá cuenta.',
+            ],
+          },
+          {
+            p: 'Copias de seguridad: hacemos copias de seguridad diarias para proteger la información de todos. Lo que borres puede permanecer en esas copias y después desaparece. Esas copias no se usan para restaurar tu cuenta eliminada.',
+          },
+        ],
+      },
+      {
+        titulo: '10. Cambios a este aviso',
+        bloques: [
+          {
+            p: 'Si cambiamos este aviso te lo mostraremos en la aplicación (y, si el cambio es importante, te pediremos aceptarlo de nuevo). Puedes consultarlo en cualquier momento desde la aplicación.',
+          },
+        ],
+      },
+    ],
+  },
+  terminos: {
+    titulo: 'Términos de uso',
+    secciones: [
+      {
+        titulo: '1. Qué es IKAMONEY',
+        bloques: [
+          {
+            p: 'IKAMONEY es una aplicación web que te ayuda a ver cómo quedaría tu dinero en los próximos meses antes de hacer una compra, sobre todo si pagas con tarjeta o a meses sin intereses. Para eso calcula tu balance, simula compras, ordena tus deudas y te da una calificación de 0 a 100.',
+          },
+        ],
+      },
+      {
+        titulo: '2. IKAMONEY no es asesoría financiera',
+        bloques: [
+          {
+            p: 'IKAMONEY no es un asesor financiero, ni un asesor de inversiones, ni una institución financiera. Te damos cálculos, proyecciones y orientación general con base en los datos que tú registras. No te damos recomendaciones personalizadas de un asesor certificado.',
+          },
+          {
+            p: 'El veredicto de una simulación, el orden de tus deudas, tu score y las sugerencias son herramientas para que decidas mejor, no una garantía ni una instrucción. La decisión de comprar, pagar o ahorrar es tuya. Si tu situación es compleja o tienes dudas importantes, consulta a un profesional.',
+          },
+        ],
+      },
+      {
+        titulo: '3. Tus resultados dependen de tus datos',
+        bloques: [
+          {
+            p: 'Los cálculos son tan buenos como los datos que registras o confirmas. Si un dato está mal, vacío o desactualizado, el resultado también lo estará. Revisa siempre lo que se leyó de tu estado de cuenta antes de confirmar. Las proyecciones son estimaciones: tu situación real puede cambiar.',
+          },
+        ],
+      },
+      {
+        titulo: '4. Tu cuenta',
+        bloques: [
+          {
+            ul: [
+              'Eres responsable de mantener tu contraseña en secreto.',
+              'Debes darnos información que sea tuya o que tengas derecho a usar.',
+              'Para crear tu cuenta debes aceptar el aviso de privacidad. Si no lo aceptas, no podemos crearla.',
+            ],
+          },
+        ],
+      },
+      {
+        titulo: '5. Uso adecuado',
+        bloques: [
+          {
+            p: 'Usa IKAMONEY solo para tus propias finanzas. No intentes entrar a la información de otras personas, afectar el funcionamiento del servicio ni usarlo para actividades ilegales.',
+          },
+        ],
+      },
+      {
+        titulo: '6. Disponibilidad y responsabilidad',
+        bloques: [
+          {
+            // Marcado por el equipo: falta revisarlo con asesoría legal antes de publicar.
+            p: 'Hacemos lo posible para que IKAMONEY funcione bien, pero puede tener fallas o interrupciones. No nos hacemos responsables de las decisiones que tomes con base en la información de la aplicación, ni de pérdidas o intereses que resulten de ellas, en la medida que la ley lo permita.',
+          },
+        ],
+      },
+      {
+        titulo: '7. Cambios y contacto',
+        bloques: [
+          {
+            p: `Podemos actualizar estos términos; te avisaremos en la aplicación. Si tienes dudas, escríbenos a ${CONTACTO}. Estos términos se rigen por las leyes de Torreón, Coah. México.`,
+          },
+        ],
+      },
+    ],
+  },
+}

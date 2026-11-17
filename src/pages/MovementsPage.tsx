@@ -1,123 +1,204 @@
 import { useEffect, useState } from 'react'
-import type { Movement, MovementType } from '../types/movement'
-import { useMovements } from '../hooks/useMovements'
-import { formatMoney } from '../utils/formatMoney'
 import Modal from '../components/Modal'
 import MovementForm from '../components/MovementForm'
 import MovementList from '../components/MovementList'
+import FechaCopia from '../components/FechaCopia'
+import { useConexion } from '../hooks/useConexion'
+import { useCategorias, useMovimientos } from '../hooks/useFinanzas'
+import { movimientosService } from '../services/movimientos'
+import type { MovimientoDelMes, MovimientoPayload, TipoMovimiento } from '../types/movimiento'
+import { mensajeError } from '../utils/errores'
+import { formatMoney } from '../utils/formatMoney'
+import { mesActual, mesLargo, sumarMeses } from '../utils/formatMes'
 import './MovementsPage.css'
 
-const money = (n: number) => formatMoney(n, 'MXN', 'es-MX')
+const dinero = (n: number) => formatMoney(n, 'MXN', 'es-MX')
 
-/** Pantalla de movimientos: resumen, listados de gastos/ingresos y formularios de alta y edición. */
+/** Pantalla de movimientos: resumen del mes, listados de gastos e ingresos y formularios de alta y edición. */
 function MovementsPage() {
-  const { movements, add, update, remove, loadSample } = useMovements()
-  const [tab, setTab] = useState<MovementType>('gasto')
-  // null = cerrado; con "movement" es edición, sin él es alta.
-  const [form, setForm] = useState<{ movement?: Movement } | null>(null)
-  const [toDelete, setToDelete] = useState<Movement | null>(null)
-  const [toast, setToast] = useState('')
+  const enLinea = useConexion()
+  const [mes, setMes] = useState(mesActual)
+  const { datos, copiaDe, error, cargando, recargar } = useMovimientos(mes)
+  const { datos: categorias } = useCategorias()
+  const [pestana, setPestana] = useState<TipoMovimiento>('gasto')
+  // null = cerrado; con "movimiento" es edición, sin él es alta.
+  const [formulario, setFormulario] = useState<{ movimiento?: MovimientoDelMes } | null>(null)
+  const [porEliminar, setPorEliminar] = useState<MovimientoDelMes | null>(null)
+  const [eliminando, setEliminando] = useState(false)
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null)
+  const [aviso, setAviso] = useState('')
 
   useEffect(() => {
-    if (!toast) return
-    const timer = setTimeout(() => setToast(''), 2500)
+    if (!aviso) return
+    const timer = setTimeout(() => setAviso(''), 2500)
     return () => clearTimeout(timer)
-  }, [toast])
+  }, [aviso])
 
-  const total = (type: MovementType) =>
-    movements.filter((m) => m.type === type).reduce((sum, m) => sum + m.amount, 0)
-  const income = total('ingreso')
-  const expenses = total('gasto')
-  const left = income - expenses
-  const label = tab === 'gasto' ? 'gasto' : 'ingreso'
-  const shown = movements.filter((m) => m.type === tab)
+  const etiqueta = pestana === 'gasto' ? 'gasto' : 'ingreso'
+  const delTipo = (tipo: TipoMovimiento) => datos?.movimientos.filter((m) => m.tipo === tipo) ?? []
 
-  function save(data: Omit<Movement, 'id'>) {
-    if (form?.movement) update({ ...data, id: form.movement.id })
-    else add(data)
-    setToast(`${data.type === 'gasto' ? 'Gasto' : 'Ingreso'} ${form?.movement ? 'actualizado' : 'guardado'}`)
-    setForm(null)
+  async function guardar(payload: MovimientoPayload) {
+    const editando = formulario?.movimiento
+    if (editando) {
+      // El tipo no se puede cambiar: el backend rechaza el campo en la edición.
+      await movimientosService.actualizar(editando.id, {
+        concepto: payload.concepto,
+        monto: payload.monto,
+        frecuencia: payload.frecuencia,
+        fecha: payload.fecha,
+        categoria_id: payload.categoria_id,
+        clase: payload.clase,
+      })
+    } else {
+      await movimientosService.crear(payload)
+    }
+    setAviso(`${payload.tipo === 'gasto' ? 'Gasto' : 'Ingreso'} ${editando ? 'actualizado' : 'guardado'}`)
+    setFormulario(null)
+    recargar()
   }
 
-  function confirmDelete() {
-    if (!toDelete) return
-    remove(toDelete.id)
-    setToast(`${toDelete.type === 'gasto' ? 'Gasto' : 'Ingreso'} eliminado`)
-    setToDelete(null)
+  async function confirmarEliminacion() {
+    if (!porEliminar) return
+    setEliminando(true)
+    setErrorEliminar(null)
+    try {
+      await movimientosService.eliminar(porEliminar.id)
+      setAviso(`${porEliminar.tipo === 'gasto' ? 'Gasto' : 'Ingreso'} eliminado`)
+      setPorEliminar(null)
+      recargar()
+    } catch (err) {
+      setErrorEliminar(mensajeError(err))
+    } finally {
+      setEliminando(false)
+    }
   }
 
   return (
     <main className="movements">
       <h1>Movimientos</h1>
 
-      <section className="movements__summary" aria-label="Resumen">
-        <p className="movements__eyebrow">Te quedan</p>
-        <p className="movements__balance">{money(left)}</p>
-        <dl>
-          <div>
-            <dt>Ingresos</dt>
-            <dd>{money(income)}</dd>
-          </div>
-          <div>
-            <dt>Gastos</dt>
-            <dd>{money(expenses)}</dd>
-          </div>
-        </dl>
-        {movements.length > 0 && left < 0 && (
-          <p className="movements__warn" role="status">
-            ⚠ Estás gastando más de lo que ingresas.
-          </p>
-        )}
-      </section>
-
-      <div className="movements__tabs" role="tablist" aria-label="Tipo de movimiento">
-        {(['gasto', 'ingreso'] as const).map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
-            {t === 'gasto' ? 'Gastos' : 'Ingresos'} ({movements.filter((m) => m.type === t).length})
-          </button>
-        ))}
+      <div className="movements__mes">
+        <button type="button" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">
+          ‹
+        </button>
+        <p aria-live="polite">{mesLargo(mes)}</p>
+        <button type="button" onClick={() => setMes(sumarMeses(mes, 1))} aria-label="Mes siguiente">
+          ›
+        </button>
       </div>
 
-      <MovementList
-        type={tab}
-        movements={shown}
-        noData={movements.length === 0}
-        onEdit={(movement) => setForm({ movement })}
-        onDelete={setToDelete}
-        onLoadSample={loadSample}
-      />
+      {copiaDe && <FechaCopia fecha={copiaDe} />}
+
+      {cargando && (
+        <p role="status" className="movements__estado">
+          Cargando…
+        </p>
+      )}
+
+      {error && (
+        <div className="movements__warn" role="alert">
+          <p>{error}</p>
+          <button type="button" className="btn btn--ghost" onClick={recargar}>
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {datos && (
+        <>
+          <section className="movements__summary" aria-label="Resumen del mes">
+            <p className="movements__eyebrow">Te quedan</p>
+            <p className="movements__balance">{dinero(datos.totales.balance)}</p>
+            <dl>
+              <div>
+                <dt>Ingresos</dt>
+                <dd>{dinero(datos.totales.ingresos)}</dd>
+              </div>
+              <div>
+                <dt>Gastos</dt>
+                <dd>{dinero(datos.totales.gastos)}</dd>
+              </div>
+            </dl>
+            {datos.movimientos.length > 0 && datos.totales.balance < 0 && (
+              <p className="movements__warn" role="status">
+                ⚠ Estás gastando más de lo que ingresas.
+              </p>
+            )}
+          </section>
+
+          <div className="movements__tabs" role="tablist" aria-label="Tipo de movimiento">
+            {(['gasto', 'ingreso'] as const).map((tipo) => (
+              <button key={tipo} type="button" role="tab" aria-selected={pestana === tipo} onClick={() => setPestana(tipo)}>
+                {tipo === 'gasto' ? 'Gastos' : 'Ingresos'} ({delTipo(tipo).length})
+              </button>
+            ))}
+          </div>
+
+          <MovementList
+            tipo={pestana}
+            movimientos={delTipo(pestana)}
+            soloLectura={!enLinea}
+            onEditar={(movimiento) => setFormulario({ movimiento })}
+            onEliminar={(movimiento) => {
+              setErrorEliminar(null)
+              setPorEliminar(movimiento)
+            }}
+          />
+        </>
+      )}
 
       <div className="movements__bar">
-        <button type="button" className="btn btn--primary" onClick={() => setForm({})}>
-          + Agregar {label}
+        <button
+          type="button"
+          className="btn btn--primary"
+          disabled={!enLinea}
+          title={enLinea ? undefined : 'Sin conexión'}
+          onClick={() => setFormulario({})}
+        >
+          + Agregar {etiqueta}
         </button>
       </div>
 
       <Modal
-        open={form !== null}
-        title={`${form?.movement ? 'Editar' : 'Nuevo'} ${label}`}
-        onClose={() => setForm(null)}
+        open={formulario !== null}
+        title={`${formulario?.movimiento ? 'Editar' : 'Nuevo'} ${formulario?.movimiento?.tipo ?? etiqueta}`}
+        onClose={() => setFormulario(null)}
       >
-        <MovementForm type={tab} initial={form?.movement} onSubmit={save} onCancel={() => setForm(null)} />
+        {formulario && (
+          <MovementForm
+            tipo={formulario.movimiento?.tipo ?? pestana}
+            inicial={formulario.movimiento}
+            categorias={categorias}
+            onGuardar={guardar}
+            onCancelar={() => setFormulario(null)}
+          />
+        )}
       </Modal>
 
-      <Modal open={toDelete !== null} title="¿Eliminar este movimiento?" onClose={() => setToDelete(null)}>
+      <Modal open={porEliminar !== null} title="¿Eliminar este movimiento?" onClose={() => setPorEliminar(null)}>
         <p>
-          {toDelete?.concept} · {toDelete && money(toDelete.amount)}. Esta acción no se puede deshacer.
+          {porEliminar?.concepto} · {porEliminar && dinero(porEliminar.monto)}.
+          {porEliminar && porEliminar.frecuencia !== 'unico' && ' Se quitará también de los demás meses.'} Esta acción no
+          se puede deshacer.
         </p>
+        {errorEliminar && (
+          <p className="movements__warn" role="alert">
+            {errorEliminar}
+          </p>
+        )}
         <div className="movements__confirm">
-          <button type="button" className="btn btn--ghost" onClick={() => setToDelete(null)}>
+          <button type="button" className="btn btn--ghost" onClick={() => setPorEliminar(null)} disabled={eliminando}>
             Cancelar
           </button>
-          <button type="button" className="btn btn--danger" onClick={confirmDelete}>
-            Eliminar
+          <button type="button" className="btn btn--danger" onClick={confirmarEliminacion} disabled={eliminando}>
+            {eliminando ? 'Eliminando…' : 'Eliminar'}
           </button>
         </div>
       </Modal>
 
-      {toast && (
+      {aviso && (
         <div className="movements__toast" role="status">
-          {toast}
+          {aviso}
         </div>
       )}
     </main>

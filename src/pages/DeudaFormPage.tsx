@@ -16,7 +16,6 @@ import {
   hayErrores,
   numeroONulo,
   validarDia,
-  validarEntero,
   validarMonto,
   validarTasa,
   validarTexto,
@@ -33,7 +32,6 @@ type Campos = {
   pago_mensual: string
   tasa_anual: string
   dia_pago: string
-  pagos_restantes: string
 }
 
 type Errores = Partial<Record<keyof Campos, string | null>>
@@ -55,7 +53,6 @@ function camposIniciales(d: Deuda | null): Campos {
     pago_mensual: texto(d?.pago_mensual),
     tasa_anual: texto(d?.tasa_anual),
     dia_pago: texto(d?.dia_pago),
-    pagos_restantes: texto(d?.pagos_restantes),
   }
 }
 
@@ -68,7 +65,6 @@ function validar(c: Campos): Errores {
     pago_mensual: validarMonto(c.pago_mensual),
     tasa_anual: validarTasa(c.tasa_anual),
     dia_pago: validarDia(c.dia_pago, false),
-    pagos_restantes: validarEntero(c.pagos_restantes, 0, 600, false),
   }
 }
 
@@ -82,7 +78,6 @@ function aPayload(c: Campos, original: Deuda | null): DeudaPayload {
     pago_mensual: numeroONulo(c.pago_mensual),
     tasa_anual: numeroONulo(c.tasa_anual),
     dia_pago: numeroONulo(c.dia_pago),
-    pagos_restantes: numeroONulo(c.pagos_restantes),
     fecha_inicio: original?.fecha_inicio ?? null,
   }
 }
@@ -190,26 +185,15 @@ function FormularioDeuda({ deuda }: { deuda: Deuda | null }) {
             error={errores.tasa_anual}
           />
         </div>
-        <div className="formulario__fila">
-          <TextField
-            etiqueta="Día de pago (opcional)"
-            inputMode="numeric"
-            placeholder="1 a 31"
-            value={campos.dia_pago}
-            maxLength={2}
-            onChange={cambiar('dia_pago')}
-            error={errores.dia_pago}
-          />
-          <TextField
-            etiqueta="Pagos restantes (opcional)"
-            inputMode="numeric"
-            placeholder="Ej. 18"
-            value={campos.pagos_restantes}
-            maxLength={3}
-            onChange={cambiar('pagos_restantes')}
-            error={errores.pagos_restantes}
-          />
-        </div>
+        <TextField
+          etiqueta="Día de pago (opcional)"
+          inputMode="numeric"
+          placeholder="1 a 31"
+          value={campos.dia_pago}
+          maxLength={2}
+          onChange={cambiar('dia_pago')}
+          error={errores.dia_pago}
+        />
         <p className="pagina__nota">Si es un préstamo de un familiar o amigo sin intereses, escribe 0 en la tasa.</p>
 
         <div className="formulario__acciones">

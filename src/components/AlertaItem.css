@@ -1,0 +1,92 @@
+.aviso {
+  --aviso-color: var(--precaucion);
+  --aviso-fondo: var(--precaucion-fondo);
+
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--arena-oscura);
+  border-left: 6px solid var(--aviso-color);
+  border-radius: 8px;
+  background: var(--crema);
+  list-style: none;
+}
+
+.aviso--critico {
+  --aviso-color: var(--critico);
+  --aviso-fondo: var(--critico-fondo);
+}
+
+/* Las nuevas se distinguen por el fondo y la etiqueta; las leídas quedan en tono neutro. */
+.aviso--nueva {
+  background: var(--aviso-fondo);
+}
+
+.aviso--leida .aviso__titulo {
+  font-weight: 600;
+}
+
+.aviso__icono {
+  flex-shrink: 0;
+  padding-top: 2px;
+  color: var(--aviso-color);
+}
+
+.aviso__cuerpo {
+  min-width: 0;
+  flex: 1;
+}
+
+.aviso__estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--aviso-color);
+}
+
+.aviso__nuevo {
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--azul);
+  color: var(--crema);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.aviso__titulo {
+  margin: 2px 0 4px;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.aviso__mensaje,
+.aviso__accion {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.aviso__accion {
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.aviso__fecha {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--gris-azulado);
+}
+
+.aviso__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 12px;
+}
+
+.aviso__enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

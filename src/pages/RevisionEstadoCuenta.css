@@ -1,8 +1,8 @@
 .rev {
-  --ia: #2563eb; --ia-fondo: #eff6ff;
-  --editado: #d97706; --editado-fondo: #fffbeb;
-  --agregado: #059669; --agregado-fondo: #ecfdf5;
-  --error: #dc2626; --borde: #d1d5db; --texto: #111827; --suave: #6b7280;
+  --ia: var(--azul); --ia-fondo: var(--arena);
+  --editado: var(--precaucion); --editado-fondo: var(--precaucion-fondo);
+  --agregado: var(--sano); --agregado-fondo: var(--sano-fondo);
+  --error: var(--critico); --borde: var(--border); --texto: var(--text); --suave: var(--muted);
   max-width: 880px; margin: 0 auto; padding: 16px; color: var(--texto);
 }
 .rev h1 { font-size: 1.5rem; margin: 0 0 8px; }
@@ -11,21 +11,22 @@
 
 /* Botones */
 .rev-btn {
-  border: 1px solid var(--borde); background: #fff; color: var(--texto);
+  border: 1px solid var(--borde); background: var(--surface); color: var(--texto);
   padding: 8px 14px; border-radius: 8px; cursor: pointer; font: inherit;
 }
+.rev-btn { text-decoration: none; display: inline-block; }
 .rev-btn:disabled { opacity: .5; cursor: not-allowed; }
-.rev-btn--principal { background: #111827; color: #fff; border-color: #111827; padding: 10px 20px; }
-.rev-btn--sec { background: #fff; }
-.rev-btn--peligro { color: var(--error); border-color: #fecaca; padding: 4px 10px; }
+.rev-btn--principal { background: var(--azul); color: var(--crema); border-color: var(--azul); padding: 10px 20px; }
+.rev-btn--sec { background: var(--surface); }
+.rev-btn--peligro { color: var(--error); border-color: var(--critico); padding: 4px 10px; }
 .rev-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 
 /* Avisos */
 .rev-aviso { border-radius: 8px; padding: 12px 16px; margin: 12px 0; border: 1px solid var(--borde); }
 .rev-aviso p { margin: 0 0 8px; }
-.rev-aviso--error { background: #fef2f2; border-color: #fecaca; }
+.rev-aviso--error { background: var(--critico-fondo); border-color: var(--critico); }
 .rev-aviso--ok { background: var(--agregado-fondo); border-color: var(--agregado); }
-.rev-aviso--vacio { background: #f9fafb; }
+.rev-aviso--vacio { background: var(--arena); }
 .rev-error { color: var(--error); font-size: .875rem; margin: 4px 0 0; }
 
 /* Cargando */
@@ -48,9 +49,13 @@
 .rev-tarjeta--editado { border-left-color: var(--editado); }
 .rev-tarjeta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 
+/* Destino */
+.rev-destino { margin-top: 16px; border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: grid; gap: 12px; }
+.rev select { font: inherit; color: var(--texto); padding: 8px; border: 1px solid var(--borde); border-radius: 6px; background: var(--surface); }
+
 /* Filas */
 .rev-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.rev-fila { border: 1px solid var(--borde); border-left: 4px solid var(--ia); border-radius: 8px; padding: 12px; background: #fff; }
+.rev-fila { border: 1px solid var(--borde); border-left: 4px solid var(--ia); border-radius: 8px; padding: 12px; background: var(--surface); }
 .rev-fila--ia { border-left-color: var(--ia); }
 .rev-fila--editado { border-left-color: var(--editado); background: var(--editado-fondo); }
 .rev-fila--agregado { border-left-color: var(--agregado); background: var(--agregado-fondo); }
@@ -61,7 +66,7 @@
 /* Campos */
 .rev label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--suave); }
 .rev input[type="text"], .rev input[type="number"], .rev input[type="date"] {
-  font: inherit; color: var(--texto); padding: 8px; border: 1px solid var(--borde); border-radius: 6px; background: #fff;
+  font: inherit; color: var(--texto); padding: 8px; border: 1px solid var(--borde); border-radius: 6px; background: var(--surface);
 }
 .rev-cambiado input { border-color: var(--editado); box-shadow: 0 0 0 1px var(--editado); }
 .rev input[aria-invalid="true"] { border-color: var(--error); box-shadow: 0 0 0 1px var(--error); }

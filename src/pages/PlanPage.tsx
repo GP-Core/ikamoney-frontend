@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import AhorroPlan from '../components/AhorroPlan'
 import ControlExtra from '../components/ControlExtra'
 import FechaLibre from '../components/FechaLibre'
@@ -20,9 +21,9 @@ function PlanPage() {
     <main className="balance">
       <div className="balance__ancho">
         <header className="balance__encabezado">
-          <a className="balance__mes-boton plan-volver" href="/" aria-label="Volver al balance">
+          <Link className="balance__mes-boton plan-volver" to="/ranking" aria-label="Volver a tus deudas">
             ‹
-          </a>
+          </Link>
           <div className="balance__mes">
             <h1 className="balance__titulo">Tu plan de pago</h1>
             {PLAN_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}

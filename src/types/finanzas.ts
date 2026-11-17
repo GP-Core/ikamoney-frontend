@@ -1,5 +1,5 @@
 // Tipos de tarjetas, compras a MSI y otras deudas (T30).
-// Siguen el modelo de datos de T18 y deben coincidir con docs/contrato-api-finanzas.md.
+// Siguen el modelo de datos de T18 y los esquemas del backend (app/schemas/tarjeta.py, deuda.py y msi.py).
 
 export type EstatusMsi = 'activo' | 'liquidado' | 'cancelado'
 export type Origen = 'manual' | 'extraido'
@@ -19,7 +19,7 @@ export interface PlanMsi {
   origen: Origen
 }
 
-/** POST /api/tarjetas/{id}/msi y PUT /api/msi/{id} */
+/** Cuerpo de POST /api/v1/msi (el backend exige además tarjeta_id) y de PUT /api/v1/msi/{id}. */
 export interface PlanMsiPayload {
   descripcion: string
   monto_original: number
@@ -44,20 +44,17 @@ export interface Tarjeta {
   dia_pago: number
   /** Porcentaje anual, por ejemplo 60 = 60 %. */
   tasa_anual: number | null
-  /** Pago mínimo del estado de cuenta. Si es null, la app lo estima (fórmula 6 de T25). */
-  pago_minimo: number | null
   activa: boolean
   planes_msi: PlanMsi[]
 }
 
-/** POST /api/tarjetas y PUT /api/tarjetas/{id} */
+/** POST /api/v1/tarjetas y PUT /api/v1/tarjetas/{id}. El pago mínimo no se captura: se estima (fórmula 6 de T25). */
 export type TarjetaPayload = Omit<Tarjeta, 'id' | 'activa' | 'planes_msi'>
 
 export type TipoDeuda =
   | 'prestamo_personal'
   | 'credito_auto'
   | 'credito_hipotecario'
-  | 'credito_tienda'
   | 'familiar_amigo'
   | 'otro'
 
@@ -72,10 +69,9 @@ export interface Deuda {
   tasa_anual: number | null
   pago_mensual: number | null
   dia_pago: number | null
-  pagos_restantes: number | null
   fecha_inicio: string | null
   estatus: 'activa' | 'liquidada'
 }
 
-/** POST /api/deudas y PUT /api/deudas/{id} */
+/** POST /api/v1/deudas y PUT /api/v1/deudas/{id} */
 export type DeudaPayload = Omit<Deuda, 'id' | 'estatus'>

@@ -10,8 +10,8 @@ export interface FinanzasService {
   obtenerTarjeta(id: number): Promise<Tarjeta>
   crearTarjeta(datos: TarjetaPayload): Promise<Tarjeta>
   actualizarTarjeta(id: number, datos: TarjetaPayload): Promise<Tarjeta>
-  /** Borra también sus compras a MSI (en cascada, T18). */
-  eliminarTarjeta(id: number): Promise<void>
+  /** Borra también sus compras a MSI (en cascada, T18) y dice cuántas fueron. */
+  eliminarTarjeta(id: number): Promise<{ planes_msi_eliminados: number }>
 
   crearPlanMsi(tarjetaId: number, datos: PlanMsiPayload): Promise<PlanMsi>
   actualizarPlanMsi(id: number, datos: PlanMsiPayload): Promise<PlanMsi>
@@ -24,7 +24,7 @@ export interface FinanzasService {
   eliminarDeuda(id: number): Promise<void>
 }
 
-// FastAPI manda los DECIMAL como texto ("12500.00"): aquí se convierten a número.
+// El backend manda el dinero como número JSON; se convierte igual por si algún campo llegara como texto.
 const numero = (v: unknown) => Number(v)
 const numeroONulo = (v: unknown) => (v === null || v === undefined ? null : Number(v))
 
@@ -38,6 +38,10 @@ function normalizarPlan(p: PlanMsi): PlanMsi {
   }
 }
 
+function conPlanes(t: Tarjeta, planes: PlanMsi[]): Tarjeta {
+  return { ...normalizarTarjeta(t), planes_msi: planes.filter((p) => p.tarjeta_id === t.id).map(normalizarPlan) }
+}
+
 function normalizarTarjeta(t: Tarjeta): Tarjeta {
   return {
     ...t,
@@ -46,8 +50,6 @@ function normalizarTarjeta(t: Tarjeta): Tarjeta {
     dia_corte: numero(t.dia_corte),
     dia_pago: numero(t.dia_pago),
     tasa_anual: numeroONulo(t.tasa_anual),
-    pago_minimo: numeroONulo(t.pago_minimo),
-    planes_msi: (t.planes_msi ?? []).map(normalizarPlan),
   }
 }
 
@@ -59,29 +61,50 @@ function normalizarDeuda(d: Deuda): Deuda {
     tasa_anual: numeroONulo(d.tasa_anual),
     pago_mensual: numeroONulo(d.pago_mensual),
     dia_pago: numeroONulo(d.dia_pago),
-    pagos_restantes: numeroONulo(d.pagos_restantes),
   }
 }
 
 const json = (metodo: 'POST' | 'PUT', datos: unknown): RequestInit => ({ method: metodo, body: JSON.stringify(datos) })
 
-/** Implementación real con los endpoints de docs/contrato-api-finanzas.md. */
+/**
+ * Implementación real sobre /api/v1/tarjetas, /deudas y /msi. El backend no mete los planes MSI dentro de la
+ * tarjeta: se piden aparte y se reparten por tarjeta_id para que las pantallas reciban la misma forma de siempre.
+ */
 export const finanzasApi: FinanzasService = {
-  listarTarjetas: async () => (await apiFetch<Tarjeta[]>('/tarjetas')).map(normalizarTarjeta),
-  obtenerTarjeta: async (id) => normalizarTarjeta(await apiFetch<Tarjeta>(`/tarjetas/${id}`)),
-  crearTarjeta: async (datos) => normalizarTarjeta(await apiFetch<Tarjeta>('/tarjetas', json('POST', datos))),
-  actualizarTarjeta: async (id, datos) =>
-    normalizarTarjeta(await apiFetch<Tarjeta>(`/tarjetas/${id}`, json('PUT', datos))),
-  eliminarTarjeta: (id) => apiFetch<void>(`/tarjetas/${id}`, { method: 'DELETE' }),
+  listarTarjetas: async () => {
+    const [tarjetas, planes] = await Promise.all([apiFetch<Tarjeta[]>('/v1/tarjetas'), apiFetch<PlanMsi[]>('/v1/msi')])
+    return tarjetas.map((t) => conPlanes(t, planes))
+  },
+  obtenerTarjeta: async (id) => {
+    const [tarjeta, planes] = await Promise.all([
+      apiFetch<Tarjeta>(`/v1/tarjetas/${id}`),
+      apiFetch<PlanMsi[]>(`/v1/msi?tarjeta_id=${id}`),
+    ])
+    return conPlanes(tarjeta, planes)
+  },
+  crearTarjeta: async (datos) => conPlanes(await apiFetch<Tarjeta>('/v1/tarjetas', json('POST', datos)), []),
+  actualizarTarjeta: async (id, datos) => {
+    await apiFetch<Tarjeta>(`/v1/tarjetas/${id}`, json('PUT', datos))
+    return finanzasApi.obtenerTarjeta(id)
+  },
+  eliminarTarjeta: async (id) => {
+    const r = await apiFetch<{ planes_msi_eliminados: number }>(`/v1/tarjetas/${id}`, { method: 'DELETE' })
+    return { planes_msi_eliminados: r.planes_msi_eliminados }
+  },
 
   crearPlanMsi: async (tarjetaId, datos) =>
-    normalizarPlan(await apiFetch<PlanMsi>(`/tarjetas/${tarjetaId}/msi`, json('POST', datos))),
-  actualizarPlanMsi: async (id, datos) => normalizarPlan(await apiFetch<PlanMsi>(`/msi/${id}`, json('PUT', datos))),
-  eliminarPlanMsi: (id) => apiFetch<void>(`/msi/${id}`, { method: 'DELETE' }),
+    normalizarPlan(await apiFetch<PlanMsi>('/v1/msi', json('POST', { ...datos, tarjeta_id: tarjetaId }))),
+  actualizarPlanMsi: async (id, datos) => normalizarPlan(await apiFetch<PlanMsi>(`/v1/msi/${id}`, json('PUT', datos))),
+  eliminarPlanMsi: async (id) => {
+    await apiFetch<unknown>(`/v1/msi/${id}`, { method: 'DELETE' })
+  },
 
-  listarDeudas: async () => (await apiFetch<Deuda[]>('/deudas')).map(normalizarDeuda),
-  obtenerDeuda: async (id) => normalizarDeuda(await apiFetch<Deuda>(`/deudas/${id}`)),
-  crearDeuda: async (datos) => normalizarDeuda(await apiFetch<Deuda>('/deudas', json('POST', datos))),
-  actualizarDeuda: async (id, datos) => normalizarDeuda(await apiFetch<Deuda>(`/deudas/${id}`, json('PUT', datos))),
-  eliminarDeuda: (id) => apiFetch<void>(`/deudas/${id}`, { method: 'DELETE' }),
+  listarDeudas: async () => (await apiFetch<Deuda[]>('/v1/deudas')).map(normalizarDeuda),
+  obtenerDeuda: async (id) => normalizarDeuda(await apiFetch<Deuda>(`/v1/deudas/${id}`)),
+  crearDeuda: async (datos) => normalizarDeuda(await apiFetch<Deuda>('/v1/deudas', json('POST', datos))),
+  actualizarDeuda: async (id, datos) =>
+    normalizarDeuda(await apiFetch<Deuda>(`/v1/deudas/${id}`, json('PUT', datos))),
+  eliminarDeuda: async (id) => {
+    await apiFetch<unknown>(`/v1/deudas/${id}`, { method: 'DELETE' })
+  },
 }

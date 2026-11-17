@@ -1,0 +1,86 @@
+.interruptor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.interruptor__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.interruptor__etiqueta {
+  font-weight: 700;
+}
+
+.interruptor__control {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.interruptor__estado {
+  min-width: 2ch;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gris-azulado);
+}
+
+.interruptor__input {
+  appearance: none;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  margin: 0;
+  border: 2px solid var(--gris-azulado);
+  border-radius: 14px;
+  background: var(--arena);
+  cursor: pointer;
+}
+
+.interruptor__input::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gris-azulado);
+  transition: transform 0.15s;
+}
+
+.interruptor__input:checked {
+  border-color: var(--azul);
+  background: var(--azul);
+}
+
+.interruptor__input:checked::after {
+  transform: translateX(20px);
+  background: var(--crema);
+}
+
+.interruptor__input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.interruptor__descripcion {
+  font-size: 14px;
+  color: var(--gris-azulado);
+}
+
+.interruptor__nota {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--precaucion);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interruptor__input::after {
+    transition: none;
+  }
+}

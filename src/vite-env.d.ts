@@ -11,6 +11,9 @@ interface ImportMetaEnv {
   readonly VITE_AUTH_MOCK?: string
   readonly VITE_RANKING_USAR_EJEMPLO?: string
   readonly VITE_PLAN_USAR_EJEMPLO?: string
+  readonly VITE_SIMULADOR_USAR_EJEMPLO?: string
+  /** Llave pública VAPID para las notificaciones push (T50). Sin ella, push queda como "próximamente". */
+  readonly VITE_VAPID_PUBLIC_KEY?: string
 }
 
 interface ImportMeta {

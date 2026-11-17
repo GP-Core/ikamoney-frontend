@@ -1,9 +1,12 @@
-import { Navigate, Route, Routes, useNavigate } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router'
 import AppLayout from './components/AppLayout'
 import AvisoActualizacion from './components/AvisoActualizacion'
 import { RutaProtegida, RutaPublica } from './components/RutaProtegida'
 import SoloConConexion from './components/SoloConConexion'
+import { AlertasProvider } from './context/alertasProvider'
 import { useActualizacionPwa } from './hooks/useActualizacionPwa'
+import AlertasConfigPage from './pages/AlertasConfigPage'
+import AlertasPage from './pages/AlertasPage'
 import BalancePage from './pages/BalancePage'
 import CuentaPage from './pages/CuentaPage'
 import DeudaFormPage from './pages/DeudaFormPage'
@@ -27,7 +30,6 @@ import SimuladorPage from './pages/SimuladorPage'
 /** Rutas de la app. Las de cuenta son públicas; el resto requiere sesión y usa AppLayout. */
 function App() {
   const pwa = useActualizacionPwa()
-  const navigate = useNavigate()
 
   return (
     <>
@@ -36,10 +38,18 @@ function App() {
         <Route path="/registro" element={<RutaPublica><RegisterPage /></RutaPublica>} />
         <Route path="/recuperar-contrasena" element={<RutaPublica><ForgotPasswordPage /></RutaPublica>} />
         <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
-        <Route path="/aviso-de-privacidad" element={<LegalPage titulo="Aviso de privacidad" />} />
-        <Route path="/terminos-de-uso" element={<LegalPage titulo="Términos de uso" />} />
+        <Route path="/aviso-de-privacidad" element={<LegalPage documento="privacidad" />} />
+        <Route path="/terminos-de-uso" element={<LegalPage documento="terminos" />} />
 
-        <Route element={<RutaProtegida><AppLayout /></RutaProtegida>}>
+        <Route
+          element={
+            <RutaProtegida>
+              <AlertasProvider>
+                <AppLayout />
+              </AlertasProvider>
+            </RutaProtegida>
+          }
+        >
           <Route path="/" element={<HomePage />} />
           <Route path="/balance" element={<BalancePage />} />
           <Route path="/score" element={<ScorePage />} />
@@ -56,10 +66,9 @@ function App() {
           <Route path="/deudas/nueva" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/deudas/:id/editar" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/movimientos" element={<MovementsPage />} />
-          <Route
-            path="/estado-cuenta"
-            element={<SoloConConexion><RevisionEstadoCuenta onGuardado={() => navigate('/movimientos')} /></SoloConConexion>}
-          />
+          <Route path="/estado-cuenta" element={<SoloConConexion><RevisionEstadoCuenta /></SoloConConexion>} />
+          <Route path="/alertas" element={<AlertasPage />} />
+          <Route path="/alertas/configuracion" element={<SoloConConexion regresar={{ a: '/alertas', texto: 'Volver a los avisos' }}><AlertasConfigPage /></SoloConConexion>} />
           <Route path="/cuenta" element={<CuentaPage />} />
         </Route>
 

@@ -92,8 +92,10 @@ export const finanzasMock: FinanzasService = {
     const datos = leer()
     if (!datos.tarjetas.some((t) => t.id === id)) throw noEncontrado()
     datos.tarjetas = datos.tarjetas.filter((t) => t.id !== id)
+    const antes = datos.planes.length
     datos.planes = datos.planes.filter((p) => p.tarjeta_id !== id) // en cascada
     guardar(datos)
+    return { planes_msi_eliminados: antes - datos.planes.length }
   },
 
   async crearPlanMsi(tarjetaId, payload) {
@@ -184,7 +186,6 @@ export async function cargarDatosDeEjemplo(): Promise<void> {
     dia_corte: 10,
     dia_pago: 30,
     tasa_anual: 60,
-    pago_minimo: null,
   })
   const tarjetaB = await finanzasMock.crearTarjeta({
     nombre: 'Tarjeta B',
@@ -195,7 +196,6 @@ export async function cargarDatosDeEjemplo(): Promise<void> {
     dia_corte: 20,
     dia_pago: 9,
     tasa_anual: 45,
-    pago_minimo: null,
   })
   await finanzasMock.crearPlanMsi(tarjetaA.id, {
     descripcion: 'Laptop',

@@ -36,6 +36,49 @@
   color: var(--gris-azulado);
 }
 
+.home__bloque {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* En Inicio la paleta se comparte, pero sin el fondo de pantalla completa de Balance. */
+.home .home__bloque {
+  min-height: 0;
+  background: none;
+}
+
+.home__bloque-titulo {
+  font-size: 1.25rem;
+}
+
+.home__aviso {
+  padding: 12px 16px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 10px;
+  background: var(--crema);
+  color: var(--tinta);
+}
+
+.home__ver-mas {
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--azul);
+  font-weight: 600;
+}
+
+.home__accesos {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.home__acceso--compacto {
+  margin-bottom: 0;
+}
+
 .home__status {
   display: flex;
   flex-direction: column;

@@ -1,6 +1,12 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import type { ChangeEvent, InputHTMLAttributes } from 'react'
-import { confirmarEstadoCuenta, ErrorApi, extraerEstadoCuenta } from '../api/estadosCuenta'
+import { Link } from 'react-router'
+import { useTarjetasYDeudas } from '../hooks/useFinanzas'
+import { errorDeExtraccion, esReintentable, extraerEstadoCuenta, faltantesDeTarjetaNueva, guardarEstadoCuenta } from '../services/estadosCuenta'
+import type { ApiError } from '../services/api'
+import type { DestinoTarjeta, ResultadoGuardado } from '../types/estadoCuenta'
+import { mensajeError } from '../utils/errores'
+import { formatMoney } from '../utils/formatMoney'
 import {
   aPayload, campoCambiado, campoTarjetaCambiado, CAMPOS_TARJETA, estadoDeFila,
   estadoInicial, reducer, tarjetaEditada, validar,
@@ -19,19 +25,23 @@ type Etapa = 'subir' | 'extrayendo' | 'revisar' | 'guardado'
 
 const SIN_ERRORES: Errores = { filas: {}, tarjeta: {}, total: 0 }
 
-const pesos = (n: number) => n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })
-
-/** Pantalla obligatoria entre la extracción y el guardado. onGuardado se llama al confirmar. */
-export default function RevisionEstadoCuenta({ onGuardado }: { onGuardado?: () => void }) {
+/** Pantalla obligatoria entre la extracción y el guardado: nada se guarda hasta que el usuario confirma. */
+export default function RevisionEstadoCuenta() {
+  const { datos: finanzas } = useTarjetasYDeudas()
+  const tarjetasGuardadas = finanzas?.tarjetas ?? []
   const [etapa, setEtapa] = useState<Etapa>('subir')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [errorArchivo, setErrorArchivo] = useState('')
-  const [errorApi, setErrorApi] = useState<ErrorApi | null>(null)
+  const [errorApi, setErrorApi] = useState<ApiError | null>(null)
   const [datos, dispatch] = useReducer(reducer, estadoInicial)
   const [intentoConfirmar, setIntentoConfirmar] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [errorGuardar, setErrorGuardar] = useState('')
   const [modoManual, setModoManual] = useState(false)
+  // 'nueva' o el id de una tarjeta ya guardada.
+  const [destinoId, setDestinoId] = useState('nueva')
+  const [nombreNueva, setNombreNueva] = useState('')
+  const [resultado, setResultado] = useState<ResultadoGuardado | null>(null)
   const abortar = useRef<AbortController | null>(null)
 
   useEffect(() => () => abortar.current?.abort(), [])
@@ -70,11 +80,7 @@ export default function RevisionEstadoCuenta({ onGuardado }: { onGuardado?: () =
       setEtapa('revisar')
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') return
-      setErrorApi(
-        e instanceof ErrorApi
-          ? e
-          : new ErrorApi(0, 'ERROR', 'Algo salió mal. Puedes capturar los datos a mano.'),
-      )
+      setErrorApi(errorDeExtraccion(e))
       setEtapa('subir')
     }
   }
@@ -98,26 +104,57 @@ export default function RevisionEstadoCuenta({ onGuardado }: { onGuardado?: () =
     setIntentoConfirmar(true)
     setErrorGuardar('')
     if (errores.total > 0) return
+
+    const payload = aPayload(datos)
+    const nombre = nombreNueva.trim() || (payload.tarjeta?.banco ?? '')
+    if (destinoId === 'nueva') {
+      const faltan = faltantesDeTarjetaNueva(payload.tarjeta)
+      if (faltan.length > 0) {
+        setErrorGuardar(`Para crear la tarjeta falta ${faltan.join(', ')}. Complétalo arriba o elige una tarjeta que ya tengas.`)
+        return
+      }
+      if (!nombre) {
+        setErrorGuardar('Escribe un nombre para reconocer la tarjeta.')
+        return
+      }
+    }
+    const destino: DestinoTarjeta = destinoId === 'nueva' ? { tipo: 'nueva', nombre } : { tipo: 'existente', id: Number(destinoId) }
+
     setGuardando(true)
     try {
-      await confirmarEstadoCuenta(aPayload(datos))
+      setResultado(await guardarEstadoCuenta(payload, destino))
       setEtapa('guardado')
-      onGuardado?.()
     } catch (e) {
-      setErrorGuardar(
-        e instanceof Error ? e.message : 'No pudimos guardar. Tus cambios siguen aquí; intenta de nuevo.',
-      )
+      setErrorGuardar(mensajeError(e))
     } finally {
       setGuardando(false)
     }
   }
 
   // ---------- Vistas ----------
-  if (etapa === 'guardado') {
+  if (etapa === 'guardado' && resultado) {
+    const { planesCreados: planes, tarjetaNueva, movimientosSinGuardar: sueltos } = resultado
     return (
       <section className="rev">
         <div className="rev-aviso rev-aviso--ok" role="status">
-          Guardado. Los datos de tu estado de cuenta ya son definitivos.
+          <p>
+            {tarjetaNueva ? 'Tarjeta creada' : 'Tarjeta actualizada'}
+            {planes > 0 && ` y ${planes} ${planes === 1 ? 'compra' : 'compras'} a MSI guardadas`}.
+          </p>
+          {sueltos > 0 && (
+            <p>
+              Los {sueltos} {sueltos === 1 ? 'movimiento suelto' : 'movimientos sueltos'} no se guardaron: todavía no hay
+              dónde registrarlos.
+            </p>
+          )}
+        </div>
+        <div className="rev-acciones">
+          <Link className="rev-btn rev-btn--principal" to={`/tarjetas/${resultado.tarjetaId}`}>
+            Ver la tarjeta
+          </Link>
+          <Link className="rev-btn rev-btn--sec" to="/tarjetas">
+            Ir a Tarjetas y deudas
+          </Link>
         </div>
       </section>
     )
@@ -151,7 +188,7 @@ export default function RevisionEstadoCuenta({ onGuardado }: { onGuardado?: () =
           <div className="rev-aviso rev-aviso--error" role="alert">
             <p>{errorApi.message}</p>
             <div className="rev-acciones">
-              {errorApi.reintentable && archivo && (
+              {esReintentable(errorApi) && archivo && (
                 <button type="button" className="rev-btn" onClick={extraer}>Reintentar</button>
               )}
               <button type="button" className="rev-btn rev-btn--sec" onClick={capturarAMano}>
@@ -224,6 +261,39 @@ export default function RevisionEstadoCuenta({ onGuardado }: { onGuardado?: () =
             )
           })}
         </div>
+      </fieldset>
+
+      {/* ---------- Destino ---------- */}
+      <fieldset className="rev-destino">
+        <legend>¿A qué tarjeta corresponde?</legend>
+        <label>
+          <span>Tarjeta</span>
+          <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)}>
+            <option value="nueva">Es una tarjeta nueva</option>
+            {tarjetasGuardadas.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+        {destinoId === 'nueva' ? (
+          <label>
+            <span>Nombre para reconocerla</span>
+            <input
+              type="text"
+              maxLength={60}
+              value={nombreNueva}
+              placeholder={tarjeta.valores.banco ? String(tarjeta.valores.banco) : 'Ej. BBVA Azul'}
+              onChange={(e) => setNombreNueva(e.target.value)}
+            />
+          </label>
+        ) : (
+          <p className="rev-ayuda">
+            Se actualizarán el saldo, el límite, la tasa y las fechas de esa tarjeta con los datos de arriba, y se
+            agregarán sus compras a MSI.
+          </p>
+        )}
       </fieldset>
 
       {/* ---------- Movimientos ---------- */}
@@ -326,8 +396,13 @@ export default function RevisionEstadoCuenta({ onGuardado }: { onGuardado?: () =
         <p className="rev-resumen">
           {filas.filter((f) => !f.esMsi).length} movimientos · {filas.filter((f) => f.esMsi).length} compras a MSI
           {' · '}Total:{' '}
-          {pesos(filas.reduce((t, f) => t + (Number(f.monto) > 0 ? Number(f.monto) : 0), 0))}
+          {formatMoney(filas.reduce((t, f) => t + (Number(f.monto) > 0 ? Number(f.monto) : 0), 0))}
         </p>
+        {filas.some((f) => !f.esMsi) && (
+          <p className="rev-aviso rev-aviso--vacio" role="note">
+            Por ahora se guardan la tarjeta y las compras a MSI. Los movimientos sueltos todavía no se pueden guardar.
+          </p>
+        )}
         <button type="button" className="rev-btn rev-btn--principal" disabled={guardando} onClick={confirmar}>
           {guardando ? 'Guardando…' : 'Confirmar y guardar'}
         </button>

@@ -125,8 +125,9 @@ function TarjetaDetallePage() {
     setErrorAccion(null)
     try {
       if (porEliminar.tipo === 'tarjeta') {
-        await finanzasService.eliminarTarjeta(tarjeta.id)
-        navegar('/tarjetas', { replace: true, state: { aviso: `Se eliminó la tarjeta "${tarjeta.nombre}".` } })
+        const { planes_msi_eliminados: planes } = await finanzasService.eliminarTarjeta(tarjeta.id)
+        const compras = planes > 0 ? ` y ${planes} ${planes === 1 ? 'compra' : 'compras'} a MSI` : ''
+        navegar('/tarjetas', { replace: true, state: { aviso: `Se eliminó la tarjeta "${tarjeta.nombre}"${compras}.` } })
         return
       }
       await finanzasService.eliminarPlanMsi(porEliminar.plan.id)

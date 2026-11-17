@@ -216,6 +216,7 @@ export const authMock: AuthService = {
     delete intentos[usuario.correo]
     escribir(CLAVES.intentos, intentos)
     localStorage.removeItem(`ikamoney-mock:finanzas:${usuario.id}`) // tarjetas, MSI y deudas (finanzasMock.ts)
+    localStorage.removeItem(`ikamoney-mock:movimientos:${usuario.id}`) // ingresos y gastos (movimientosMock.ts)
   },
 }
 

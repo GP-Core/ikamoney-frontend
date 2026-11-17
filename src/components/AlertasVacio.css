@@ -1,0 +1,27 @@
+.alertas-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 16px;
+  background: var(--crema);
+  text-align: center;
+  color: var(--sano);
+}
+
+.alertas-vacio__titulo {
+  margin: 4px 0 0;
+}
+
+.alertas-vacio__texto {
+  max-width: 44ch;
+  color: var(--tinta);
+}
+
+.alertas-vacio__enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

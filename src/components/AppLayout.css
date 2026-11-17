@@ -56,6 +56,28 @@
   background: var(--arena);
 }
 
+/* Campana de avisos (T48): el globo con el número queda sobre la esquina del ícono. */
+.app__campana {
+  position: relative;
+  display: inline-flex;
+}
+
+.app__contador {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--azul);
+  color: var(--crema);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
 /* Celulares angostos: menos margen para que marca, cuenta y cerrar sesión quepan en una fila. */
 @media (max-width: 380px) {
   .app__barra {

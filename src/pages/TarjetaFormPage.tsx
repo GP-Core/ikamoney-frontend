@@ -31,7 +31,6 @@ type Campos = {
   dia_corte: string
   dia_pago: string
   tasa_anual: string
-  pago_minimo: string
 }
 
 type Errores = Partial<Record<keyof Campos, string | null>>
@@ -48,7 +47,6 @@ function camposIniciales(t: Tarjeta | null): Campos {
     dia_corte: texto(t?.dia_corte ?? null),
     dia_pago: texto(t?.dia_pago ?? null),
     tasa_anual: texto(t?.tasa_anual ?? null),
-    pago_minimo: texto(t?.pago_minimo ?? null),
   }
 }
 
@@ -62,7 +60,6 @@ function validar(c: Campos): Errores {
     dia_corte: validarDia(c.dia_corte),
     dia_pago: validarDia(c.dia_pago),
     tasa_anual: validarTasa(c.tasa_anual),
-    pago_minimo: validarMonto(c.pago_minimo, { obligatorio: false, permitirCero: true }),
   }
 }
 
@@ -76,7 +73,6 @@ function aPayload(c: Campos): TarjetaPayload {
     dia_corte: numeroONulo(c.dia_corte) ?? 1,
     dia_pago: numeroONulo(c.dia_pago) ?? 1,
     tasa_anual: numeroONulo(c.tasa_anual),
-    pago_minimo: numeroONulo(c.pago_minimo),
   }
 }
 
@@ -199,27 +195,17 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
           />
         </div>
 
-        <div className="formulario__fila">
-          <TextField
-            etiqueta="Tasa anual % (opcional)"
-            inputMode="decimal"
-            placeholder="Ej. 45.5"
-            value={campos.tasa_anual}
-            onChange={cambiar('tasa_anual')}
-            error={errores.tasa_anual}
-          />
-          <TextField
-            etiqueta="Pago mínimo (opcional)"
-            inputMode="decimal"
-            placeholder="$0.00"
-            value={campos.pago_minimo}
-            onChange={cambiar('pago_minimo')}
-            error={errores.pago_minimo}
-          />
-        </div>
+        <TextField
+          etiqueta="Tasa anual % (opcional)"
+          inputMode="decimal"
+          placeholder="Ej. 45.5"
+          value={campos.tasa_anual}
+          onChange={cambiar('tasa_anual')}
+          error={errores.tasa_anual}
+        />
         <p className="pagina__nota">
           La tasa aparece en tu estado de cuenta como "tasa de interés ordinaria anual"; sin ella no podemos estimar tus
-          intereses. Si dejas vacío el pago mínimo, lo estimamos con la regla de Banxico.
+          intereses. El pago mínimo lo estimamos con la regla de Banxico.
         </p>
 
         <div className="formulario__acciones">

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { finanzasService } from '../services/finanzas'
+import { movimientosService } from '../services/movimientos'
 import { conCopia } from '../services/offline'
 import type { ConCopia } from '../services/offline'
 import { mensajeError } from '../utils/errores'
@@ -53,6 +54,26 @@ export function useTarjetasYDeudas() {
         const [tarjetas, deudas] = await Promise.all([finanzasService.listarTarjetas(), finanzasService.listarDeudas()])
         return { tarjetas, deudas }
       }),
+    [enLinea],
+  )
+  return useCarga(cargar)
+}
+
+/** Ingresos y gastos de un mes (AAAA-MM) con sus totales. Cambiar de mes vuelve a consultar. */
+export function useMovimientos(mes: string) {
+  const enLinea = useConexion()
+  const cargar = useCallback(
+    () => conCopia(`movimientos:${mes}`, enLinea, () => movimientosService.listarMes(mes)),
+    [mes, enLinea],
+  )
+  return useCarga(cargar)
+}
+
+/** Categorías para clasificar los gastos (las base del sistema y las del usuario). */
+export function useCategorias() {
+  const enLinea = useConexion()
+  const cargar = useCallback(
+    () => conCopia('categorias', enLinea, () => movimientosService.listarCategorias()),
     [enLinea],
   )
   return useCarga(cargar)

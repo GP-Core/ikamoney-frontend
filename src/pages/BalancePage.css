@@ -2,7 +2,9 @@
  * Paleta de esta pantalla. Verde profundo (marca) para el resumen; ámbar, violeta y verde menta
  * para distinguir gastos variables, MSI y dinero libre. El violeta rayado queda reservado a MSI.
  */
-.balance {
+/* Los bloques de Inicio (.home__bloque) reutilizan la misma paleta. */
+.balance,
+.home__bloque {
   --b-fondo: #eaf3f0;
   --b-hero: #0b3b3c;
   --b-realce: #eef5f3;
@@ -26,7 +28,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .balance {
+  .balance,
+  .home__bloque {
     --b-fondo: #0c1416;
     --b-hero: #0f3a3a;
     --b-realce: #1c2b2f;

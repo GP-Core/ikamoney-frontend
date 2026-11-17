@@ -124,3 +124,15 @@ Pasos:
 
 - La caché de respuestas de la API va en `workbox.runtimeCaching` dentro de `vite.config.ts` (por ejemplo, `NetworkFirst` para `/api/v1/...`), o en un service worker propio con `strategies: 'injectManifest'` si hace falta más control. El precache de la interfaz se queda como está.
 - **Fuentes**: hoy la app usa las del sistema (T34). Si se adoptan las de la guía T20 (Playfair Display y Source Sans 3), deben ir **autoalojadas** (por ejemplo con `@fontsource`) para que entren al precache; desde el CDN de Google Fonts no funcionarían sin conexión.
+
+## Notificaciones push · T49 y T50 (pendiente)
+
+**Hecho (T49):** la pantalla `/alertas/configuracion` ya pide el permiso del navegador al encender "Notificaciones en tu dispositivo" (`src/services/push.ts`). Si el permiso está bloqueado, el navegador no lo soporta o no hay `VITE_VAPID_PUBLIC_KEY`, el interruptor queda apagado y deshabilitado con su explicación; si el servidor guardó `push: true` pero este dispositivo no lo permite, se corrige solo con `PUT /alertas/configuracion` (IC-08).
+
+**Fuera de alcance por ahora (pasa al sprint 10):** el envío real. El backend aún no tiene llaves VAPID, tabla de suscripciones ni `POST` y `DELETE` de suscripción (ver `ikamoney-backend/docs/NOTIFICACIONES.md`), así que no se tocó el service worker. Cuando existan:
+
+1. `vite.config.ts`: pasar de `generateSW` a `strategies: 'injectManifest'` con `src/sw.ts`, y agregar `workbox-precaching` y `workbox-routing` como dependencias de desarrollo.
+2. `src/sw.ts`: precache del manifiesto, el mismo `NavigationRoute` con exclusión de `/api/`, respuesta al mensaje `SKIP_WAITING` (lo usa `useActualizacionPwa` con `registerType: 'prompt'`) y los eventos `push` y `notificationclick` (abre `/alertas`). El texto lo manda el backend; si llega vacío, usar uno fijo sin datos ("Tienes un aviso nuevo en IkaMoney", IC-07).
+3. `src/services/push.ts`: `suscribir()` (`pushManager.subscribe` con la llave pública y `POST` al backend) y `desuscribir()`; declarar la llave en `.env.example` (ya está `VITE_VAPID_PUBLIC_KEY`).
+4. `src/services/dispositivo.ts`: `cancelarPush` hoy solo cancela en el navegador; debe avisar también al servidor antes de que se borre el token.
+5. Probar con `npm run build` + `npm run preview` (no con `dev`) y en un Android con la app instalada. En iPhone solo funciona con la app agregada a la pantalla de inicio.

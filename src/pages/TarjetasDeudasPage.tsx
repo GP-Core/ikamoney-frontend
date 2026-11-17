@@ -123,12 +123,6 @@ function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => v
             <dd>{textoProximaFecha(deuda.dia_pago)}</dd>
           </div>
         )}
-        {deuda.pagos_restantes !== null && (
-          <div className="datos__fila">
-            <dt>Pagos restantes</dt>
-            <dd>{deuda.pagos_restantes}</dd>
-          </div>
-        )}
       </dl>
       <div className="ficha__acciones">
         <EnlaceEscritura to={`/deudas/${deuda.id}/editar`} className="accion">
@@ -210,13 +204,15 @@ function TarjetasDeudasPage() {
           <Icon nombre="mas" tamano={20} />
           Agregar otra deuda
         </EnlaceEscritura>
-        <Button variante="secundario" disabled title="Disponible en una próxima versión (T31)">
+        <EnlaceEscritura to="/estado-cuenta" className="boton boton--secundario">
           <Icon nombre="subir" tamano={20} />
           Subir estado de cuenta
-        </Button>
+        </EnlaceEscritura>
       </div>
       <NotaSinConexion />
-      <p className="pagina__nota">Subir el estado de cuenta en PDF estará disponible pronto. Por ahora captura tus datos a mano.</p>
+      <p className="pagina__nota">
+        Sube el PDF de tu estado de cuenta y revisa lo que lea la IA antes de guardarlo. También puedes capturar tus datos a mano.
+      </p>
 
       {sinDatos ? (
         <section className="ficha vacio" aria-labelledby="vacio-titulo">

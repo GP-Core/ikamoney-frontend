@@ -23,7 +23,6 @@ export const TIPO_DEUDA_TEXTO: Record<TipoDeuda, string> = {
   prestamo_personal: 'Préstamo personal',
   credito_auto: 'Crédito de auto',
   credito_hipotecario: 'Crédito hipotecario',
-  credito_tienda: 'Crédito de tienda',
   familiar_amigo: 'Familiar o amigo',
   otro: 'Otro',
 }
@@ -109,9 +108,8 @@ export function pagoMinimoEstimado(tarjeta: Tarjeta): number | null {
   return redondear2(Math.min(Math.max(porSaldo, porLinea), saldo + interes))
 }
 
-/** Pago mínimo del estado de cuenta o, si no se capturó, el estimado. */
+/** Pago mínimo de la tarjeta. El backend no lo guarda: siempre es el estimado con la regla de Banxico. */
 export function pagoMinimo(tarjeta: Tarjeta): { monto: number | null; estimado: boolean } {
-  if (tarjeta.pago_minimo !== null) return { monto: tarjeta.pago_minimo, estimado: false }
   return { monto: pagoMinimoEstimado(tarjeta), estimado: true }
 }
 
