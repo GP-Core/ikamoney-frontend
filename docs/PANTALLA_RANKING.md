@@ -13,7 +13,7 @@ Ruta: `/?ranking`. Muestra las deudas en el orden que devuelve `GET /api/v1/prio
 | `/?ranking&demo=error` | Falla la carga, con "Reintentar" |
 
 ## Conectar con el backend
-1. `.env`: `VITE_RANKING_USAR_EJEMPLO=false` y `VITE_API_URL=http://localhost:8000`.
+1. `.env`: `VITE_RANKING_USAR_EJEMPLO=false` y `VITE_API_URL=` (vacío; el proxy de Vite reenvía `/api` al backend en :8000).
 2. Backend levantado con `docker compose up --build` y un token guardado en el navegador (ver README del backend o `seed_demo.py`).
 3. Reiniciar `npm run dev` y abrir `/?ranking`.
 

@@ -1,7 +1,7 @@
 // Lógica de la pantalla de revisión (T32), sin React.
 // Una "fila" une los movimientos y los MSI que devuelve la IA en una sola lista editable.
 import type {
-  MovimientoExtraido, MsiExtraido, PayloadConfirmar, RespuestaExtraccion,
+  CupoExtraccion, MovimientoExtraido, MsiExtraido, PayloadConfirmar, RespuestaExtraccion,
 } from '../types/estadoCuenta'
 
 // ---------- Tipos ----------
@@ -171,6 +171,11 @@ const num = (v: unknown): number | null => {
   return typeof n === 'number' ? Math.round(n * 100) / 100 : null
 }
 
+function originalDeMovimiento(o: DatosFila): { fecha: string; concepto: string; monto: number } | null {
+  const monto = num(o.monto)
+  return o.fecha && monto !== null && monto > 0 ? { fecha: String(o.fecha), concepto: o.concepto.trim(), monto } : null
+}
+
 export function aPayload({ filas, tarjeta }: Pick<EstadoDatos, 'filas' | 'tarjeta'>): PayloadConfirmar {
   const origen = (f: Fila): 'extraido' | 'manual' => (f.origen === 'manual' ? 'manual' : 'extraido')
   return {
@@ -187,6 +192,7 @@ export function aPayload({ filas, tarjeta }: Pick<EstadoDatos, 'filas' | 'tarjet
     movimientos: filas.filter((f) => !f.esMsi).map((f) => ({
       fecha: String(f.fecha ?? ''), concepto: f.concepto.trim(), monto: num(f.monto),
       origen: origen(f), editadoPorUsuario: estadoDeFila(f) !== 'ia',
+      original: origen(f) === 'extraido' && f.original ? originalDeMovimiento(f.original) : null,
     })),
     msi: filas.filter((f) => f.esMsi).map((f) => ({
       descripcion: f.concepto.trim(), montoTotal: num(f.monto), meses: num(f.meses),
@@ -257,4 +263,42 @@ export function reducer(s: EstadoDatos, a: Accion): EstadoDatos {
     default:
       return s
   }
+}
+
+// ---------- Cupo de lecturas con IA (H-04) ----------
+/** ¿Se puede pedir una lectura con IA? Sin dato del cupo (aún cargando o sin red) se deja intentar: el backend decide. */
+export function puedeLeerConIa(cupo: CupoExtraccion | null): boolean {
+  return cupo === null || cupo.restantes > 0
+}
+
+/** Texto del cupo para la pantalla de subir; null mientras no se conoce. */
+export function textoCupo(cupo: CupoExtraccion | null): string | null {
+  if (cupo === null) return null
+  if (cupo.restantes <= 0) {
+    return `Ya usaste tus ${cupo.limite} lecturas automáticas gratis. Puedes capturar los datos a mano.`
+  }
+  return `Te ${cupo.restantes === 1 ? 'queda' : 'quedan'} ${cupo.restantes} de ${cupo.limite} lecturas automáticas gratis.`
+}
+
+/** Cupo después de una lectura exitosa, sin volver a pedirlo. */
+export function cupoTrasLectura(cupo: CupoExtraccion | null): CupoExtraccion | null {
+  if (cupo === null) return null
+  const usados = Math.min(cupo.usados + 1, cupo.limite)
+  return { ...cupo, usados, restantes: cupo.limite - usados }
+}
+
+// ---------- Fecha de corte ----------
+const dos = (n: number) => String(n).padStart(2, '0')
+export const aTextoFecha = (f: Date): string => `${f.getFullYear()}-${dos(f.getMonth() + 1)}-${dos(f.getDate())}`
+
+/**
+ * Fecha de corte que se propone: el último corte que ya pasó (hoy cuenta). /extraer solo trae el día de corte
+ * y el backend necesita la fecha completa; el usuario puede cambiarla. En meses cortos el día baja al último.
+ */
+export function fechaCortePropuesta(diaCorte: number | null, hoy: Date): string {
+  if (diaCorte === null || !Number.isInteger(diaCorte) || diaCorte < 1 || diaCorte > 31) return ''
+  const enMes = (anio: number, mes: number) => new Date(anio, mes, Math.min(diaCorte, new Date(anio, mes + 1, 0).getDate()))
+  const esteMes = enMes(hoy.getFullYear(), hoy.getMonth())
+  const hoySinHora = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+  return aTextoFecha(esteMes <= hoySinHora ? esteMes : enMes(hoy.getFullYear(), hoy.getMonth() - 1))
 }

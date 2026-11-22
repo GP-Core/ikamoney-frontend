@@ -2,6 +2,12 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// El frontend llama a /api en su propio origen: así la cookie de sesión (HttpOnly, SameSite=Strict) es del mismo
+// sitio y no "de terceros". En producción lo hace el rewrite de vercel.json; en desarrollo y en `npm run preview`,
+// este proxy hacia el backend local.
+// API_PROXY_TARGET cambia el destino si el backend corre en otro puerto (por ejemplo, para probar en paralelo).
+const proxyApi = { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://localhost:8000' } }
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -45,4 +51,6 @@ export default defineConfig({
       },
     }),
   ],
+  server: { proxy: proxyApi },
+  preview: { proxy: proxyApi },
 })

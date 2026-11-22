@@ -22,6 +22,8 @@ export interface MesBalance {
   /** Pagos mínimos de tarjetas + otras cuotas de deuda (T33). */
   tarjetas?: number
   libre: number
+  /** Dinero acumulado al cierre del mes: ahorro de las cuentas + los flujos hasta ese mes (T33). */
+  acumulado?: number
 }
 
 

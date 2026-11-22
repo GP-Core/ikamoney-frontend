@@ -254,3 +254,60 @@
     transition: none;
   }
 }
+
+/* Selector de horizonte (RF-40): 3, 6 o 12 meses. */
+.balance__columna-grafica {
+  grid-area: grafica;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.balance__horizonte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.balance__horizonte legend {
+  float: left;
+  margin-right: 8px;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.balance__horizonte-opcion {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--b-linea);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.balance__horizonte-opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.balance__horizonte-opcion--activa {
+  border-color: var(--b-hero);
+  background: var(--b-hero);
+  color: #fff;
+  font-weight: 700;
+}
+
+.balance__horizonte-opcion:focus-within {
+  outline: 2px solid var(--c-msi);
+  outline-offset: 2px;
+}

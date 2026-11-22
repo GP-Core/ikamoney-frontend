@@ -61,7 +61,7 @@ Se definen en el archivo `.env`, que **no se sube al repositorio**. En `.env.exa
 
 | Variable | Valor por defecto | Descripción |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:8000` | URL del backend, sin `/api` al final |
+| `VITE_API_URL` | *(vacío)* | URL del backend, sin `/api` al final. Vacío = el mismo origen de la app: `/api` lo reenvía el proxy de Vite (desarrollo) o `vercel.json` (producción) y la cookie de sesión HttpOnly funciona |
 
 Solo las variables que empiezan con `VITE_` se pueden leer desde el código (con `import.meta.env.VITE_...`). Vite las incrusta en el código al compilar, así que **nunca pongas secretos ahí**: cualquiera puede verlas en el navegador. Si cambias el `.env`, reinicia `npm run dev`.
 

@@ -1,8 +1,13 @@
 import type { ApiErrorBody } from '../types/api'
 import { leerToken } from './tokenStorage'
 
-/** URL base del backend. Se configura en .env con VITE_API_URL. */
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+/**
+ * URL base del backend. Vacía (lo normal) = el mismo origen que la app: /api lo reenvía al backend el proxy de
+ * Vite en desarrollo y el rewrite de vercel.json en producción. Así la cookie de sesión (HttpOnly,
+ * SameSite=Strict) es del mismo sitio. Solo con un backend en otro origen (y TOKEN_EN_RESPUESTA=true) se pone
+ * VITE_API_URL con su dirección.
+ */
+export const API_URL = import.meta.env.VITE_API_URL ?? ''
 
 /** Error lanzado cuando el backend responde con un código distinto de 2xx. */
 export class ApiError extends Error {
@@ -50,11 +55,12 @@ export async function apiFetch<T>(path: string, init: OpcionesApi = {}): Promise
   if (opciones.body && !(opciones.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
-  // Manejo de sesión (IC-10): el token viaja en el encabezado Authorization.
+  // Manejo de sesión (IC-10): con el backend real la sesión va en una cookie HttpOnly que el navegador manda
+  // solo; el encabezado Authorization solo se usa si hay un token guardado (modo de prueba o transición).
   const sesion = conToken ? leerToken() : null
-  if (sesion) headers.set('Authorization', `Bearer ${sesion.token}`)
+  if (sesion?.token) headers.set('Authorization', `Bearer ${sesion.token}`)
 
-  const response = await fetch(`${API_URL}/api${path}`, { ...opciones, headers })
+  const response = await fetch(`${API_URL}/api${path}`, { credentials: 'same-origin', ...opciones, headers })
 
   if (!response.ok) {
     if (response.status === 401 && sesion) alNoAutorizado?.()

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import BarraUso from '../components/BarraUso'
 import Button from '../components/Button'
+import AyudaTermino from '../components/AyudaTermino'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EncabezadoPagina from '../components/EncabezadoPagina'
 import EnlaceEscritura from '../components/EnlaceEscritura'
@@ -166,7 +167,10 @@ function TarjetaDetallePage() {
             <dd>{formatMoney(tarjeta.saldo_actual)}</dd>
           </div>
           <div className="datos__fila">
-            <dt>Pendiente de compras a MSI</dt>
+            <dt>
+              Pendiente de compras a MSI
+              <AyudaTermino termino="msi" />
+            </dt>
             <dd>{formatMoney(saldoMsiTarjeta(tarjeta))}</dd>
           </div>
           <div className="datos__fila">
@@ -174,39 +178,57 @@ function TarjetaDetallePage() {
             <dd>{formatMoney(tarjeta.limite_credito)}</dd>
           </div>
           <div className="datos__fila">
-            <dt>Disponible</dt>
+            <dt>
+              Disponible
+              <AyudaTermino termino="creditoDisponible" />
+            </dt>
             <dd>{formatMoney(disponibleTarjeta(tarjeta))}</dd>
           </div>
         </dl>
         <BarraUso proporcion={utilizacion(tarjeta)} etiqueta="Uso del límite (incluye MSI)" />
+        <p className="pagina__nota">
+          ¿Qué es el uso del límite? <AyudaTermino termino="usoLimite" />
+        </p>
       </section>
 
       <section className="ficha" aria-labelledby="pagos-titulo">
         <h2 id="pagos-titulo">Fechas y pagos</h2>
         <dl className="datos">
           <div className="datos__fila">
-            <dt>Fecha límite de pago</dt>
+            <dt>
+              Fecha límite de pago
+              <AyudaTermino termino="fechaLimitePago" />
+            </dt>
             <dd>
               {textoProximaFecha(tarjeta.dia_pago)}
               <span className="datos__nota">Día {tarjeta.dia_pago} de cada mes</span>
             </dd>
           </div>
           <div className="datos__fila">
-            <dt>Fecha de corte</dt>
+            <dt>
+              Fecha de corte
+              <AyudaTermino termino="fechaCorte" />
+            </dt>
             <dd>
               {textoProximaFecha(tarjeta.dia_corte)}
               <span className="datos__nota">Día {tarjeta.dia_corte} de cada mes</span>
             </dd>
           </div>
           <div className="datos__fila">
-            <dt>Pago para no generar intereses</dt>
+            <dt>
+              Pago para no generar intereses
+              <AyudaTermino termino="pagoNoIntereses" />
+            </dt>
             <dd>
               {formatMoney(pagoNoIntereses(tarjeta))}
               <span className="datos__nota">Saldo + mensualidades MSI del mes</span>
             </dd>
           </div>
           <div className="datos__fila">
-            <dt>Pago mínimo</dt>
+            <dt>
+              Pago mínimo
+              <AyudaTermino termino="pagoMinimo" />
+            </dt>
             <dd>
               {minimo.monto === null ? 'Sin calcular' : formatMoney(minimo.monto)}
               {minimo.estimado && (
@@ -217,7 +239,10 @@ function TarjetaDetallePage() {
             </dd>
           </div>
           <div className="datos__fila">
-            <dt>Tasa de interés anual</dt>
+            <dt>
+              Tasa de interés anual
+              <AyudaTermino termino="tasaAnual" />
+            </dt>
             <dd>{tarjeta.tasa_anual === null ? 'Sin registrar' : `${tarjeta.tasa_anual} %`}</dd>
           </div>
           {interes !== null && interes > 0 && (

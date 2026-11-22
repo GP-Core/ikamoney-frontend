@@ -1,31 +1,40 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ApiError, registrarAlNoAutorizado } from '../services/api'
-import { authService } from '../services/auth'
+import { MODO_PRUEBA, authService } from '../services/auth'
 import { limpiarDispositivo } from '../services/dispositivo'
 import { guardarCopia, leerCopia } from '../services/offline'
-import { borrarDatosLocales, guardarToken, leerToken } from '../services/tokenStorage'
+import {
+  borrarDatosLocales,
+  guardarToken,
+  hayCierrePendiente,
+  leerToken,
+  marcarCierrePendiente,
+} from '../services/tokenStorage'
 import type { LoginPayload, MotivoCierre, RegistroPayload, SesionResponse, Usuario } from '../types/auth'
 import { AuthContext } from './authContext'
 import type { AuthContextValue, EstadoSesion } from './authContext'
 
 /**
  * Maneja la sesión del usuario en toda la app:
- * - al abrir la app, recupera la sesión si el token sigue vigente;
- * - programa el cierre automático cuando el token expira;
+ * - al abrir la app, recupera la sesión preguntando a /auth/me (la cookie HttpOnly no se puede leer desde
+ *   JavaScript, así que solo el servidor sabe si sigue vigente; una pestaña nueva la recupera por la cookie);
+ * - programa el cierre automático cuando la sesión expira;
  * - cierra la sesión si el backend responde 401;
- * - al cerrar sesión, borra los datos guardados en el dispositivo (RN-06): token, almacenamiento
+ * - al cerrar sesión, borra los datos guardados en el dispositivo (RN-06): marca de sesión, almacenamiento
  *   local, copias de IndexedDB para consultar sin conexión (T60), cachés de datos y suscripción push.
+ *
+ * En el modo de prueba (VITE_AUTH_MOCK) no hay cookie: la marca de sesión en sessionStorage decide.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [estado, setEstado] = useState<EstadoSesion>(() => (leerToken() ? 'verificando' : 'anonimo'))
+  const [estado, setEstado] = useState<EstadoSesion>(() => (MODO_PRUEBA && !leerToken() ? 'anonimo' : 'verificando'))
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [motivoCierre, setMotivoCierre] = useState<MotivoCierre | null>(null)
   const temporizador = useRef<number | undefined>(undefined)
 
   const limpiarSesion = useCallback((motivo: MotivoCierre) => {
     window.clearTimeout(temporizador.current)
-    borrarDatosLocales() // el token se borra ya, antes que nada
+    borrarDatosLocales() // la marca de sesión se borra ya, antes que nada
     void limpiarDispositivo() // y el resto (IndexedDB, cachés, push) enseguida; nunca falla
     setUsuario(null)
     setEstado('anonimo')
@@ -42,7 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const abrirSesion = useCallback(
     (respuesta: SesionResponse) => {
+      // Con el backend real no viene token (va en la cookie): solo se guarda cuándo expira.
       const { expiraEn } = guardarToken(respuesta.access_token, respuesta.expira_en)
+      marcarCierrePendiente(false) // la sesión nueva reemplaza la cookie anterior
       void guardarCopia('usuario', respuesta.usuario) // para reabrir la sesión sin conexión (T60)
       programarExpiracion(expiraEn)
       setUsuario(respuesta.usuario)
@@ -58,28 +69,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => registrarAlNoAutorizado(null)
   }, [limpiarSesion])
 
-  // Al abrir la app: si hay un token vigente, se valida con /auth/me.
+  // Al abrir la app: se valida la sesión con /auth/me.
   useEffect(() => {
-    const guardado = leerToken()
-    if (!guardado) {
-      // Sin sesión no debe quedar nada del usuario anterior: si la app se cerró sin cerrar sesión,
-      // el token se perdió (sessionStorage) pero las copias de IndexedDB seguirían ahí (T60).
-      void limpiarDispositivo()
-      return
-    }
     let activo = true
-    authService
-      .obtenerUsuarioActual()
-      .then((datos) => {
+    const guardado = leerToken() // marca de esta pestaña; en una pestaña nueva no existe aunque la cookie sí
+
+    // Sin sesión no debe quedar nada del usuario anterior: si la app se cerró sin cerrar sesión, la marca se
+    // perdió (sessionStorage) pero las copias de IndexedDB seguirían ahí (T60).
+    async function sinSesion() {
+      await limpiarDispositivo()
+      if (activo) setEstado('anonimo')
+    }
+
+    async function iniciar() {
+      // Un cierre de sesión que no llegó al servidor (sin conexión) dejó viva la cookie, y solo el servidor
+      // puede quitarla: se reintenta antes que nada y esta pestaña no retoma la sesión.
+      if (!MODO_PRUEBA && hayCierrePendiente()) {
+        try {
+          await authService.cerrarSesion()
+          marcarCierrePendiente(false)
+        } catch {
+          // Sigue sin conexión: se reintenta la próxima vez que abra la app.
+        }
+        return sinSesion()
+      }
+      if (MODO_PRUEBA && !guardado) return sinSesion()
+
+      try {
+        const { expira_en: segundosRestantes, ...datos } = await authService.obtenerUsuarioActual()
         if (!activo) return
+        // El servidor es quien sabe cuánto le queda a la sesión. Se guarda la marca antes de tocar las copias
+        // locales, porque offline.ts no lee ni escribe sin ella.
+        let expiraEn = guardado?.expiraEn
+        if (segundosRestantes !== undefined) expiraEn = guardarToken(guardado?.token, segundosRestantes).expiraEn
+        // Si la cookie es de otro usuario que el de las copias guardadas aquí, esas copias no son suyas.
+        const copia = await leerCopia<Usuario>('usuario')
+        if (!activo) return
+        if (copia && copia.datos.id !== datos.id) {
+          await limpiarDispositivo()
+          if (expiraEn) guardarToken(guardado?.token, Math.max(1, Math.round((expiraEn - Date.now()) / 1000)))
+        }
         setUsuario(datos)
         setEstado('autenticado')
-        programarExpiracion(guardado.expiraEn)
+        if (expiraEn) programarExpiracion(expiraEn)
         void guardarCopia('usuario', datos)
-      })
-      .catch(async (error) => {
-        // Sin red no se puede validar, pero el token sigue vigente: se conserva la sesión (T60).
-        if (error instanceof TypeError || !navigator.onLine) {
+      } catch (error) {
+        if (!activo) return
+        // Sin red no se puede validar, pero la sesión de esta pestaña sigue vigente: se conserva (T60).
+        if (guardado && (error instanceof TypeError || !navigator.onLine)) {
           const copia = await leerCopia<Usuario>('usuario')
           if (copia) {
             if (!activo) return
@@ -89,8 +126,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return
           }
         }
-        if (activo) limpiarSesion('expirada')
-      })
+        // Había sesión y ya no sirve: se avisa. Quien solo abrió la app sin sesión no ve ningún aviso.
+        if (guardado) limpiarSesion('expirada')
+        else await sinSesion()
+      }
+    }
+
+    void iniciar()
     return () => {
       activo = false
     }
@@ -110,12 +152,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const cerrarSesion = useCallback(
     async (motivo: MotivoCierre = 'manual') => {
+      let llegoAlServidor = true
       try {
         await authService.cerrarSesion()
       } catch {
         // Aunque el backend no responda, la sesión se cierra en el dispositivo.
+        llegoAlServidor = false
       }
       limpiarSesion(motivo)
+      // La cookie HttpOnly sigue viva si el servidor no se enteró: se recuerda para reintentarlo. Va después
+      // de limpiarSesion, que borra las claves `ikamoney:*` (esta no lo es).
+      if (!llegoAlServidor && !MODO_PRUEBA) marcarCierrePendiente(true)
     },
     [limpiarSesion],
   )
@@ -127,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Primero el servidor: si falla, lanza el error y en el dispositivo no se borra nada.
       await authService.eliminarCuenta({ contrasena })
       await limpiarDispositivo()
-      // Sin authService.cerrarSesion(): la cuenta ya no existe y su token dejó de servir.
+      // Sin authService.cerrarSesion(): la cuenta ya no existe y el servidor ya borró la cookie.
       limpiarSesion('cuenta_eliminada')
     },
     [limpiarSesion],

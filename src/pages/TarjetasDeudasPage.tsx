@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
+import AyudaTermino from '../components/AyudaTermino'
 import BarraUso from '../components/BarraUso'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -114,7 +115,10 @@ function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => v
           </div>
         )}
         <div className="datos__fila">
-          <dt>Tasa anual</dt>
+          <dt>
+            Tasa anual
+            <AyudaTermino termino="tasaAnual" />
+          </dt>
           <dd>{deuda.tasa_anual === null ? 'Sin registrar' : `${deuda.tasa_anual} %`}</dd>
         </div>
         {deuda.dia_pago !== null && deuda.estatus === 'activa' && (
@@ -194,6 +198,11 @@ function TarjetasDeudasPage() {
       <FechaCopia fecha={copiaDe} />
       {(mensaje ?? aviso) && <FormAlert tipo="sano">{mensaje ?? aviso}</FormAlert>}
       {errorAccion && <FormAlert tipo="critico">{errorAccion}</FormAlert>}
+
+      <p className="pagina__nota">
+        ¿Qué es el crédito disponible? <AyudaTermino termino="creditoDisponible" /> ¿Y los meses sin intereses?{' '}
+        <AyudaTermino termino="msi" />
+      </p>
 
       <div className="pagina__acciones">
         <EnlaceEscritura to="/tarjetas/nueva" className="boton boton--primario">

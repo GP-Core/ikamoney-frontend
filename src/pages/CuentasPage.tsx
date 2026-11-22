@@ -14,7 +14,7 @@ import type { Cuenta, MovimientoCuenta, TipoCuentaNueva, TipoMovimientoCuenta } 
 import { mensajeError } from '../utils/errores'
 import { formatMoney } from '../utils/formatMoney'
 import { mesActual, mesLargo, sumarMeses } from '../utils/formatMes'
-import './MovementsPage.css'
+import './MovimientosPage.css'
 import './CuentasPage.css'
 
 const dinero = (n: number) => formatMoney(n, 'MXN', 'es-MX')

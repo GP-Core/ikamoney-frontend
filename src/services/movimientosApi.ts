@@ -12,6 +12,8 @@ export interface MovimientosService {
   actualizar(id: string, datos: MovimientoEdicion): Promise<Movimiento>
   eliminar(id: string): Promise<void>
   listarCategorias(): Promise<Categoria[]>
+  /** Crea una categoría propia (1 a 60 caracteres). Responde CATEGORIA_DUPLICADA si el nombre ya existe. */
+  crearCategoria(nombre: string): Promise<Categoria>
 }
 
 const json = (metodo: 'POST' | 'PUT', datos: unknown): RequestInit => ({ method: metodo, body: JSON.stringify(datos) })
@@ -25,4 +27,5 @@ export const movimientosApi: MovimientosService = {
     await apiFetch<unknown>(`/v1/movimientos/${encodeURIComponent(id)}`, { method: 'DELETE' })
   },
   listarCategorias: () => apiFetch<Categoria[]>('/v1/categorias'),
+  crearCategoria: (nombre) => apiFetch<Categoria>('/v1/categorias', json('POST', { nombre })),
 }

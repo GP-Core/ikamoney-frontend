@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useBalance } from '../hooks/useBalance'
 import { useScore } from '../hooks/useScore'
 import { mesActual, mesLargo } from '../utils/formatMes'
+import { HORIZONTE_DEFECTO, recortarMeses } from '../utils/balanceVista'
 import { efectoDe, TEXTO_TOPE, tonoDelNivel } from '../utils/score'
 import './BalancePage.css'
 import './HomePage.css'
@@ -92,7 +93,7 @@ function BloqueBalance({ mes }: { mes: string }) {
       {estado === 'ok' && data && data.tiene_datos && (
         <div className="balance__contenido">
           <ResumenMes datos={data.resumen} />
-          <CompromisosMsi meses={[data.resumen, ...data.proyeccion]} msi={data.msi} />
+          <CompromisosMsi meses={recortarMeses([data.resumen, ...data.proyeccion], HORIZONTE_DEFECTO)} msi={data.msi} />
           <Link className="home__ver-mas" to="/balance">
             Ver balance y proyección
           </Link>

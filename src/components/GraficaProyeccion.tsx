@@ -1,6 +1,7 @@
 import { useId, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import type { MesBalance } from '../types/balance'
+import { fraseDeMeses, mesesEnNegativo } from '../utils/balanceVista'
 import { mesCorto, mesLargo, pesosCompacto } from '../utils/formatMes'
 import { pesos } from '../utils/pesos'
 import './GraficaProyeccion.css'
@@ -11,9 +12,10 @@ interface GraficaProyeccionProps {
 }
 
 // Geometría del SVG (se escala con el ancho de la pantalla gracias al viewBox).
-const ANCHO = 340
-const ALTO = 220
-const MARGEN = { izq: 42, der: 10, arriba: 14, abajo: 28 }
+const ANCHO_BASE = 340
+const ANCHO_POR_MES = 40 // con 12 meses la gráfica crece y se desplaza, para que se lea el "Faltan" de cada mes
+const ALTO = 232
+const MARGEN = { izq: 42, der: 10, arriba: 14, abajo: 40 }
 
 const egresos = (m: MesBalance) => m.gastos_fijos + m.gastos_variables + (m.tarjetas ?? 0) + m.msi
 
@@ -31,6 +33,7 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
   const idPatron = `msi-${useId().replace(/:/g, '')}`
   const [elegido, setElegido] = useState(0)
 
+  const ANCHO = Math.max(ANCHO_BASE, MARGEN.izq + MARGEN.der + meses.length * ANCHO_POR_MES)
   const areaAncho = ANCHO - MARGEN.izq - MARGEN.der
   const areaAlto = ALTO - MARGEN.arriba - MARGEN.abajo
   const { techo, marcas } = escalaEjeY(Math.max(...meses.flatMap((m) => [m.ingresos, egresos(m)])))
@@ -42,6 +45,7 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
   const anchoBarra = columna * 0.56
 
   const detalle = meses[Math.min(elegido, meses.length - 1)]
+  const hayNegativos = mesesEnNegativo(meses).length > 0
   const puntosIngreso = meses.map((m, i) => `${centro(i)},${y(m.ingresos)}`).join(' ')
 
   function alTeclear(evento: KeyboardEvent<SVGRectElement>, i: number) {
@@ -56,6 +60,11 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
       <h2 id="grafica-titulo" className="grafica__titulo">
         Cómo se ven tus próximos {meses.length} meses
       </h2>
+
+      <p className={`grafica__resumen ${hayNegativos ? 'grafica__resumen--falta' : ''}`} role="status">
+        {hayNegativos && <span aria-hidden="true">⚠ </span>}
+        {fraseDeMeses(meses)}
+      </p>
 
       <ul className="grafica__leyenda">
         <li>
@@ -75,7 +84,8 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
         </li>
       </ul>
 
-      <svg className="grafica__svg" viewBox={`0 0 ${ANCHO} ${ALTO}`} role="group" aria-label="Gráfica de proyección por mes. Toca un mes para ver su detalle.">
+      <div className="grafica__scroll">
+      <svg className="grafica__svg" style={{ minWidth: ANCHO > ANCHO_BASE ? ANCHO : undefined }} viewBox={`0 0 ${ANCHO} ${ALTO}`} role="group" aria-label="Gráfica de proyección por mes. Toca un mes para ver su detalle.">
         <defs>
           <pattern id={idPatron} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <rect width="6" height="6" className="grafica__msi-fondo" />
@@ -118,11 +128,17 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
               <text
                 className={`grafica__mes ${i === elegido ? 'grafica__mes--elegido' : ''} ${m.libre < 0 ? 'grafica__mes--negativo' : ''}`}
                 x={centro(i)}
-                y={ALTO - 9}
+                y={ALTO - 22}
                 textAnchor="middle"
               >
                 {mesCorto(m.mes)}
               </text>
+              {m.libre < 0 && (
+                <g className="grafica__falta">
+                  <polygon points={`${centro(i) - 15},${ALTO - 6} ${centro(i) - 9},${ALTO - 6} ${centro(i) - 12},${ALTO - 13}`} />
+                  <text x={centro(i) - 7} y={ALTO - 6}>Faltan</text>
+                </g>
+              )}
             </g>
           )
         })}
@@ -150,6 +166,7 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
           />
         ))}
       </svg>
+      </div>
 
       <div className="grafica__detalle" aria-live="polite">
         <h3 className="grafica__detalle-titulo">{mesLargo(detalle.mes)}</h3>
@@ -188,6 +205,12 @@ function GraficaProyeccion({ meses }: GraficaProyeccionProps) {
             </dt>
             <dd>{pesos(detalle.msi)}</dd>
           </div>
+          {detalle.acumulado !== undefined && (
+            <div>
+              <dt>Acumulado</dt>
+              <dd className={detalle.acumulado < 0 ? 'grafica__negativo' : undefined}>{pesos(detalle.acumulado)}</dd>
+            </div>
+          )}
           <div className="grafica__total">
             <dt>{detalle.libre < 0 ? 'Faltan' : 'Libre'}</dt>
             <dd className={detalle.libre < 0 ? 'grafica__negativo' : 'grafica__positivo'}>{pesos(Math.abs(detalle.libre))}</dd>

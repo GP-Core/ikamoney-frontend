@@ -18,7 +18,7 @@ const PLANES = [
   { mensualidad: 550, restantes: 8 },
 ]
 
-const MESES_PROYECCION = 5
+const MESES_PROYECCION = 11 // el selector de horizonte llega a 12 meses contando el consultado
 
 function msiDelMes(indice: number): number {
   return PLANES.filter((p) => p.restantes > indice).reduce((s, p) => s + p.mensualidad, 0)

@@ -1,8 +1,12 @@
 import type { PlanMsiPayload, TarjetaPayload } from '../types/finanzas'
-import type { DestinoTarjeta, PayloadConfirmar, RespuestaExtraccion, ResultadoGuardado } from '../types/estadoCuenta'
+import type {
+  CupoExtraccion, DestinoTarjeta, EnvioConfirmacion, PayloadConfirmar, RespuestaExtraccion, ResultadoGuardado,
+} from '../types/estadoCuenta'
 import { calcularMensualidad } from '../utils/finanzas'
 import { mensajeError } from '../utils/errores'
 import { apiFetch, ApiError } from './api'
+import { MODO_PRUEBA } from './auth'
+import { escribir } from './escribir'
 import { finanzasService } from './finanzas'
 
 /** POST /api/v1/estados-cuenta/extraer: no guarda nada, solo devuelve lo que leyó la IA (T31). */
@@ -15,6 +19,11 @@ export function extraerEstadoCuenta(archivoPdf: File, opciones: { signal?: Abort
     body: datos,
     signal: opciones.signal,
   })
+}
+
+/** GET /api/v1/estados-cuenta/cupo: cuántas lecturas con IA gratis le quedan al usuario (H-04). */
+export function obtenerCupo(): Promise<CupoExtraccion> {
+  return apiFetch<CupoExtraccion>('/v1/estados-cuenta/cupo')
 }
 
 /** Convierte cualquier fallo de la extracción en un ApiError con mensaje para el usuario. */
@@ -30,7 +39,7 @@ export function errorDeExtraccion(error: unknown): ApiError {
   return new ApiError(0, 'Algo salió mal. Puedes capturar los datos a mano.')
 }
 
-/** Errores donde tiene sentido volver a intentar con el mismo PDF. */
+/** Errores donde tiene sentido volver a intentar con el mismo PDF (CUPO_AGOTADO y 429 no: reintentar no sirve). */
 export function esReintentable(error: ApiError): boolean {
   return error.codigo === 'IA_NO_DISPONIBLE' || error.codigo === 'SIN_CONEXION'
 }
@@ -56,13 +65,45 @@ export function faltantesDeTarjetaNueva(tarjeta: PayloadConfirmar['tarjeta']): s
 }
 
 /**
- * Guarda lo que el usuario revisó, con lo que el backend ya tiene: actualiza o crea la tarjeta y crea sus
- * compras a MSI. Los movimientos sueltos NO se guardan: falta POST /api/v1/estados-cuenta/confirmar (B5 del
- * backend). Cuando exista, solo cambia esta función.
- *
- * No es atómico: si falla una compra a MSI, la tarjeta y las anteriores ya quedaron guardadas, y el error lo dice.
+ * Guarda lo que el usuario revisó con UNA sola llamada: POST /api/v1/estados-cuenta/confirmar crea o actualiza
+ * la tarjeta, el estado de cuenta, las compras a MSI y los movimientos en una transacción (todo o nada). La
+ * clave de confirmación hace que reintentar el mismo envío no duplique nada (N1).
  */
-export async function guardarEstadoCuenta(payload: PayloadConfirmar, destino: DestinoTarjeta): Promise<ResultadoGuardado> {
+export async function guardarEstadoCuenta(
+  payload: PayloadConfirmar, destino: DestinoTarjeta, envio: EnvioConfirmacion,
+): Promise<ResultadoGuardado> {
+  // En modo de prueba (VITE_AUTH_MOCK) no hay backend: se guarda en el almacén local, sin transacción.
+  if (MODO_PRUEBA) return guardarEnModoPrueba(payload, destino)
+  if (destino.tipo === 'nueva') {
+    const faltan = faltantesDeTarjetaNueva(payload.tarjeta)
+    if (faltan.length > 0) throw new ApiError(0, `Para crear la tarjeta falta ${faltan.join(', ')}.`)
+  }
+  const r = await escribir(() =>
+    apiFetch<{ estadoCuentaId: number; tarjetaId: number; tarjetaNueva: boolean; planesCreados: number; movimientosGuardados: number }>(
+      '/v1/estados-cuenta/confirmar',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          claveConfirmacion: envio.claveConfirmacion,
+          destino: destino.tipo === 'existente'
+            ? { tipo: 'existente', tarjetaId: destino.id }
+            : { tipo: 'nueva', nombre: destino.nombre },
+          fechaCorte: envio.fechaCorte,
+          tarjeta: payload.tarjeta ?? {},
+          movimientos: payload.movimientos,
+          msi: payload.msi,
+        }),
+      },
+    ),
+  )
+  return r
+}
+
+/**
+ * Solo para VITE_AUTH_MOCK: guarda la tarjeta y las compras a MSI con el servicio de prueba. No es atómico y
+ * no guarda movimientos; con el backend real se usa /confirmar.
+ */
+async function guardarEnModoPrueba(payload: PayloadConfirmar, destino: DestinoTarjeta): Promise<ResultadoGuardado> {
   const extraida = payload.tarjeta
   let tarjetaId: number
 
@@ -124,6 +165,6 @@ export async function guardarEstadoCuenta(payload: PayloadConfirmar, destino: De
     tarjetaId,
     tarjetaNueva: destino.tipo === 'nueva',
     planesCreados,
-    movimientosSinGuardar: payload.movimientos.length,
+    movimientosGuardados: 0,
   }
 }

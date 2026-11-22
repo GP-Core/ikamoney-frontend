@@ -45,11 +45,13 @@ export interface Tarjeta {
   /** Porcentaje anual, por ejemplo 60 = 60 %. */
   tasa_anual: number | null
   activa: boolean
+  /** Lo que manda el backend (límite - saldo - pendiente de MSI). Si falta, se calcula con `disponibleTarjeta`. */
+  credito_disponible?: number
   planes_msi: PlanMsi[]
 }
 
 /** POST /api/v1/tarjetas y PUT /api/v1/tarjetas/{id}. El pago mínimo no se captura: se estima (fórmula 6 de T25). */
-export type TarjetaPayload = Omit<Tarjeta, 'id' | 'activa' | 'planes_msi'>
+export type TarjetaPayload = Omit<Tarjeta, 'id' | 'activa' | 'planes_msi' | 'credito_disponible'>
 
 export type TipoDeuda =
   | 'prestamo_personal'

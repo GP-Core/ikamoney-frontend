@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
-import MovementForm from '../components/MovementForm'
-import MovementList from '../components/MovementList'
+import MovimientoFormulario from '../components/MovimientoFormulario'
+import MovimientosLista from '../components/MovimientosLista'
 import FechaCopia from '../components/FechaCopia'
 import { useConexion } from '../hooks/useConexion'
 import { useCategorias, useMovimientos } from '../hooks/useFinanzas'
@@ -10,16 +10,16 @@ import type { MovimientoDelMes, MovimientoPayload, TipoMovimiento } from '../typ
 import { mensajeError } from '../utils/errores'
 import { formatMoney } from '../utils/formatMoney'
 import { mesActual, mesLargo, sumarMeses } from '../utils/formatMes'
-import './MovementsPage.css'
+import './MovimientosPage.css'
 
 const dinero = (n: number) => formatMoney(n, 'MXN', 'es-MX')
 
 /** Pantalla de movimientos: resumen del mes, listados de gastos e ingresos y formularios de alta y edición. */
-function MovementsPage() {
+function MovimientosPage() {
   const enLinea = useConexion()
   const [mes, setMes] = useState(mesActual)
   const { datos, copiaDe, error, cargando, recargar } = useMovimientos(mes)
-  const { datos: categorias } = useCategorias()
+  const { datos: categorias, recargar: recargarCategorias } = useCategorias()
   const [pestana, setPestana] = useState<TipoMovimiento>('gasto')
   // null = cerrado; con "movimiento" es edición, sin él es alta.
   const [formulario, setFormulario] = useState<{ movimiento?: MovimientoDelMes } | null>(null)
@@ -55,6 +55,12 @@ function MovementsPage() {
     setAviso(`${payload.tipo === 'gasto' ? 'Gasto' : 'Ingreso'} ${editando ? 'actualizado' : 'guardado'}`)
     setFormulario(null)
     recargar()
+  }
+
+  async function crearCategoria(nombre: string) {
+    const creada = await movimientosService.crearCategoria(nombre)
+    recargarCategorias()
+    return creada
   }
 
   async function confirmarEliminacion() {
@@ -134,7 +140,7 @@ function MovementsPage() {
             ))}
           </div>
 
-          <MovementList
+          <MovimientosLista
             tipo={pestana}
             movimientos={delTipo(pestana)}
             soloLectura={!enLinea}
@@ -165,11 +171,12 @@ function MovementsPage() {
         onClose={() => setFormulario(null)}
       >
         {formulario && (
-          <MovementForm
+          <MovimientoFormulario
             tipo={formulario.movimiento?.tipo ?? pestana}
             inicial={formulario.movimiento}
             categorias={categorias}
             onGuardar={guardar}
+            onCrearCategoria={crearCategoria}
             onCancelar={() => setFormulario(null)}
           />
         )}
@@ -205,4 +212,4 @@ function MovementsPage() {
   )
 }
 
-export default MovementsPage
+export default MovimientosPage

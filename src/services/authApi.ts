@@ -6,7 +6,7 @@ import type {
   RegistroPayload,
   RestablecerPayload,
   SesionResponse,
-  Usuario,
+  UsuarioConSesion,
 } from '../types/auth'
 import { apiFetch } from './api'
 
@@ -17,7 +17,7 @@ import { apiFetch } from './api'
 export interface AuthService {
   registrar(datos: RegistroPayload): Promise<SesionResponse>
   iniciarSesion(datos: LoginPayload): Promise<SesionResponse>
-  obtenerUsuarioActual(): Promise<Usuario>
+  obtenerUsuarioActual(): Promise<UsuarioConSesion>
   cerrarSesion(): Promise<void>
   recuperarContrasena(datos: RecuperarPayload): Promise<MensajeResponse>
   restablecerContrasena(datos: RestablecerPayload): Promise<void>
@@ -29,6 +29,7 @@ export interface AuthService {
  * Implementación real con los endpoints /api/auth/* (ver docs/contrato-api-auth.md).
  * La contraseña viaja en texto dentro de HTTPS y el backend la guarda con hash
  * (bcrypt o Argon2, IC-11): el frontend nunca la guarda ni la cifra por su cuenta.
+ * La sesión va en una cookie HttpOnly que pone el backend: aquí no se lee ni se guarda ningún token.
  */
 export const authApi: AuthService = {
   registrar: (datos) =>
@@ -45,7 +46,7 @@ export const authApi: AuthService = {
       conToken: false,
     }),
 
-  obtenerUsuarioActual: () => apiFetch<Usuario>('/auth/me'),
+  obtenerUsuarioActual: () => apiFetch<UsuarioConSesion>('/auth/me'),
 
   cerrarSesion: () => apiFetch<void>('/auth/logout', { method: 'POST' }),
 

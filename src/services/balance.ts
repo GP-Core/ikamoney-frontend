@@ -4,9 +4,7 @@ import { balanceEjemplo, leerEscenario } from './balanceEjemplo'
 
 export const USANDO_EJEMPLO = import.meta.env.VITE_USAR_DATOS_EJEMPLO !== 'false'
 
-/** Meses que se muestran, contando el consultado. */
-const MESES = 6
-/** Meses que se piden al backend (máximo de T33), para calcular el resumen de MSI completo. */
+/** Meses que se piden al backend (máximo de T33): el selector de horizonte (3, 6 o 12) recorta en pantalla. */
 const MESES_API = 24
 
 // Forma de GET /api/v1/proyeccion (T33).
@@ -21,6 +19,7 @@ interface MesApi {
   otras_cuotas: number
   flujo: number
   msi_activos: number
+  acumulado: number
 }
 
 interface ProyeccionApi {
@@ -38,6 +37,7 @@ function aMesBalance(m: MesApi): MesBalance {
     msi: m.mensualidades_msi,
     tarjetas: m.pagos_tarjetas + m.otras_cuotas,
     libre: m.flujo,
+    acumulado: m.acumulado,
   }
 }
 
@@ -49,7 +49,7 @@ export async function obtenerBalance(mes: string): Promise<BalanceResponse> {
     return balanceEjemplo(mes, escenario)
   }
 
-  const r = await apiFetch<ProyeccionApi>(`/v1/proyeccion?meses=${MESES_API}&ahorro_inicial=0`)
+  const r = await apiFetch<ProyeccionApi>(`/v1/proyeccion?meses=${MESES_API}`)
 
   if (r.estado === 'sin_datos' || r.proyeccion.length === 0) {
     const cero: MesBalance = { mes, ingresos: 0, gastos_fijos: 0, gastos_variables: 0, msi: 0, libre: 0 }
@@ -61,7 +61,7 @@ export async function obtenerBalance(mes: string): Promise<BalanceResponse> {
     throw new Error('Solo hay proyección desde el mes actual hasta 24 meses adelante.')
   }
 
-  const visibles = r.proyeccion.slice(desde, desde + MESES).map(aMesBalance)
+  const visibles = r.proyeccion.slice(desde).map(aMesBalance)   // todos: la pantalla recorta según el horizonte
   const conMsi = r.proyeccion.filter((m) => m.msi_activos > 0)
 
   return {

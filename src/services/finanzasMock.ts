@@ -49,6 +49,21 @@ function estatusPlan(datos: PlanMsiPayload): PlanMsi['estatus'] {
   return datos.mensualidades_pagadas >= datos.num_mensualidades ? 'liquidado' : 'activo'
 }
 
+/** Misma regla que el backend: el pendiente del plan no puede rebasar el crédito disponible de la tarjeta. */
+function validarCredito(datos: DatosMock, tarjetaId: number, payload: PlanMsiPayload, planId?: number): void {
+  const tarjeta = datos.tarjetas.find((t) => t.id === tarjetaId)
+  if (!tarjeta || estatusPlan(payload) !== 'activo') return
+  const pendiente = (p: { num_mensualidades: number; mensualidades_pagadas: number; monto_mensualidad: number }) =>
+    Math.max(p.num_mensualidades - p.mensualidades_pagadas, 0) * p.monto_mensualidad
+  const otros = datos.planes
+    .filter((p) => p.tarjeta_id === tarjetaId && p.estatus === 'activo' && p.id !== planId)
+    .reduce((total, p) => total + pendiente(p), 0)
+  const disponible = Math.max(tarjeta.limite_credito - tarjeta.saldo_actual - otros, 0)
+  if (pendiente(payload) > disponible + 0.005) {
+    throw new ApiError(422, 'La compra no cabe en el crédito disponible de la tarjeta.', 'CREDITO_INSUFICIENTE')
+  }
+}
+
 function estatusDeuda(datos: DeudaPayload): Deuda['estatus'] {
   return datos.saldo_actual <= 0.005 ? 'liquidada' : 'activa'
 }
@@ -102,6 +117,7 @@ export const finanzasMock: FinanzasService = {
     await esperar()
     const datos = leer()
     if (!datos.tarjetas.some((t) => t.id === tarjetaId)) throw noEncontrado()
+    validarCredito(datos, tarjetaId, payload)
     const plan: PlanMsi = {
       ...payload,
       id: ++datos.ultimoId,
@@ -119,6 +135,7 @@ export const finanzasMock: FinanzasService = {
     const datos = leer()
     const indice = datos.planes.findIndex((p) => p.id === id)
     if (indice < 0) throw noEncontrado()
+    validarCredito(datos, datos.planes[indice].tarjeta_id, payload, id)
     datos.planes[indice] = { ...datos.planes[indice], ...payload, estatus: estatusPlan(payload) }
     guardar(datos)
     return datos.planes[indice]

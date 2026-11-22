@@ -13,9 +13,9 @@ import type {
 import { mensajeError } from '../utils/errores'
 import { todayISO } from '../utils/formatDate'
 import { leerMonto, validarMovimiento } from '../utils/validarMovimiento'
-import './MovementForm.css'
+import './MovimientoFormulario.css'
 
-interface MovementFormProps {
+interface MovimientoFormularioProps {
   tipo: TipoMovimiento
   /** Si viene un movimiento, el formulario es de edición. */
   inicial?: Movimiento
@@ -23,23 +23,29 @@ interface MovementFormProps {
   categorias: Categoria[] | null
   /** Guarda el movimiento. Si lanza un error, el formulario lo muestra y se queda abierto. */
   onGuardar: (datos: MovimientoPayload) => Promise<void>
+  /** Crea una categoría propia y devuelve la creada (la página recarga la lista). */
+  onCrearCategoria: (nombre: string) => Promise<Categoria>
   onCancelar: () => void
 }
 
 type Campo = keyof ValoresMovimiento
+
+/** Valor de la opción del selector que abre el alta de una categoría propia. */
+const NUEVA = '__nueva__'
 
 const FRECUENCIAS_INGRESO: { valor: Frecuencia; texto: string }[] = [
   { valor: 'unico', texto: 'Una sola vez' },
   { valor: 'semanal', texto: 'Cada semana' },
   { valor: 'quincenal', texto: 'Cada quincena' },
   { valor: 'mensual', texto: 'Cada mes' },
+  { valor: 'anual', texto: 'Cada año' },
 ]
 
 /** Un gasto fijo siempre se repite; uno variable es siempre único (regla del backend). */
 const FRECUENCIAS_GASTO_FIJO = FRECUENCIAS_INGRESO.filter((f) => f.valor !== 'unico')
 
 /** Formulario de alta y edición de ingreso o gasto, con validaciones. */
-function MovementForm({ tipo, inicial, categorias, onGuardar, onCancelar }: MovementFormProps) {
+function MovimientoFormulario({ tipo, inicial, categorias, onGuardar, onCrearCategoria, onCancelar }: MovimientoFormularioProps) {
   const esGasto = tipo === 'gasto'
   const formRef = useRef<HTMLFormElement>(null)
   const [valores, setValores] = useState<ValoresMovimiento>({
@@ -53,6 +59,10 @@ function MovementForm({ tipo, inicial, categorias, onGuardar, onCancelar }: Move
   const [errores, setErrores] = useState<ErroresMovimiento>({})
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  // Alta de categoría propia: null = cerrado; si no, el nombre que se va escribiendo.
+  const [nuevaCategoria, setNuevaCategoria] = useState<string | null>(null)
+  const [errorCategoria, setErrorCategoria] = useState<string | null>(null)
+  const [creandoCategoria, setCreandoCategoria] = useState(false)
 
   // Revisa un solo campo (al salir de él o mientras se corrige).
   function revisarCampo(nombre: Campo, siguiente: ValoresMovimiento = valores) {
@@ -69,6 +79,26 @@ function MovementForm({ tipo, inicial, categorias, onGuardar, onCancelar }: Move
     setValores(siguiente)
     if (errores[nombre]) revisarCampo(nombre, siguiente)
     if (nombre === 'frecuencia' && errores.fecha) revisarCampo('fecha', siguiente)
+  }
+
+  async function agregarCategoria() {
+    const nombre = (nuevaCategoria ?? '').trim()
+    if (nombre.length < 1 || nombre.length > 60) {
+      setErrorCategoria('Escribe un nombre de 1 a 60 caracteres.')
+      return
+    }
+    setCreandoCategoria(true)
+    setErrorCategoria(null)
+    try {
+      const creada = await onCrearCategoria(nombre)
+      setValores((previos) => ({ ...previos, categoria_id: String(creada.id) }))
+      setErrores((previos) => ({ ...previos, categoria_id: undefined }))
+      setNuevaCategoria(null)
+    } catch (error) {
+      setErrorCategoria(mensajeError(error))
+    } finally {
+      setCreandoCategoria(false)
+    }
   }
 
   async function enviar(evento: FormEvent) {
@@ -130,7 +160,7 @@ function MovementForm({ tipo, inicial, categorias, onGuardar, onCancelar }: Move
 
       <div className="mform__field">
         <label htmlFor="mf-concepto">Concepto</label>
-        <input {...campo('concepto')} maxLength={60} autoComplete="off" placeholder="Ej. Renta, Sueldo, Súper" />
+        <input {...campo('concepto')} maxLength={120} autoComplete="off" placeholder="Ej. Renta, Sueldo, Súper" />
         {error('concepto')}
       </div>
 
@@ -144,15 +174,62 @@ function MovementForm({ tipo, inicial, categorias, onGuardar, onCancelar }: Move
         <>
           <div className="mform__field">
             <label htmlFor="mf-categoria_id">Categoría</label>
-            <select {...campo('categoria_id')} disabled={categorias === null}>
+            <select
+              {...campo('categoria_id')}
+              value={nuevaCategoria === null ? valores.categoria_id : NUEVA}
+              onChange={(e) => {
+                if (e.target.value === NUEVA) setNuevaCategoria('')
+                else {
+                  setNuevaCategoria(null)
+                  setErrorCategoria(null)
+                  cambiar('categoria_id', e.target.value)
+                }
+              }}
+              disabled={categorias === null}
+            >
               <option value="">{categorias === null ? 'Cargando categorías…' : 'Elige una categoría'}</option>
               {categorias?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nombre}
                 </option>
               ))}
+              <option value={NUEVA}>+ Nueva categoría</option>
             </select>
             {error('categoria_id')}
+            {nuevaCategoria !== null && (
+              <div className="mform__nueva">
+                <label htmlFor="mf-nueva-categoria">Nombre de la categoría</label>
+                <input
+                  id="mf-nueva-categoria"
+                  value={nuevaCategoria}
+                  maxLength={60}
+                  autoComplete="off"
+                  placeholder="Ej. Mascotas"
+                  aria-invalid={Boolean(errorCategoria)}
+                  aria-describedby={errorCategoria ? 'mf-nueva-categoria-error' : undefined}
+                  onChange={(e) => setNuevaCategoria(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      void agregarCategoria()
+                    }
+                  }}
+                />
+                {errorCategoria && (
+                  <p className="mform__error" id="mf-nueva-categoria-error" role="alert">
+                    <span aria-hidden="true">⚠</span> {errorCategoria}
+                  </p>
+                )}
+                <div className="mform__actions">
+                  <button type="button" className="btn btn--ghost" onClick={() => setNuevaCategoria(null)} disabled={creandoCategoria}>
+                    Cancelar
+                  </button>
+                  <button type="button" className="btn btn--primary" onClick={() => void agregarCategoria()} disabled={creandoCategoria}>
+                    {creandoCategoria ? 'Agregando…' : 'Agregar categoría'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <fieldset className="mform__field">
@@ -219,4 +296,4 @@ function MovementForm({ tipo, inicial, categorias, onGuardar, onCancelar }: Move
   )
 }
 
-export default MovementForm
+export default MovimientoFormulario

@@ -1,9 +1,23 @@
 // Validación de los formularios de tarjetas, MSI y deudas (REQ-TD-09).
 // Los campos llegan como texto; cada función devuelve el mensaje de error o null si está bien.
 
+/** Tope de un monto; coincide con el de `Dinero` en el backend. */
+export const MONTO_MAXIMO = 9_999_999_999.99
+
+/**
+ * Quita "$" y espacios y las comas de miles. Las comas solo valen como separador de miles
+ * ("1,234.56" sí; "1,2,3" no). Devuelve "" si no hay texto y null si las comas están mal puestas.
+ */
+export function normalizarMonto(texto: string): string | null {
+  const limpio = texto.replace(/[\s$]/g, '')
+  if (!limpio.includes(',')) return limpio
+  return /^-?\d{1,3}(,\d{3})+(\.\d*)?$/.test(limpio) ? limpio.replace(/,/g, '') : null
+}
+
 /** Convierte "12,500.50" o "$12500" en número. Devuelve null si está vacío y NaN si no es número. */
 export function leerNumero(texto: string): number | null {
-  const limpio = texto.replace(/[\s$,]/g, '')
+  const limpio = normalizarMonto(texto)
+  if (limpio === null) return Number.NaN
   if (!limpio) return null
   return /^-?\d+(\.\d+)?$/.test(limpio) ? Number(limpio) : Number.NaN
 }
@@ -20,8 +34,8 @@ export function validarMonto(texto: string, { obligatorio = true, permitirCero =
   if (Number.isNaN(valor)) return 'Escribe solo números, por ejemplo 12500.50'
   if (valor < 0) return 'La cantidad no puede ser negativa'
   if (valor === 0 && !permitirCero) return 'La cantidad debe ser mayor a cero'
-  if (!/^-?\d+(\.\d{1,2})?$/.test(texto.replace(/[\s$,]/g, ''))) return 'Usa máximo dos decimales'
-  if (valor > 9_999_999_999.99) return 'La cantidad es demasiado grande'
+  if (!/^-?\d+(\.\d{1,2})?$/.test(normalizarMonto(texto) ?? '')) return 'Usa máximo dos decimales'
+  if (valor > MONTO_MAXIMO) return 'La cantidad es demasiado grande'
   return null
 }
 
@@ -62,6 +76,11 @@ export function validarUltimos4(texto: string): string | null {
 export function validarFecha(texto: string, max: string): string | null {
   if (!texto) return 'Elige la fecha'
   if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) return 'La fecha no es válida'
+  const [anio, mes, dia] = texto.split('-').map(Number)
+  const real = new Date(Date.UTC(anio, mes - 1, dia))
+  if (anio < 1 || real.getUTCFullYear() !== anio || real.getUTCMonth() !== mes - 1 || real.getUTCDate() !== dia) {
+    return 'La fecha no existe'
+  }
   if (texto > max) return 'La fecha no puede ser futura'
   return null
 }

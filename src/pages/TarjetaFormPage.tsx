@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import Button from '../components/Button'
+import AyudaTermino from '../components/AyudaTermino'
+import ConfirmDialog from '../components/ConfirmDialog'
 import EncabezadoPagina from '../components/EncabezadoPagina'
 import EstadoCarga from '../components/EstadoCarga'
 import FormAlert from '../components/FormAlert'
@@ -82,17 +84,28 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
   const [errores, setErrores] = useState<Errores>({})
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [confirmandoSaldo, setConfirmandoSaldo] = useState(false)
 
   const cambiar = (campo: keyof Campos) => (e: { target: { value: string } }) =>
     setCampos((c) => ({ ...c, [campo]: e.target.value }))
 
-  async function enviar(evento: FormEvent) {
+  function enviar(evento: FormEvent) {
     evento.preventDefault()
     const nuevos = validar(campos)
     setErrores(nuevos)
     setErrorGeneral(null)
     if (hayErrores(nuevos)) return
+    // El banco puede reportar un saldo sobre el límite (intereses, comisiones), pero casi siempre es un error de captura.
+    const { saldo_actual, limite_credito } = aPayload(campos)
+    if (saldo_actual > limite_credito) {
+      setConfirmandoSaldo(true)
+      return
+    }
+    void guardar()
+  }
 
+  async function guardar() {
+    setConfirmandoSaldo(false)
     setEnviando(true)
     try {
       const datos = aPayload(campos)
@@ -171,9 +184,13 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
         </div>
         <p className="pagina__nota">
           En el saldo no incluyas lo que te falta pagar de tus compras a meses sin intereses: esas se registran aparte y
-          nosotros las sumamos.
+          nosotros las sumamos. <AyudaTermino termino="msi" />
         </p>
 
+        <p className="pagina__nota">
+          ¿Qué son el día de corte <AyudaTermino termino="fechaCorte" /> y la fecha límite de pago{' '}
+          <AyudaTermino termino="fechaLimitePago" />?
+        </p>
         <div className="formulario__fila">
           <TextField
             etiqueta="Día de corte"
@@ -205,7 +222,7 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
         />
         <p className="pagina__nota">
           La tasa aparece en tu estado de cuenta como "tasa de interés ordinaria anual"; sin ella no podemos estimar tus
-          intereses. El pago mínimo lo estimamos con la regla de Banxico.
+          intereses. El pago mínimo lo estimamos con la regla de Banxico. <AyudaTermino termino="tasaAnual" />
         </p>
 
         <div className="formulario__acciones">
@@ -217,6 +234,17 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
           </Button>
         </div>
       </form>
+
+      <ConfirmDialog
+        abierto={confirmandoSaldo}
+        titulo="¿El saldo supera el límite?"
+        textoConfirmar="Sí, guardar así"
+        onConfirmar={() => void guardar()}
+        onCancelar={() => setConfirmandoSaldo(false)}
+      >
+        <p>El saldo que escribiste es mayor que el límite de crédito. Revisa que no sea un error de captura.</p>
+        <p>Si tu banco lo reporta así (por intereses o comisiones), puedes guardarlo.</p>
+      </ConfirmDialog>
     </div>
   )
 }

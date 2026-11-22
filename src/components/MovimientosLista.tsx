@@ -1,9 +1,9 @@
 import type { Frecuencia, MovimientoDelMes, TipoMovimiento } from '../types/movimiento'
 import { formatDate } from '../utils/formatDate'
 import { formatMoney } from '../utils/formatMoney'
-import './MovementList.css'
+import './MovimientosLista.css'
 
-interface MovementListProps {
+interface MovimientosListaProps {
   tipo: TipoMovimiento
   movimientos: MovimientoDelMes[]
   /** Sin conexión no se edita ni se elimina (T60). */
@@ -19,10 +19,11 @@ const TEXTO_FRECUENCIA: Record<Frecuencia, string | null> = {
   semanal: 'Cada semana',
   quincenal: 'Cada quincena',
   mensual: 'Cada mes',
+  anual: 'Cada año',
 }
 
 /** Listado de ingresos o gastos del mes con editar y eliminar; muestra el estado vacío si no hay nada. */
-function MovementList({ tipo, movimientos, soloLectura, onEditar, onEliminar }: MovementListProps) {
+function MovimientosLista({ tipo, movimientos, soloLectura, onEditar, onEliminar }: MovimientosListaProps) {
   const esGasto = tipo === 'gasto'
 
   if (movimientos.length === 0) {
@@ -87,4 +88,4 @@ function MovementList({ tipo, movimientos, soloLectura, onEditar, onEliminar }: 
   )
 }
 
-export default MovementList
+export default MovimientosLista

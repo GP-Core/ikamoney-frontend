@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import Button from '../components/Button'
+import AyudaTermino from '../components/AyudaTermino'
 import EncabezadoPagina from '../components/EncabezadoPagina'
 import EstadoCarga from '../components/EstadoCarga'
 import FormAlert from '../components/FormAlert'
@@ -10,7 +11,7 @@ import { useTarjeta } from '../hooks/useFinanzas'
 import { finanzasService } from '../services/finanzas'
 import type { PlanMsi, PlanMsiPayload, Tarjeta } from '../types/finanzas'
 import { mensajeError } from '../utils/errores'
-import { calcularMensualidad, hoyIso, redondear2 } from '../utils/finanzas'
+import { calcularMensualidad, disponibleTarjeta, hoyIso, redondear2, saldoPendienteMsi } from '../utils/finanzas'
 import { formatMoney } from '../utils/formatMoney'
 import {
   hayErrores,
@@ -83,11 +84,17 @@ function FormularioMsi({ tarjeta, plan }: { tarjeta: Tarjeta; plan: PlanMsi | nu
     setCampos((c) => ({ ...c, [campo]: e.target.value }))
 
   const calculo = calcular(campos)
+  // Crédito disponible sin contar lo que todavía debe este mismo plan (al editarlo).
+  const disponible = redondear2(disponibleTarjeta(tarjeta) + (plan ? saldoPendienteMsi(plan) : 0))
   const volverA = `/tarjetas/${tarjeta.id}`
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault()
-    const nuevos = validar(campos)
+    const base = validar(campos)
+    const noCabe = !hayErrores(base) && calculo !== null && calculo.pendiente > disponible
+    const nuevos: Errores = noCabe
+      ? { ...base, monto_original: `No cabe en el crédito disponible de la tarjeta (${formatMoney(disponible)}).` }
+      : base
     setErrores(nuevos)
     setErrorGeneral(null)
     if (hayErrores(nuevos) || !calculo) return
@@ -173,6 +180,12 @@ function FormularioMsi({ tarjeta, plan }: { tarjeta: Tarjeta; plan: PlanMsi | nu
         </div>
         <p className="pagina__nota">
           Las mensualidades pagadas son las que ya aparecieron en tus estados de cuenta. Si apenas la compraste, deja 0.
+        </p>
+        <p className="pagina__nota">
+          ¿Qué son los meses sin intereses? <AyudaTermino termino="msi" />
+        </p>
+        <p className="pagina__nota">
+          Crédito disponible de la tarjeta: {formatMoney(disponible)} <AyudaTermino termino="creditoDisponible" />
         </p>
 
         <div className="calculo" aria-live="polite">

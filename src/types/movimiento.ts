@@ -4,7 +4,7 @@
 export type TipoMovimiento = 'ingreso' | 'gasto'
 /** Un gasto fijo se repite; uno variable es siempre único (regla del backend). */
 export type ClaseGasto = 'fijo' | 'variable'
-export type Frecuencia = 'unico' | 'semanal' | 'quincenal' | 'mensual'
+export type Frecuencia = 'unico' | 'semanal' | 'quincenal' | 'mensual' | 'anual'
 
 export interface Categoria {
   id: number

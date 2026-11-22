@@ -15,4 +15,5 @@ export const movimientosService: MovimientosService = {
   crear: (datos) => escribir(() => servicio.crear(datos)),
   actualizar: (id, datos) => escribir(() => servicio.actualizar(id, datos)),
   eliminar: (id) => escribir(() => servicio.eliminar(id)),
+  crearCategoria: (nombre) => escribir(() => servicio.crearCategoria(nombre)),
 }

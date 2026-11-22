@@ -21,11 +21,19 @@ export interface LoginPayload {
   contrasena: string
 }
 
-/** Respuesta de registro y login: token de sesión + usuario. */
+/** GET /api/auth/me: el usuario y, con el backend real, cuántos segundos le quedan a la sesión. */
+export interface UsuarioConSesion extends Usuario {
+  expira_en?: number
+}
+
+/**
+ * Respuesta de registro y login. Con el backend real el token va en una cookie HttpOnly y no viene en el
+ * cuerpo; solo el modo de prueba o un backend en transición (TOKEN_EN_RESPUESTA=true) lo incluyen.
+ */
 export interface SesionResponse {
-  access_token: string
-  token_type: 'bearer'
-  /** Segundos que dura el token antes de expirar. */
+  access_token?: string
+  token_type?: 'bearer'
+  /** Segundos que dura la sesión antes de expirar. */
   expira_en: number
   usuario: Usuario
 }

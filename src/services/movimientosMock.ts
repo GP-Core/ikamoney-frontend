@@ -22,6 +22,8 @@ import type { MovimientosService } from './movimientosApi'
 interface DatosMock {
   ultimoId: number
   movimientos: Movimiento[]
+  /** Categorías propias del usuario (las base viven en CATEGORIAS). */
+  categorias?: Categoria[]
 }
 
 /** Las mismas nueve categorías base que siembra el backend (app/crear_tablas.py). */
@@ -67,7 +69,11 @@ function ocurrencias(frecuencia: Frecuencia, inicio: string, fin: string | null,
   let candidatas: string[]
   if (frecuencia === 'unico') candidatas = [inicio]
   else if (frecuencia === 'mensual') candidatas = [iso(anio, mes, ajustarDia(anio, mes, diaInicio))]
-  else if (frecuencia === 'quincenal') {
+  else if (frecuencia === 'anual') {
+    // Solo en el mes de la fecha de inicio; el 29 de febrero cae en 28 si el año no es bisiesto.
+    const mesInicio = Number(inicio.slice(5, 7))
+    candidatas = mes === mesInicio ? [iso(anio, mes, ajustarDia(anio, mes, diaInicio))] : []
+  } else if (frecuencia === 'quincenal') {
     const d1 = ((diaInicio - 1) % 15) + 1
     candidatas = [iso(anio, mes, d1), iso(anio, mes, ajustarDia(anio, mes, d1 + 15))]
   } else {
@@ -84,8 +90,13 @@ function ocurrencias(frecuencia: Frecuencia, inicio: string, fin: string | null,
 
 const redondear2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
 
+/** Las categorías propias arrancan en 100 para no chocar con los ids de las base. */
+const PRIMER_ID_PROPIO = 100
+
+const todasLasCategorias = (datos: DatosMock) => [...CATEGORIAS, ...(datos.categorias ?? [])]
+
 function nombreCategoria(id: number | null): string | null {
-  return CATEGORIAS.find((c) => c.id === id)?.nombre ?? null
+  return todasLasCategorias(leer()).find((c) => c.id === id)?.nombre ?? null
 }
 
 /** Las reglas que el backend valida y responde con 422. */
@@ -186,6 +197,22 @@ export const movimientosMock: MovimientosService = {
 
   async listarCategorias() {
     await esperar()
-    return CATEGORIAS
+    return todasLasCategorias(leer())
+  },
+
+  async crearCategoria(nombre) {
+    await esperar()
+    const limpio = nombre.trim()
+    if (limpio.length < 1 || limpio.length > 60) throw new ApiError(422, 'El nombre debe tener de 1 a 60 caracteres.')
+    const datos = leer()
+    const existentes = todasLasCategorias(datos)
+    if (existentes.some((c) => c.nombre.toLowerCase() === limpio.toLowerCase())) {
+      throw new ApiError(400, 'Ya existe una categoría con ese nombre.', 'CATEGORIA_DUPLICADA')
+    }
+    const id = Math.max(PRIMER_ID_PROPIO - 1, ...(datos.categorias ?? []).map((c) => c.id)) + 1
+    const categoria: Categoria = { id, nombre: limpio, base: false }
+    datos.categorias = [...(datos.categorias ?? []), categoria]
+    guardar(datos)
+    return categoria
   },
 }

@@ -92,7 +92,7 @@ function crearSesion(usuario: UsuarioMock): SesionResponse {
 
 function usuarioDeLaSesion(): UsuarioMock {
   const actual = leerToken()
-  const sesion = actual ? leer<Record<string, SesionMock>>(CLAVES.sesiones, {})[actual.token] : null
+  const sesion = actual?.token ? leer<Record<string, SesionMock>>(CLAVES.sesiones, {})[actual.token] : null
   if (!sesion || Date.now() >= sesion.expiraEn) throw new ApiError(401, 'Tu sesión expiró')
   const usuario = leer<UsuarioMock[]>(CLAVES.usuarios, []).find((u) => u.id === sesion.usuarioId)
   if (!usuario) throw new ApiError(401, 'Tu sesión expiró')
@@ -158,7 +158,7 @@ export const authMock: AuthService = {
 
   async cerrarSesion() {
     const actual = leerToken()
-    if (!actual) return
+    if (!actual?.token) return
     const sesiones = leer<Record<string, SesionMock>>(CLAVES.sesiones, {})
     delete sesiones[actual.token]
     escribir(CLAVES.sesiones, sesiones)

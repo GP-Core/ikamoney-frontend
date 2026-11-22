@@ -191,3 +191,30 @@
   font-size: 0.75rem;
   line-height: 1.4;
 }
+
+/* T34: meses en que no alcanza el dinero, dicho con texto e ícono y no solo con color. */
+.grafica__resumen {
+  margin: 0 0 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.grafica__resumen--falta {
+  color: var(--danger);
+}
+
+.grafica__scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.grafica__falta polygon {
+  fill: var(--danger);
+}
+
+.grafica__falta text {
+  fill: var(--danger);
+  font-size: 8px;
+  font-weight: 700;
+  font-family: var(--sans);
+}

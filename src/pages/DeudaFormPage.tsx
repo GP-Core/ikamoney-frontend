@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import Button from '../components/Button'
+import AyudaTermino from '../components/AyudaTermino'
 import EncabezadoPagina from '../components/EncabezadoPagina'
 import EstadoCarga from '../components/EstadoCarga'
 import FormAlert from '../components/FormAlert'
@@ -185,6 +186,9 @@ function FormularioDeuda({ deuda }: { deuda: Deuda | null }) {
             error={errores.tasa_anual}
           />
         </div>
+        <p className="pagina__nota">
+          ¿Qué es la tasa anual? <AyudaTermino termino="tasaAnual" />
+        </p>
         <TextField
           etiqueta="Día de pago (opcional)"
           inputMode="numeric"
