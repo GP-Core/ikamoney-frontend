@@ -177,7 +177,7 @@ export const authMock: AuthService = {
       tokens[token] = { usuarioId: usuario.id, expiraEn: Date.now() + DURACION_ENLACE_MS, usado: false }
       escribir(CLAVES.recuperacion, tokens)
       // En producción este enlace llega por correo; aquí se muestra en pantalla.
-      respuesta.enlace_prueba = `${window.location.origin}/restablecer-contrasena?token=${token}`
+      respuesta.enlace_prueba = `${window.location.origin}/restablecer-contrasena#token=${token}`
     }
     return respuesta
   },

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { finanzasService } from '../services/finanzas'
 import { movimientosService } from '../services/movimientos'
+import { cuentasService } from '../services/cuentas'
 import { conCopia } from '../services/offline'
 import type { ConCopia } from '../services/offline'
 import { mensajeError } from '../utils/errores'
@@ -16,7 +17,7 @@ interface Estado<T> {
 }
 
 /** Ejecuta `cargar` al montar y cada vez que se llama a `recargar`. */
-function useCarga<T>(cargar: () => Promise<ConCopia<T>>) {
+export function useCarga<T>(cargar: () => Promise<ConCopia<T>>) {
   const [estado, setEstado] = useState<Estado<T>>({ para: null, datos: null, copiaDe: null, error: null })
   const [version, setVersion] = useState(0)
 
@@ -98,6 +99,26 @@ export function useDeuda(id: number | null) {
     () =>
       Promise.resolve(id === null ? null : finanzasService.obtenerDeuda(id)).then((datos) => ({ datos, copiaDe: null })),
     [id],
+  )
+  return useCarga(cargar)
+}
+
+/** Todas las cuentas del usuario: débito, ahorro, efectivo… y las tarjetas de crédito. */
+export function useCuentas() {
+  const enLinea = useConexion()
+  const cargar = useCallback(() => conCopia('cuentas', enLinea, () => cuentasService.listar()), [enLinea])
+  return useCarga(cargar)
+}
+
+/** Movimientos de una cuenta en un mes (AAAA-MM). Con cuentaId null no carga nada. */
+export function useMovimientosCuenta(cuentaId: number | null, mes: string) {
+  const enLinea = useConexion()
+  const cargar = useCallback(
+    () =>
+      cuentaId === null
+        ? Promise.resolve({ datos: null, copiaDe: null })
+        : conCopia(`cuenta:${cuentaId}:${mes}`, enLinea, () => cuentasService.listarMovimientos(cuentaId, mes)),
+    [cuentaId, mes, enLinea],
   )
   return useCarga(cargar)
 }

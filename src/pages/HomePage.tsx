@@ -20,6 +20,7 @@ const ACCESOS: { ruta: string; titulo: string; texto: string; icono: NombreIcono
   { ruta: '/ranking', titulo: 'Tus deudas', texto: 'En qué orden conviene pagarlas.', icono: 'recibo' },
   { ruta: '/tarjetas', titulo: 'Tarjetas y deudas', texto: 'Tus tarjetas, compras a MSI y préstamos.', icono: 'tarjeta' },
   { ruta: '/movimientos', titulo: 'Ingresos y gastos', texto: 'Lo que entra y lo que sale cada mes.', icono: 'mas' },
+  { ruta: '/cuentas', titulo: 'Cuentas', texto: 'Débito, ahorro, efectivo y lo que pasó en cada una.', icono: 'tarjeta' },
   { ruta: '/balance', titulo: 'Balance y proyección', texto: 'Cómo se ven tus próximos meses.', icono: 'calendario' },
   { ruta: '/estado-cuenta', titulo: 'Subir estado de cuenta', texto: 'Lee el PDF y revisa lo que encuentre.', icono: 'subir' },
 ]

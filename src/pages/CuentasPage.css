@@ -1,0 +1,86 @@
+.cuentas__intro,
+.cuentas__vacio {
+  margin-top: 8px;
+  color: var(--text-muted, inherit);
+}
+
+.cuentas__lista,
+.cuentas__movimientos {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cuentas__cuenta {
+  display: grid;
+  width: 100%;
+  min-height: 44px;
+  gap: 2px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  text-align: left;
+}
+
+.cuentas__cuenta[aria-pressed='true'] {
+  border-color: var(--text-strong);
+  border-width: 2px;
+}
+
+.cuentas__saldo {
+  font-weight: 700;
+}
+
+.cuentas__totales {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.cuentas__totales dt {
+  font-size: 0.85rem;
+}
+
+.cuentas__totales dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.cuentas__movimientos li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cuentas__movimientos small {
+  display: block;
+}
+
+.cuentas__entra {
+  font-weight: 700;
+}
+
+.cuentas__sale {
+  font-weight: 700;
+}
+
+.cuentas__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cuentas__form {
+  display: grid;
+  gap: 12px;
+}

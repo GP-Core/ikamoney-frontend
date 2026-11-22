@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
 import Button from '../components/Button'
 import FormAlert from '../components/FormAlert'
@@ -10,11 +10,25 @@ import { authService } from '../services/auth'
 import { mensajeErrorAuth } from '../utils/authErrors'
 import { CONTRASENA_MAX, validarConfirmacion, validarContrasenaNueva } from '../utils/validation'
 
-/** Crear una contraseña nueva desde el enlace del correo: /restablecer-contrasena?token=… */
+/**
+ * Crear una contraseña nueva desde el enlace del correo: /restablecer-contrasena#token=…
+ * El token va en el fragmento (#) para que no llegue a ningún servidor ni al encabezado Referer. Se acepta
+ * también ?token=… por los enlaces enviados antes de este cambio.
+ */
 function ResetPasswordPage() {
-  const [parametros] = useSearchParams()
-  const token = parametros.get('token') ?? ''
+  const ubicacion = useLocation()
   const navegar = useNavigate()
+  // Se lee una sola vez: después se quita de la barra de direcciones y del historial.
+  const [token] = useState(() => {
+    const desdeFragmento = new URLSearchParams(ubicacion.hash.replace(/^#/, '')).get('token')
+    return desdeFragmento ?? new URLSearchParams(ubicacion.search).get('token') ?? ''
+  })
+
+  useEffect(() => {
+    if (token && (ubicacion.hash || ubicacion.search)) {
+      navegar({ pathname: ubicacion.pathname, search: '', hash: '' }, { replace: true })
+    }
+  }, [token, ubicacion.hash, ubicacion.search, ubicacion.pathname, navegar])
 
   const [contrasena, setContrasena] = useState('')
   const [confirmacion, setConfirmacion] = useState('')

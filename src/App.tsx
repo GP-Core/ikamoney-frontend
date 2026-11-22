@@ -9,6 +9,7 @@ import AlertasConfigPage from './pages/AlertasConfigPage'
 import AlertasPage from './pages/AlertasPage'
 import BalancePage from './pages/BalancePage'
 import CuentaPage from './pages/CuentaPage'
+import CuentasPage from './pages/CuentasPage'
 import DeudaFormPage from './pages/DeudaFormPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import HomePage from './pages/HomePage'
@@ -66,6 +67,7 @@ function App() {
           <Route path="/deudas/nueva" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/deudas/:id/editar" element={<SoloConConexion><DeudaFormPage /></SoloConConexion>} />
           <Route path="/movimientos" element={<MovementsPage />} />
+          <Route path="/cuentas" element={<CuentasPage />} />
           <Route path="/estado-cuenta" element={<SoloConConexion><RevisionEstadoCuenta /></SoloConConexion>} />
           <Route path="/alertas" element={<AlertasPage />} />
           <Route path="/alertas/configuracion" element={<SoloConConexion regresar={{ a: '/alertas', texto: 'Volver a los avisos' }}><AlertasConfigPage /></SoloConConexion>} />

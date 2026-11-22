@@ -11,6 +11,8 @@ export function mensajeErrorAuth(
   if (!(error instanceof ApiError)) return 'Ocurrió un error inesperado. Inténtalo de nuevo.'
 
   if (error.status === 429) {
+    // El backend dice cuánto falta (Retry-After); el mock y las respuestas sin cuerpo usan el texto fijo.
+    if (error.codigo === 'DEMASIADOS_INTENTOS') return error.message
     return 'Hiciste demasiados intentos. Espera 15 minutos e inténtalo de nuevo.'
   }
   if (contexto === 'login' && (error.status === 401 || error.status === 400)) {
