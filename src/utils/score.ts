@@ -52,3 +52,15 @@ export const TEXTO_FALTANTE: Record<string, string> = {
   ingresos: 'Tus ingresos del mes',
   gastos: 'Tus gastos del mes',
 }
+
+/**
+ * Lo más alto que puede llegar el score con la forma de pago que se está suponiendo: 100 menos
+ * los puntos que deja de sumar el comportamiento de pago. Hoy el backend lo da siempre por
+ * "solo mínimo" (todavía no se captura), así que sale 92 con tarjetas. Se calcula con la
+ * respuesta para no escribir el número a mano. null si ese factor no limita el score.
+ */
+export function maximoPosible(factores: FactorScore[]): number | null {
+  const pago = factores.find((f) => f.clave === 'comportamiento_pago')
+  if (!pago || !pago.disponible || pago.puntos_perdidos <= 0) return null
+  return Math.round(100 - pago.puntos_perdidos)
+}

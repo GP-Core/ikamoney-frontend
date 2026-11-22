@@ -2,11 +2,12 @@ import { Link } from 'react-router'
 import DatosFaltantes from '../components/DatosFaltantes'
 import FactoresScore from '../components/FactoresScore'
 import FechaCopia from '../components/FechaCopia'
+import HistorialScore from '../components/HistorialScore'
 import ScoreResumen from '../components/ScoreResumen'
 import { useScore } from '../hooks/useScore'
 import { SCORE_USANDO_EJEMPLO } from '../services/score'
 import type { ScoreResponse } from '../types/score'
-import { efectoDe, TEXTO_TOPE, tonoDelNivel } from '../utils/score'
+import { efectoDe, maximoPosible, TEXTO_TOPE, tonoDelNivel } from '../utils/score'
 import './BalancePage.css'
 import '../components/ScoreDesglose.css'
 
@@ -71,6 +72,8 @@ function ScoreCalculado({ data, puntaje }: { data: ScoreResponse; puntaje: numbe
   const prioritario = factores.find((f) => f.clave === data.orden_mejora[0])
   // Datos opcionales que faltan (por ejemplo los gastos): el score se calcula, pero se avisa.
   const opcionales = data.faltantes.filter((d) => !d.obligatorio)
+  // Mientras no se capture cómo paga el usuario, el comportamiento de pago limita el score (T25).
+  const maximo = maximoPosible(factores)
 
   return (
     <div className="score-contenido">
@@ -98,7 +101,9 @@ function ScoreCalculado({ data, puntaje }: { data: ScoreResponse; puntaje: numbe
 
       <FactoresScore factores={factores} ordenMejora={data.orden_mejora} claveDestacada={prioritario?.clave} />
 
-      {(data.supuestos.length > 0 || opcionales.length > 0) && (
+      <HistorialScore />
+
+      {(data.supuestos.length > 0 || opcionales.length > 0 || maximo !== null) && (
         <section className="score-supuestos" aria-labelledby="supuestos-titulo">
           <h2 id="supuestos-titulo" className="score-supuestos__titulo">
             Qué supusimos para calcularlo
@@ -107,6 +112,11 @@ function ScoreCalculado({ data, puntaje }: { data: ScoreResponse; puntaje: numbe
             {data.supuestos.map((texto) => (
               <li key={texto}>{texto}</li>
             ))}
+            {maximo !== null && (
+              <li>
+                Hoy tu score puede llegar como máximo a {maximo}, porque todavía no registramos cómo pagas tus tarjetas.
+              </li>
+            )}
             {opcionales.map((dato) => (
               <li key={dato.dato}>{dato.mensaje}</li>
             ))}

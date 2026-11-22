@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import type { Tarjeta } from '../types/finanzas'
 import type { EscenarioPedido, Prioridad } from '../types/simulador'
+import { prioridadVecina } from '../utils/prioridad'
 import { escenariosAUrl, leerPrecio, MAX_ESCENARIOS, nombreTarjeta, OPCIONES_PRIORIDAD, PLAZOS_MSI } from '../utils/simulador'
 import '../pages/SimuladorPage.css'
 
@@ -38,6 +39,7 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
   const [tarjetaId, setTarjetaId] = useState<number | ''>(tarjetas.length === 1 ? tarjetas[0].id : '')
   const navigate = useNavigate()
   const [errores, setErrores] = useState<Errores>({})
+  const opcionesPrioridad = useRef<Record<string, HTMLButtonElement | null>>({})
 
   const hayMsi = plazos.length > 0
   const total = (contado ? 1 : 0) + plazos.length
@@ -50,6 +52,15 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
     else if (errores.ahorro) document.getElementById('sim-ahorro')?.focus()
     else if (errores.tarjeta) document.getElementById('sim-tarjeta')?.focus()
   }, [errores])
+
+  /** Flechas, Inicio y Fin cambian la prioridad y llevan el foco a la opción elegida. */
+  function teclaPrioridad(evento: React.KeyboardEvent) {
+    const siguiente = prioridadVecina(prioridad, evento.key)
+    if (!siguiente) return
+    evento.preventDefault()
+    setPrioridad(siguiente)
+    opcionesPrioridad.current[siguiente]?.focus()
+  }
 
   function alternarPlazo(meses: number) {
     setPlazos((actuales) => (actuales.includes(meses) ? actuales.filter((m) => m !== meses) : [...actuales, meses].sort((a, b) => a - b)))
@@ -207,15 +218,28 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
         </Link>
 
         <fieldset className="sim-campo">
-          <legend>¿Qué tan necesaria es?</legend>
-          <div className="sim-segmentos" role="radiogroup">
+          <legend id="sim-prioridad-titulo">¿Qué tan necesaria es?</legend>
+          <div className="sim-segmentos" role="radiogroup" aria-labelledby="sim-prioridad-titulo" aria-describedby="sim-prioridad-ayuda" onKeyDown={teclaPrioridad}>
             {OPCIONES_PRIORIDAD.map((p) => (
-              <button key={p.valor} type="button" role="radio" aria-checked={prioridad === p.valor} className="sim-segmento" onClick={() => setPrioridad(p.valor)}>
+              <button
+                key={p.valor}
+                ref={(el) => {
+                  opcionesPrioridad.current[p.valor] = el
+                }}
+                type="button"
+                role="radio"
+                aria-checked={prioridad === p.valor}
+                tabIndex={prioridad === p.valor ? 0 : -1}
+                className="sim-segmento"
+                onClick={() => setPrioridad(p.valor)}
+              >
                 {p.etiqueta}
               </button>
             ))}
           </div>
-          <p className="sim-nota">{ayudaPrioridad} Pesa en el veredicto final.</p>
+          <p id="sim-prioridad-ayuda" className="sim-nota">
+            {ayudaPrioridad} Pesa en el veredicto final.
+          </p>
         </fieldset>
 
         <div className="sim-campo">

@@ -18,7 +18,7 @@ interface DatosMock {
 
 /** Mismos valores por defecto que app/core/reglas_alertas.json del backend. */
 const CONFIGURACION_INICIAL: ConfiguracionAlertas = {
-  umbral_utilizacion: 70,
+  umbral_utilizacion: 50,
   dias_anticipacion: 3,
   canales: { correo: true, push: false },
 }
@@ -47,7 +47,7 @@ function iniciales(): DatosMock {
       regla: 'AL-02',
       severidad: 'atencion',
       titulo: 'Utilización alta en Tarjeta A',
-      mensaje: 'Tarjeta A usa 70 % o más de su límite de crédito.',
+      mensaje: 'Tarjeta A usa 50 % o más de su límite de crédito.',
       accion: 'Paga parte del saldo o evita nuevas compras con esta tarjeta.',
       referencia: 'tarjeta:1',
       estado: 'activa',

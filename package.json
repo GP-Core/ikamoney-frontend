@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generar-iconos": "pwa-assets-generator",
-    "test": "node --test --experimental-strip-types tests/planVista.test.ts tests/alertas.test.ts tests/validacionFinanzas.test.ts tests/validarMovimiento.test.ts tests/revisionEstado.test.ts tests/balanceVista.test.ts"
+    "test": "node --test --experimental-strip-types tests/planVista.test.ts tests/alertas.test.ts tests/validacionFinanzas.test.ts tests/validarMovimiento.test.ts tests/revisionEstado.test.ts tests/balanceVista.test.ts tests/simulador.test.ts tests/score.test.ts"
   },
   "dependencies": {
     "react": "^19.2.8",

@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import DeudaRanking from '../components/DeudaRanking'
+import EnlaceEscritura from '../components/EnlaceEscritura'
 import RankingVacio from '../components/RankingVacio'
 import { useRanking } from '../hooks/useRanking'
 import { RANKING_USANDO_EJEMPLO } from '../services/ranking'
@@ -54,6 +55,8 @@ function RankingPage() {
 function RankingLista({ data }: { data: RankingResponse }) {
   // Se respeta el orden del motor tal cual llega: la primera del arreglo es la primera del ranking.
   const [primera] = data.ranking
+  // Con una sola deuda no hay orden que explicar: se orienta al usuario en lugar de mostrar un "ranking" de uno.
+  const unaSola = data.ranking.length === 1
 
   return (
     <div className="ranking__contenido">
@@ -72,14 +75,29 @@ function RankingLista({ data }: { data: RankingResponse }) {
         Ver plan mes a mes
       </Link>
 
-      <h2 className="ranking__lista-titulo">El orden en que conviene pagarlas</h2>
-      <p className="ranking__ayuda">De la que más dinero te quita cada mes a la que menos.</p>
+      <h2 className="ranking__lista-titulo">{unaSola ? 'Tu deuda con intereses' : 'El orden en que conviene pagarlas'}</h2>
+      {!unaSola && <p className="ranking__ayuda">De la que más dinero te quita cada mes a la que menos.</p>}
 
       <ol className="ranking__lista">
         {data.ranking.map((deuda, i) => (
           <DeudaRanking key={deuda.clave} deuda={deuda} destacada={i === 0} />
         ))}
       </ol>
+
+      {unaSola && (
+        <section className="ranking__nota" aria-labelledby="una-deuda-titulo">
+          <h3 id="una-deuda-titulo" className="ranking__nota-titulo">
+            Solo tienes una deuda con intereses
+          </h3>
+          <p>
+            No hay orden que elegir: cubre su pago cada mes y todo lo extra que puedas, abónalo a {primera.nombre}. Si
+            registras otra tarjeta o préstamo, aquí verás cuál conviene pagar primero y por qué.
+          </p>
+          <EnlaceEscritura to="/deudas/nueva" className="ranking__nota-enlace">
+            Registrar otra deuda
+          </EnlaceEscritura>
+        </section>
+      )}
 
       {data.bola_de_nieve && !data.bola_de_nieve.coincide && (
         <section className="ranking__nota" aria-label="Por qué no empezar por la deuda más chica">

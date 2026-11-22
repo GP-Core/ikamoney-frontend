@@ -364,3 +364,11 @@
     max-width: 240px;
   }
 }
+
+/* RF-50: registrar la compra del escenario recomendado */
+.sim-registrar { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); }
+.sim-registrar__titulo { margin: 0; font-size: 1rem; }
+
+/* Avisos sobre el resultado: datos de ejemplo y compra sin ahorro */
+.sim-aviso { margin: 0; padding: 10px 14px; border: 1px solid var(--border); border-left: 6px solid var(--precaucion); border-radius: 12px; background: var(--precaucion-fondo); font-size: 0.875rem; }
+.sim-aviso a { font-weight: 700; }

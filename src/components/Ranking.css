@@ -235,3 +235,31 @@
   font-size: 0.9375rem;
   color: var(--text);
 }
+
+/* Nota de orientación (una sola deuda, bola de nieve) */
+.ranking__nota {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  font-size: 0.9375rem;
+}
+
+.ranking__nota p {
+  margin: 0;
+}
+
+.ranking__nota-titulo {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.ranking__nota-enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  color: var(--text-strong);
+  font-weight: 700;
+  text-decoration: underline;
+}

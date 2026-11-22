@@ -17,7 +17,8 @@ export function mensajeErrorAuth(
   }
   if (contexto === 'login' && (error.status === 401 || error.status === 400)) {
     // Mensaje general: no indica si falló el correo o la contraseña (REQ-CU-04).
-    return 'Correo o contraseña incorrectos.'
+    // La salida a crear cuenta va igual para cualquier correo: así no se revela cuáles están registrados.
+    return 'Correo o contraseña incorrectos. Si aún no tienes cuenta, o la eliminaste, puedes crear una.'
   }
   if (contexto === 'registro' && error.status === 409) {
     return 'Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.'

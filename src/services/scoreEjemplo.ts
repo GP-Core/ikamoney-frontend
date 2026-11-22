@@ -1,4 +1,4 @@
-import type { ScoreResponse } from '../types/score'
+import type { HistorialScore, NivelScore, ScoreResponse } from '../types/score'
 
 /**
  * Datos de ejemplo de la pantalla de score (T37), con la misma estructura que GET /api/v1/score.
@@ -416,4 +416,26 @@ export function leerEscenarioScore(): EscenarioScore {
 
 export function scoreEjemplo(escenario: Exclude<EscenarioScore, 'error'>): ScoreResponse {
   return ESCENARIOS[escenario]
+}
+
+/** Historial de ejemplo: la evolución del perfil de T25 hasta el score de la pantalla (78). */
+export function historialEjemplo(): HistorialScore {
+  const punto = (periodo: string, puntaje: number, nivel: NivelScore, nivel_texto: string) => ({
+    periodo,
+    puntaje,
+    nivel,
+    nivel_texto,
+    calculado_en: `${periodo}-28T12:00:00`,
+    version_modelo: 'T25-v1',
+  })
+  return {
+    meses: 12,
+    puntos: [
+      punto('2026-06', 58, 'en_riesgo', 'En riesgo'),
+      punto('2026-07', 63, 'en_revision', 'En revisión'),
+      punto('2026-08', 70, 'en_revision', 'En revisión'),
+      punto('2026-09', 74, 'en_revision', 'En revisión'),
+      punto('2026-10', 78, 'en_revision', 'En revisión'),
+    ],
+  }
 }

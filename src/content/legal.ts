@@ -1,7 +1,8 @@
 // Texto del aviso de privacidad y de los términos de uso (T55, RNF-20 y RNF-21).
 //
-// Texto redactado por el equipo (IKASOFT). Los campos [ENTRE CORCHETES] siguen pendientes de definir,
-// y la cláusula de responsabilidad está marcada para revisión con asesoría legal.
+// Texto redactado por el equipo (IKASOFT). Ya no quedan campos [ENTRE CORCHETES]. Las cláusulas 6 y 7 de los
+// términos (responsabilidad y jurisdicción) son una propuesta y siguen pendientes de revisión con asesoría legal
+// antes de publicar.
 
 /** Un bloque de texto: párrafo, lista con viñetas o lista numerada. */
 export type Bloque = { p: string } | { ul: string[] } | { ol: string[] }
@@ -20,7 +21,7 @@ export interface DocumentoLegal {
 export type ClaveDocumentoLegal = 'privacidad' | 'terminos'
 
 const CONTACTO = 'ikasoft_empresa@gmail.com'
-const PROVEEDOR_IA = '[PROVEEDOR DE IA]'
+const PROVEEDOR_IA = 'Google (API de Gemini)'
 
 export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
   privacidad: {
@@ -104,7 +105,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
             p: 'Qué sí va en ese texto: saldos, fechas, tasas, movimientos (con sus descripciones y montos) y planes MSI, porque es justo lo que hay que leer.',
           },
           {
-            p: 'Qué hace el proveedor con él: leerlo y devolvernos los datos. Con el proveedor tenemos el acuerdo de que no conserva el estado de cuenta ni lo usa para otros fines.',
+            p: 'Qué hace el proveedor con él: leerlo y devolvernos los datos. Usamos la versión de pago de su servicio, en la que Google no usa lo que le enviamos para entrenar ni mejorar sus productos. Google guarda un registro por un tiempo limitado, solo para detectar abusos de su servicio, y puede procesarlo en servidores fuera de México.',
           },
           {
             p: 'Qué no hace la inteligencia artificial: tu score, tu proyección y el orden de tus deudas se calculan con reglas fijas y visibles, no con IA.',
@@ -171,6 +172,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
               'Se borran tus datos del servidor, no solo se ocultan.',
               'Se borran los datos guardados en tu dispositivo.',
               'Se cierra tu sesión, y ese correo ya no tendrá cuenta.',
+              'En tus otros dispositivos la sesión deja de funcionar, y la copia guardada ahí se borra la próxima vez que abras la aplicación con internet.',
             ],
           },
           {
@@ -242,8 +244,9 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
         titulo: '6. Disponibilidad y responsabilidad',
         bloques: [
           {
-            // Marcado por el equipo: falta revisarlo con asesoría legal antes de publicar.
-            p: 'Hacemos lo posible para que IKAMONEY funcione bien, pero puede tener fallas o interrupciones. No nos hacemos responsables de las decisiones que tomes con base en la información de la aplicación, ni de pérdidas o intereses que resulten de ellas, en la medida que la ley lo permita.',
+            // Propuesta pendiente de revisión con asesoría legal antes de publicar. La versión anterior excluía toda
+            // responsabilidad, y en un contrato de adhesión eso choca con la Ley Federal de Protección al Consumidor.
+            p: 'Hacemos lo posible para que IKAMONEY funcione bien y sus cálculos sean correctos, pero puede tener fallas o interrupciones. Los resultados son estimaciones con base en los datos que registras, y las decisiones que tomes con ellos son tuyas. Esto no limita los derechos que te da la ley como consumidor.',
           },
         ],
       },
@@ -251,7 +254,8 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
         titulo: '7. Cambios y contacto',
         bloques: [
           {
-            p: `Podemos actualizar estos términos; te avisaremos en la aplicación. Si tienes dudas, escríbenos a ${CONTACTO}. Estos términos se rigen por las leyes de Torreón, Coah. México.`,
+            // Propuesta pendiente de revisión con asesoría legal.
+            p: `Podemos actualizar estos términos; te avisaremos en la aplicación. Si tienes dudas, escríbenos a ${CONTACTO}. Estos términos se rigen por las leyes de los Estados Unidos Mexicanos. Para cualquier controversia son competentes los tribunales de Torreón, Coahuila, sin perjuicio de que acudas a la Profeco.`,
           },
         ],
       },

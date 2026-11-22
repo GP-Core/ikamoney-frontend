@@ -18,10 +18,12 @@ import './Cuenta.css'
 const SE_PIERDE = [
   'Tu cuenta: nombre, correo y contraseña.',
   'Tus tarjetas y tus compras a meses sin intereses.',
+  'Tus cuentas de débito, ahorro y efectivo, con sus movimientos.',
   'Tus deudas.',
   'Tus ingresos y gastos, y las categorías que creaste.',
   'Tus estados de cuenta y sus movimientos.',
   'Tu score y su historial.',
+  'Tus avisos y la configuración de cuándo recibirlos.',
   'Los datos guardados en este dispositivo.',
 ]
 
@@ -129,8 +131,8 @@ function CuentaPage() {
         onCancelar={() => setConfirmando(false)}
       >
         <p>
-          Se borrará la cuenta de <strong>{usuario?.correo}</strong> con todas sus tarjetas, compras a MSI, deudas,
-          ingresos, gastos, estados de cuenta y su score.
+          Se borrará la cuenta de <strong>{usuario?.correo}</strong> con todas sus tarjetas, compras a MSI, cuentas,
+          deudas, ingresos, gastos, estados de cuenta, avisos y su score.
         </p>
         <p>Esta acción no se puede deshacer.</p>
       </ConfirmDialog>

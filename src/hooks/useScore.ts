@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { conCopia } from '../services/offline'
-import { obtenerScore } from '../services/score'
-import type { ScoreResponse } from '../types/score'
+import { obtenerHistorialScore, obtenerScore } from '../services/score'
+import type { HistorialScore, ScoreResponse } from '../types/score'
 import { useConexion } from './useConexion'
 
 export type EstadoScore = 'cargando' | 'ok' | 'error'
@@ -50,5 +50,29 @@ export function useScore() {
     copiaDe: actual?.copiaDe ?? null,
     error: actual?.error ?? null,
     reintentar: () => setIntento((n) => n + 1),
+  }
+}
+
+/** Historial mensual del score. Si falla, la sección se oculta: no bloquea la pantalla del score. */
+export function useHistorialScore() {
+  const [resultado, setResultado] = useState<{ intento: number; data?: HistorialScore; error?: true } | null>(null)
+  const enLinea = useConexion()
+  const clave = enLinea ? 1 : 0
+
+  useEffect(() => {
+    let activo = true
+    obtenerHistorialScore()
+      .then((data) => activo && setResultado({ intento: clave, data }))
+      .catch(() => activo && setResultado({ intento: clave, error: true }))
+    return () => {
+      activo = false
+    }
+  }, [clave])
+
+  const actual = resultado?.intento === clave ? resultado : null
+  return {
+    cargando: actual === null,
+    error: actual?.error === true,
+    puntos: actual?.data?.puntos ?? [],
   }
 }

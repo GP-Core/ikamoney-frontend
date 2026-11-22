@@ -16,6 +16,8 @@ function PlanPage() {
   const [extra, setExtra] = useState(0)
   const { estado, data, error, errorAlActualizar, actualizando, reintentar } = usePlan(extra)
   const plan = data?.plan ?? null
+  // Con extra 0 solo se pagarían los mínimos: no es un plan, y el criterio pide avisarlo en lugar de generarlo.
+  const sinExtra = extra <= 0
 
   return (
     <main className="balance">
@@ -65,7 +67,9 @@ function PlanPage() {
 
         {estado === 'ok' && data && plan && (
           <div className="plan__contenido">
-            <FechaLibre total={plan.total} avisoSinFecha={plan.avisos.find((a) => a.codigo === 'PLAN_NO_SE_LIQUIDA')} />
+            {!sinExtra && (
+              <FechaLibre total={plan.total} avisoSinFecha={plan.avisos.find((a) => a.codigo === 'PLAN_NO_SE_LIQUIDA')} />
+            )}
             <ControlExtra
               valor={extra}
               paso={PASO_EXTRA}
@@ -77,17 +81,30 @@ function PlanPage() {
               errorAlActualizar={errorAlActualizar}
               onReintentar={reintentar}
             />
-            <AhorroPlan plan={plan} />
-            <PlanPorDeuda plan={plan} ranking={data.ranking} />
-            <FueraDelPlan items={data.sin_ranking} msiMesTotal={data.msi_mes_total} />
-            {plan.avisos
-              .filter((a) => a.codigo === 'DEUDA_SIN_PAGO_MENSUAL')
-              .map((a) => (
-                <p key={a.mensaje} className="plan__aviso" role="status">
-                  {a.mensaje}
+            {sinExtra ? (
+              <section className="plan__vacio" role="status">
+                <h2>Escribe cuánto extra puedes abonar</h2>
+                <p>
+                  Con $0 extra solo pagarías los mínimos, y eso no es un plan. Elige un monto arriba para ver cuánto
+                  abonar a cada deuda, cuándo quedas libre y cuánto ahorras.
                 </p>
-              ))}
-            <SupuestosPlan supuestos={plan.supuestos} />
+              </section>
+            ) : (
+              <>
+                <AhorroPlan plan={plan} />
+                <PlanPorDeuda plan={plan} ranking={data.ranking} />
+              </>
+            )}
+            <FueraDelPlan items={data.sin_ranking} msiMesTotal={data.msi_mes_total} />
+            {!sinExtra &&
+              plan.avisos
+                .filter((a) => a.codigo === 'DEUDA_SIN_PAGO_MENSUAL')
+                .map((a) => (
+                  <p key={a.mensaje} className="plan__aviso" role="status">
+                    {a.mensaje}
+                  </p>
+                ))}
+            {!sinExtra && <SupuestosPlan supuestos={plan.supuestos} />}
           </div>
         )}
       </div>

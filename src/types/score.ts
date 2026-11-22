@@ -74,3 +74,20 @@ export interface ScoreResponse {
   /** Supuestos usados en el cálculo, para mostrarlos al usuario. */
   supuestos: string[]
 }
+
+/** Un mes del historial: último score de ese mes (GET /api/v1/score/historial, REQ-SF-06). */
+export interface PuntoHistorialScore {
+  /** AAAA-MM. */
+  periodo: string
+  puntaje: number
+  nivel: NivelScore
+  nivel_texto: string
+  calculado_en: string
+  version_modelo: string
+}
+
+export interface HistorialScore {
+  meses: number
+  /** Del mes más antiguo al más reciente; solo meses con score. */
+  puntos: PuntoHistorialScore[]
+}

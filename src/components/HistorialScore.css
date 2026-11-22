@@ -1,0 +1,78 @@
+.historial-score {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.historial-score__titulo {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.historial-score__vacio {
+  margin: 0;
+  color: var(--muted);
+}
+
+.historial-score__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.historial-score__mes {
+  --hist-texto: var(--sano);
+  --hist-grafica: #4ea145;
+
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 2px 10px;
+  align-items: center;
+}
+
+.historial-score__mes--precaucion {
+  --hist-texto: var(--precaucion);
+  --hist-grafica: #f2b705;
+}
+
+.historial-score__mes--riesgo {
+  --hist-texto: var(--riesgo);
+  --hist-grafica: #e8590c;
+}
+
+.historial-score__mes--critico {
+  --hist-texto: var(--critico);
+  --hist-grafica: #c62828;
+}
+
+.historial-score__nombre {
+  grid-row: span 2;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.historial-score__barra {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--arena-oscura);
+  overflow: hidden;
+}
+
+.historial-score__relleno {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--hist-grafica);
+}
+
+.historial-score__valor {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: var(--hist-texto);
+}
