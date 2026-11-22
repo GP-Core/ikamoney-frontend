@@ -198,7 +198,11 @@ function AlertasConfigPage() {
             step={1}
             value={dias}
             error={errorDiasCampo}
-            ayuda={`Avísame ${Number(dias) > 0 ? dias : 'N'} ${dias === '1' ? 'día' : 'días'} antes de la fecha límite de pago.`}
+            ayuda={
+              errorDias(Number(dias)) === null && dias.trim() !== ''
+                ? `Avísame ${dias} ${dias === '1' ? 'día' : 'días'} antes de la fecha límite de pago.`
+                : `Elige cuántos días antes de la fecha límite de pago quieres el aviso (de ${DIAS_MIN} a ${DIAS_MAX}).`
+            }
             onChange={(e) => {
               setDias(e.target.value)
               setErrorDiasCampo(null)
