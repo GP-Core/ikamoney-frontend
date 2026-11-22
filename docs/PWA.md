@@ -125,14 +125,19 @@ Pasos:
 - La caché de respuestas de la API va en `workbox.runtimeCaching` dentro de `vite.config.ts` (por ejemplo, `NetworkFirst` para `/api/v1/...`), o en un service worker propio con `strategies: 'injectManifest'` si hace falta más control. El precache de la interfaz se queda como está.
 - **Fuentes**: hoy la app usa las del sistema (T34). Si se adoptan las de la guía T20 (Playfair Display y Source Sans 3), deben ir **autoalojadas** (por ejemplo con `@fontsource`) para que entren al precache; desde el CDN de Google Fonts no funcionarían sin conexión.
 
-## Notificaciones push · T49 y T50 (pendiente)
+## Notificaciones push · T49 y T50
 
-**Hecho (T49):** la pantalla `/alertas/configuracion` ya pide el permiso del navegador al encender "Notificaciones en tu dispositivo" (`src/services/push.ts`). Si el permiso está bloqueado, el navegador no lo soporta o no hay `VITE_VAPID_PUBLIC_KEY`, el interruptor queda apagado y deshabilitado con su explicación; si el servidor guardó `push: true` pero este dispositivo no lo permite, se corrige solo con `PUT /alertas/configuracion` (IC-08).
+**Estado (22-nov-2026): código listo, sin probar con un servicio de push real.** Falta generar las llaves VAPID en el backend, ponerlas y probar en un Android y un iPhone.
 
-**Fuera de alcance por ahora (pasa al sprint 10):** el envío real. El backend aún no tiene llaves VAPID, tabla de suscripciones ni `POST` y `DELETE` de suscripción (ver `ikamoney-backend/docs/NOTIFICACIONES.md`), así que no se tocó el service worker. Cuando existan:
+**Cómo está armado:**
 
-1. `vite.config.ts`: pasar de `generateSW` a `strategies: 'injectManifest'` con `src/sw.ts`, y agregar `workbox-precaching` y `workbox-routing` como dependencias de desarrollo.
-2. `src/sw.ts`: precache del manifiesto, el mismo `NavigationRoute` con exclusión de `/api/`, respuesta al mensaje `SKIP_WAITING` (lo usa `useActualizacionPwa` con `registerType: 'prompt'`) y los eventos `push` y `notificationclick` (abre `/alertas`). El texto lo manda el backend; si llega vacío, usar uno fijo sin datos ("Tienes un aviso nuevo en IkaMoney", IC-07).
-3. `src/services/push.ts`: `suscribir()` (`pushManager.subscribe` con la llave pública y `POST` al backend) y `desuscribir()`; declarar la llave en `.env.example` (ya está `VITE_VAPID_PUBLIC_KEY`).
-4. `src/services/dispositivo.ts`: `cancelarPush` hoy solo cancela en el navegador; debe avisar también al servidor antes de que se borre el token.
-5. Probar con `npm run build` + `npm run preview` (no con `dev`) y en un Android con la app instalada. En iPhone solo funciona con la app agregada a la pantalla de inicio.
+- `vite.config.ts` usa `strategies: 'injectManifest'` con un service worker propio, `src/sw.ts` (antes lo generaba `generateSW`). Hace lo mismo: precache de la interfaz, `index.html` para las navegaciones salvo `/api/`, y el mensaje `SKIP_WAITING` que usa `useActualizacionPwa` con `registerType: 'prompt'`. Agrega `push` (muestra la notificación con el texto fijo que manda el backend o, si llega vacío, "Tienes un aviso nuevo en IkaMoney.": nunca saldos, IC-07) y `notificationclick` (abre o enfoca `/alertas`; solo acepta rutas de la propia app).
+- `tsconfig.sw.json` compila `src/sw.ts` con los tipos de WebWorker; `tsconfig.app.json` lo excluye. Dependencias de desarrollo: `workbox-core`, `workbox-precaching` y `workbox-routing`.
+- `src/services/push.ts`: `pedirPermisoPush` (T49), `suscribirPush` (suscribe con `VITE_VAPID_PUBLIC_KEY` y la registra con `POST /api/v1/notificaciones/suscripcion` a través de `alertasService.registrarPush`) y `desuscribirPush` (la quita del servidor y del navegador; nunca lanza y no espera más de 4 s).
+- `pages/AlertasConfigPage.tsx`: al guardar con push encendido, primero suscribe este dispositivo; si no se puede, no guarda nada y explica por qué. Al apagarlo, tras guardar, lo da de baja.
+- `context/authProvider.tsx` (`cerrarSesion`): llama a `desuscribirPush()` **antes** de cerrar la sesión en el servidor, mientras la cookie sigue viva. Si no llega (sin conexión, sesión vencida), el navegador igual cancela la suscripción y el servidor la borra cuando el servicio de push le conteste 404 o 410. Al eliminar la cuenta no hace falta: el servidor borra las suscripciones con la cuenta.
+- `AlertasService` (`alertasApi.ts`, `alertasMock.ts`) tiene `registrarPush` y `quitarPush`; el de prueba no hace nada.
+
+**Para activarlo** (los pasos del backend están en `ikamoney-backend/docs/NOTIFICACIONES.md`): poner la llave **pública** en `VITE_VAPID_PUBLIC_KEY` (Vercel) y volver a desplegar. Sin ella, la opción dice "Disponible próximamente".
+
+**Cómo probarlo cuando haya llaves:** `npm run build` + `npm run preview` (el service worker no existe en `dev`), instalar la app, encender el interruptor y bajar el umbral a 10 con una tarjeta con saldo. En iPhone solo funciona con la app agregada a la pantalla de inicio (iOS 16.4 o posterior). Si se cambia `src/sw.ts`, la versión nueva espera a que la persona acepte la actualización.

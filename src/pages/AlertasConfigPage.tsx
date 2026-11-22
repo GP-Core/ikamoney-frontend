@@ -11,7 +11,7 @@ import { useAlertas } from '../hooks/useAlertas'
 import { useAuth } from '../hooks/useAuth'
 import { useConexion } from '../hooks/useConexion'
 import { alertasService } from '../services/alertas'
-import { pedirPermisoPush, permisoPush, pushHabilitado } from '../services/push'
+import { desuscribirPush, pedirPermisoPush, permisoPush, pushHabilitado, suscribirPush } from '../services/push'
 import type { PermisoPush } from '../services/push'
 import type { ConfiguracionAlertas, ConfiguracionEdicion } from '../types/alerta'
 import { DIAS_MAX, DIAS_MIN, UMBRAL_MAX, UMBRAL_MIN, errorDias, errorUmbral } from '../utils/alertas'
@@ -122,6 +122,16 @@ function AlertasConfigPage() {
     }
 
     // Solo se envía lo que cambió.
+    // Encender push: primero se suscribe este dispositivo; si no se puede, no se guarda nada y se explica por qué.
+    if (push && !base.canales.push) {
+      try {
+        await suscribirPush()
+      } catch (error) {
+        setErrorGuardar(mensajeError(error))
+        setPush(false)
+        return
+      }
+    }
     const cambios: ConfiguracionEdicion = {}
     if (umbral !== base.umbral_utilizacion) cambios.umbral_utilizacion = umbral
     if (diasNumero !== base.dias_anticipacion) cambios.dias_anticipacion = diasNumero
@@ -137,6 +147,8 @@ function AlertasConfigPage() {
     setGuardando(true)
     try {
       aplicar(await alertasService.guardarConfiguracion(cambios))
+      // Apagar push: ya guardado, este dispositivo deja de recibirlo (en el servidor y en el navegador).
+      if (!push && base.canales.push) await desuscribirPush()
       recargar() // el servidor reevalúa las alertas con los valores nuevos
       setGuardado(true)
     } catch (error) {
@@ -183,7 +195,8 @@ function AlertasConfigPage() {
             }}
           />
           <p id="umbral-ayuda" className="alertas-config__ayuda">
-            Te avisamos cuando una tarjeta use este porcentaje o más de su límite de crédito.
+            Te avisamos cuando una tarjeta use este porcentaje o más de su límite de crédito. Recomendamos 50 % o
+            menos, la referencia del Buró de Crédito.
           </p>
         </section>
 

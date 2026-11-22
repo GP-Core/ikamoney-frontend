@@ -15,6 +15,11 @@ export default defineConfig({
     // App instalable (T59). El service worker solo existe en el build (npm run build / preview), no en dev.
     // Guía completa: docs/PWA.md
     VitePWA({
+      // Service worker propio (src/sw.ts) para poder recibir notificaciones push (T50). Hace lo mismo que el
+      // generado: precache de la interfaz y de index.html para las navegaciones salvo /api/ (ver el archivo).
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       // Avisa cuando hay versión nueva y el usuario decide cuándo actualizar (ver hooks/useActualizacionPwa.ts).
       registerType: 'prompt',
       // Las previews de Vercel con protección solo entregan el manifest si la petición lleva la cookie de sesión.
@@ -43,11 +48,9 @@ export default defineConfig({
           { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      injectManifest: {
         // Solo la interfaz (app shell): HTML, CSS, JS, íconos y fuentes autoalojadas. El manifest lo agrega el plugin.
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        // Las respuestas de la API no se cachean aquí (eso es T60), y una navegación a /api nunca recibe index.html.
-        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

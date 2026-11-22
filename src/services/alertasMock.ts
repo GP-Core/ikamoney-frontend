@@ -145,4 +145,8 @@ export const alertasMock: AlertasService = {
     guardar(datos)
     return datos.configuracion
   },
+
+  // En prueba no hay servidor que envíe push: registrar y quitar no hacen nada.
+  async registrarPush() {},
+  async quitarPush() {},
 }

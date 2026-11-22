@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { ApiError, registrarAlNoAutorizado } from '../services/api'
 import { MODO_PRUEBA, authService } from '../services/auth'
 import { limpiarDispositivo } from '../services/dispositivo'
+import { desuscribirPush } from '../services/push'
 import { guardarCopia, leerCopia } from '../services/offline'
 import {
   borrarDatosLocales,
@@ -153,6 +154,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const cerrarSesion = useCallback(
     async (motivo: MotivoCierre = 'manual') => {
       let llegoAlServidor = true
+      // Con la sesión todavía viva, este dispositivo deja de recibir push (T50). No lanza ni espera de más.
+      await desuscribirPush()
       try {
         await authService.cerrarSesion()
       } catch {

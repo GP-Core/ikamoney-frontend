@@ -1,4 +1,4 @@
-import type { Alerta, ConfiguracionAlertas, ConfiguracionEdicion, ListaAlertas } from '../types/alerta'
+import type { Alerta, ConfiguracionAlertas, ConfiguracionEdicion, ListaAlertas, SuscripcionPush } from '../types/alerta'
 import { apiFetch } from './api'
 
 /**
@@ -11,9 +11,13 @@ export interface AlertasService {
   marcarLeida(id: number, leida: boolean): Promise<Alerta>
   obtenerConfiguracion(): Promise<ConfiguracionAlertas>
   guardarConfiguracion(cambios: ConfiguracionEdicion): Promise<ConfiguracionAlertas>
+  /** Registra este dispositivo para recibir notificaciones push (T50). */
+  registrarPush(suscripcion: SuscripcionPush): Promise<void>
+  /** Quita este dispositivo de las notificaciones push. No falla si ya no existía. */
+  quitarPush(endpoint: string): Promise<void>
 }
 
-const json = (metodo: 'PUT' | 'PATCH', datos: unknown): RequestInit => ({ method: metodo, body: JSON.stringify(datos) })
+const json = (metodo: 'PUT' | 'PATCH' | 'POST' | 'DELETE', datos: unknown): RequestInit => ({ method: metodo, body: JSON.stringify(datos) })
 
 /** Implementación real sobre /api/v1/alertas. */
 export const alertasApi: AlertasService = {
@@ -21,4 +25,6 @@ export const alertasApi: AlertasService = {
   marcarLeida: (id, leida) => apiFetch<Alerta>(`/v1/alertas/${encodeURIComponent(String(id))}`, json('PATCH', { leida })),
   obtenerConfiguracion: () => apiFetch<ConfiguracionAlertas>('/v1/alertas/configuracion'),
   guardarConfiguracion: (cambios) => apiFetch<ConfiguracionAlertas>('/v1/alertas/configuracion', json('PUT', cambios)),
+  registrarPush: (suscripcion) => apiFetch<void>('/v1/notificaciones/suscripcion', json('POST', suscripcion)),
+  quitarPush: (endpoint) => apiFetch<void>('/v1/notificaciones/suscripcion', json('DELETE', { endpoint })),
 }

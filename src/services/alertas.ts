@@ -14,4 +14,6 @@ export const alertasService: AlertasService = {
   ...servicio,
   marcarLeida: (id, leida) => escribir(() => servicio.marcarLeida(id, leida)),
   guardarConfiguracion: (cambios) => escribir(() => servicio.guardarConfiguracion(cambios)),
+  registrarPush: (suscripcion) => escribir(() => servicio.registrarPush(suscripcion)),
+  quitarPush: (endpoint) => escribir(() => servicio.quitarPush(endpoint)),
 }

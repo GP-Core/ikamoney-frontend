@@ -44,3 +44,9 @@ export interface ConfiguracionEdicion {
   dias_anticipacion?: number
   canales?: Partial<CanalesAlertas>
 }
+
+/** Suscripción push de este dispositivo, con el formato de PushSubscription.toJSON() que espera el backend. */
+export interface SuscripcionPush {
+  endpoint: string
+  keys: { p256dh: string; auth: string }
+}

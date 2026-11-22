@@ -22,5 +22,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // El service worker se compila aparte (tsconfig.sw.json): usa los tipos de WebWorker, no los del DOM
+  "exclude": ["src/sw.ts"]
 }
