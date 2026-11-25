@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import ComparativaEscenarios from '../components/ComparativaEscenarios'
 import EscenariosNoViables from '../components/EscenariosNoViables'
 import ExplicacionIa from '../components/ExplicacionIa'
@@ -26,7 +26,9 @@ const EXPLICACION_MUESTRA =
 
 /** La compra viaja en la URL: con `precio` (o los atajos de demo) se ve el resultado; sin nada, se captura la compra. */
 function SimuladorPage() {
-  const p = new URLSearchParams(window.location.search)
+  // useLocation suscribe la página a la ruta: sin él, navegar de /simulador a /simulador?precio=… no la vuelve a pintar.
+  const { search } = useLocation()
+  const p = new URLSearchParams(search)
   const hayCompra = p.has('precio') || p.has('demo') || p.has('ia')
   return hayCompra ? <ResultadoSimulador /> : <CapturaCompra />
 }

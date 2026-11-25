@@ -21,6 +21,14 @@
 }
 
 /* Lo que debe hacer el usuario: la primera deuda. */
+/* .accion también es la clase de los botones pequeños de Finanzas.css (inline-flex): en la tarjeta se anula para que sea un bloque. */
+section.accion {
+  display: block;
+  min-height: 0;
+  gap: 0;
+  font: inherit;
+}
+
 .accion {
   padding: 18px 16px;
   border-radius: 28px;
