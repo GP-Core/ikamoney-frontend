@@ -190,10 +190,11 @@ const ICONOS = {
       <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
     </>
   ),
-  salirCirculo: (
+  salirCasa: (
     <>
-      <circle cx="12" cy="12" r="10" />
-      <path d="m14 16-4-4 4-4" />
+      <path d="M14 8.5V8L8.5 3.5 3 8v11a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2.5" />
+      <path d="M9 12.5h12" />
+      <path d="m17.5 9 3.5 3.5-3.5 3.5" />
     </>
   ),
 } as const

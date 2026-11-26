@@ -46,7 +46,7 @@ function BarraLateral() {
 
       <div className="lateral__pie">
         <button type="button" className="lateral__salir" onClick={() => void cerrarSesion('manual')}>
-          <Icon nombre="salirCirculo" tamano={22} />
+          <Icon nombre="salirCasa" tamano={22} />
           Salir
         </button>
         <p className="lateral__legales">

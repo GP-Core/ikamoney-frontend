@@ -103,7 +103,7 @@ function MenuLateral({ abierto, onCerrar }: MenuLateralProps) {
               void cerrarSesion('manual')
             }}
           >
-            <Icon nombre="salirCirculo" tamano={28} />
+            <Icon nombre="salirCasa" tamano={28} />
             Salir
           </button>
           {/* Para quien usa lector de pantalla en el celular, sin Esc ni forma de tocar el velo. */}
