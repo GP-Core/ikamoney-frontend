@@ -7,10 +7,12 @@ interface ModalProps {
   title: string
   onClose: () => void
   children: ReactNode
+  /** Para textos largos: más ancha, con el título fijo y el contenido con scroll. */
+  variante?: 'documento'
 }
 
 /** Ventana modal con <dialog>: en celular sube desde abajo. Esc y "Cerrar" llaman a onClose. */
-function Modal({ open, title, onClose, children }: ModalProps) {
+function Modal({ open, title, onClose, children, variante }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
 
@@ -22,7 +24,12 @@ function Modal({ open, title, onClose, children }: ModalProps) {
   }, [open])
 
   return (
-    <dialog ref={ref} className="modal" aria-labelledby={titleId} onClose={onClose}>
+    <dialog
+      ref={ref}
+      className={`modal ${variante ? `modal--${variante}` : ''}`}
+      aria-labelledby={titleId}
+      onClose={onClose}
+    >
       <div className="modal__head">
         <h2 id={titleId}>{title}</h2>
         <button type="button" className="modal__close" onClick={onClose} aria-label="Cerrar">
@@ -30,7 +37,7 @@ function Modal({ open, title, onClose, children }: ModalProps) {
         </button>
       </div>
       {/* Se monta solo al abrir, así el formulario siempre empieza limpio. */}
-      {open && children}
+      {open && (variante ? <div className="modal__cuerpo">{children}</div> : children)}
     </dialog>
   )
 }

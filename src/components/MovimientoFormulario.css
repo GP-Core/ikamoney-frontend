@@ -95,3 +95,10 @@
   border: 1.5px dashed var(--border);
   border-radius: 8px;
 }
+
+.mform__nota {
+  margin: 4px 0 0;
+  color: var(--gris-azulado);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}

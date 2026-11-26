@@ -73,6 +73,8 @@ export interface ScoreResponse {
   faltantes: FaltanteScore[]
   /** Supuestos usados en el cálculo, para mostrarlos al usuario. */
   supuestos: string[]
+  /** false cuando el comportamiento de pago sale de los pagos registrados. Sin el campo, es supuesto. */
+  comportamiento_supuesto?: boolean
 }
 
 /** Un mes del historial: último score de ese mes (GET /api/v1/score/historial, REQ-SF-06). */

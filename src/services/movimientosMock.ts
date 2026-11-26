@@ -195,6 +195,14 @@ export const movimientosMock: MovimientosService = {
     guardar(datos)
   },
 
+  async registrarOcurrencia() {
+    throw new ApiError(422, 'Marcar pagos no está disponible en el modo de prueba.')
+  },
+
+  async quitarOcurrencia() {
+    throw new ApiError(422, 'Marcar pagos no está disponible en el modo de prueba.')
+  },
+
   async listarCategorias() {
     await esperar()
     return todasLasCategorias(leer())

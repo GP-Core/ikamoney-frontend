@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { PlanResponse } from '../src/types/plan.ts'
-import { abonosPorDeuda, desplazarMeses, indiceDeEjemplo, mesesEntre } from '../src/utils/planVista.ts'
+import { abonosPorDeuda, cuandoAbonar, desplazarMeses, extraAplicable, indiceDeEjemplo, maximoDeslizador, mesesEntre } from '../src/utils/planVista.ts'
 
 const plan = {
   calendario: [
@@ -42,4 +42,22 @@ test('indiceDeEjemplo elige el plan de ejemplo más cercano y no se sale del arr
   assert.equal(indiceDeEjemplo(1300, 500, 21), 3)
   assert.equal(indiceDeEjemplo(999999, 500, 21), 20)
   assert.equal(indiceDeEjemplo(-50, 500, 21), 0)
+})
+
+test('el tope del deslizador deja aire sobre el monto sugerido', () => {
+  assert.equal(maximoDeslizador(0), 10000)
+  assert.equal(maximoDeslizador(3000), 10000)
+  assert.equal(maximoDeslizador(11800), 15000)
+})
+
+test('el extra aplicable se redondea hacia abajo al paso', () => {
+  assert.equal(extraAplicable(11850, 100), 11800)
+  assert.equal(extraAplicable(80, 100), 0)
+  assert.equal(extraAplicable(-300, 100), 0)
+})
+
+test('un solo pago se anuncia como "este mes"', () => {
+  assert.equal(cuandoAbonar(1), 'este mes')
+  assert.equal(cuandoAbonar(3), 'al mes')
+  assert.equal(cuandoAbonar(null), 'al mes')
 })

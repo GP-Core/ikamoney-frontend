@@ -1,23 +1,55 @@
+import { Link } from 'react-router'
+import type { Termino } from '../content/glosario'
 import type { ClaveFactor, FactorScore } from '../types/score'
-import { efectoDe, numero, ordenarFactores, type Efecto } from '../utils/score'
+import type { NivelSemaforo } from '../utils/ranking'
+import {
+  calificacionDe,
+  consejoDe,
+  ETIQUETA_CALIFICACION,
+  numero,
+  ordenarFactores,
+  TEXTO_SUPUESTO_PAGO,
+  type Calificacion,
+} from '../utils/score'
+import { sinCodigosInternos } from '../utils/texto'
+import AyudaTermino from './AyudaTermino'
+import IconoSemaforo from './IconoSemaforo'
+import './Desplegable.css'
 import './ScoreDesglose.css'
+import './Semaforo.css'
 
 interface FactoresScoreProps {
   factores: FactorScore[]
   ordenMejora: ClaveFactor[]
   /** Factor cuya sugerencia ya se muestra arriba, para no repetirla. */
   claveDestacada?: ClaveFactor | null
+  /** true si el comportamiento de pago no se pudo medir. */
+  pagoSupuesto: boolean
 }
 
-const ETIQUETA: Record<Efecto, string> = { suma: 'Suma', resta: 'Resta', omitido: 'No aplica' }
-const ICONO: Record<Efecto, string> = { suma: '↑', resta: '↓', omitido: '–' }
+const TERMINO: Record<ClaveFactor, Termino> = {
+  relacion_deuda_ingreso: 'relacionDeudaIngreso',
+  utilizacion_credito: 'usoLimite',
+  flujo_libre: 'flujoLibre',
+  carga_msi: 'cargaMsi',
+  comportamiento_pago: 'comportamientoPago',
+}
+
+/** Supuesto y "no aplica" van sin semáforo: no se están midiendo. */
+const SEMAFORO: Record<Calificacion, NivelSemaforo | null> = {
+  bien: 'sano',
+  mejorar: 'precaucion',
+  baja: 'riesgo',
+  supuesto: null,
+  omitido: null,
+}
 
 /**
- * Lista de factores. Cada uno muestra cuántos puntos aporta de los que podría aportar.
- * Lo que suma y lo que resta se distingue por color, icono, etiqueta y texto, no solo por color.
+ * Lista de factores. Cada uno dice cómo va (color, forma y texto) y cuántos puntos aporta de los
+ * que podría aportar.
  */
-function FactoresScore({ factores, ordenMejora, claveDestacada }: FactoresScoreProps) {
-  const ordenados = ordenarFactores(factores, ordenMejora)
+function FactoresScore({ factores, ordenMejora, claveDestacada, pagoSupuesto }: FactoresScoreProps) {
+  const ordenados = ordenarFactores(factores, ordenMejora, pagoSupuesto)
   const pesoMaximo = Math.max(...factores.map((f) => f.peso_efectivo), 1)
 
   return (
@@ -26,33 +58,43 @@ function FactoresScore({ factores, ordenMejora, claveDestacada }: FactoresScoreP
         Qué pesa en tu score
       </h2>
       <p className="factores__ayuda">
-        Primero lo que más puntos deja de sumar, para que veas por dónde conviene empezar. La barra completa es lo
-        máximo que puede aportar cada factor.
+        Ordenados por los puntos que puedes ganar. La barra completa es lo máximo que aporta cada factor.
       </p>
 
       <ol className="factores__lista">
         {ordenados.map((f) => {
-          const efecto = efectoDe(f)
-          const omitido = efecto === 'omitido'
+          const calificacion = calificacionDe(f, pagoSupuesto)
+          const semaforo = SEMAFORO[calificacion]
+          const omitido = calificacion === 'omitido'
+          const supuesto = calificacion === 'supuesto'
           const ancho = (f.peso_efectivo / pesoMaximo) * 100
           const llenado = f.peso_efectivo > 0 ? (f.aporte / f.peso_efectivo) * 100 : 0
-          const pierde = f.puntos_perdidos >= 1
           return (
-            <li key={f.clave} className={`factor factor--${efecto}`}>
+            <li key={f.clave} className={`factor factor--${calificacion}`}>
               <div className="factor__cabeza">
-                <span className="factor__icono" aria-hidden="true">
-                  {ICONO[efecto]}
-                </span>
-                <h3 className="factor__nombre">{f.nombre}</h3>
-                <span className="factor__puntos">
-                  <span className="factor__etiqueta">{ETIQUETA[efecto]}</span>
-                  {!omitido && ` · ${numero(f.aporte)} de ${numero(f.peso_efectivo)} pts`}
+                <h3 className="factor__nombre">
+                  <AyudaTermino termino={TERMINO[f.clave]}>{f.nombre}</AyudaTermino>
+                </h3>
+                <span className={semaforo ? `semaforo semaforo--${semaforo}` : 'semaforo semaforo--neutro'}>
+                  {semaforo && <IconoSemaforo nivel={semaforo} />}
+                  {ETIQUETA_CALIFICACION[calificacion]}
                 </span>
               </div>
 
-              <p className="factor__texto">{f.explicacion}</p>
+              <p className="factor__texto">{supuesto ? TEXTO_SUPUESTO_PAGO : sinCodigosInternos(f.explicacion)}</p>
+              {supuesto && (
+                <Link className="factor__enlace" to="/cuentas">
+                  Registra tus pagos para que cuente
+                </Link>
+              )}
 
               {!omitido && (
+                <p className="factor__puntos">
+                  <strong>{numero(f.aporte)}</strong> de {numero(f.peso_efectivo)} puntos
+                </p>
+              )}
+
+              {!omitido && !supuesto && (
                 <div
                   className="factor__barra"
                   role="img"
@@ -64,23 +106,23 @@ function FactoresScore({ factores, ordenMejora, claveDestacada }: FactoresScoreP
                 </div>
               )}
 
-              {pierde && f.clave !== claveDestacada && (
+              {!omitido && !supuesto && f.puntos_perdidos >= 1 && f.clave !== claveDestacada && (
                 <p className="factor__sugerencia">
-                  <strong>Qué puede ayudar:</strong> {f.como_mejorar}
+                  <strong>Qué puede ayudar:</strong> {consejoDe(f)}
                 </p>
               )}
 
-              <details className="factor__detalle">
+              <details className="desplegable">
                 <summary>Cómo se calcula</summary>
                 <p>
-                  <strong>Fórmula:</strong> {f.formula}
+                  <strong>Fórmula:</strong> {sinCodigosInternos(f.formula)}
                 </p>
                 <p>
-                  <strong>Peso en tu score:</strong> {numero(f.peso)}%
-                  {!omitido && f.peso_efectivo !== f.peso && ` (hoy cuenta como ${numero(f.peso_efectivo)}%)`}
+                  <strong>Peso en tu score:</strong> {numero(f.peso)} %
+                  {!omitido && f.peso_efectivo !== f.peso && ` (hoy cuenta como ${numero(f.peso_efectivo)} %)`}
                 </p>
                 <p>
-                  <strong>Por qué pesa eso:</strong> {f.justificacion_peso}
+                  <strong>Por qué pesa eso:</strong> {sinCodigosInternos(f.justificacion_peso)}
                 </p>
               </details>
             </li>

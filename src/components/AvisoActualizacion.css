@@ -53,3 +53,10 @@
   outline: 3px solid var(--marca-dorado);
   box-shadow: 0 0 0 5px var(--marca-azul);
 }
+
+/* Por encima de la barra de navegación flotante. */
+@media (max-width: 1023px) {
+  .aviso-pwa {
+    bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+}

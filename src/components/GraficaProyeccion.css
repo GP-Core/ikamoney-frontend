@@ -1,8 +1,9 @@
 .grafica {
   grid-area: grafica;
-  padding: 18px 16px 16px;
-  border: 1px solid var(--border);
-  border-radius: 22px;
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--azul);
+  border-radius: var(--radio);
   background: var(--surface);
 }
 
@@ -60,7 +61,6 @@
 .grafica__svg {
   display: block;
   width: 100%;
-  max-width: 560px; /* en pantallas anchas evita que los textos del SVG se agranden de más */
   margin: 0 auto;
   height: auto;
   -webkit-tap-highlight-color: transparent;
@@ -117,14 +117,14 @@
 }
 
 .grafica__linea {
-  stroke: var(--c-libre);
+  stroke: var(--verde-texto);
   stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .grafica__punto {
-  fill: var(--c-libre);
+  fill: var(--verde-texto);
   stroke: var(--surface);
   stroke-width: 1.5;
 }
@@ -135,14 +135,14 @@
 }
 
 .grafica__zona:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--dorado);
   outline-offset: -2px;
 }
 
 .grafica__detalle {
   margin-top: 8px;
   padding: 12px;
-  border-radius: 16px;
+  border-radius: 8px;
   background: var(--b-realce);
 }
 
@@ -179,7 +179,7 @@
 }
 
 .grafica__filas dd.grafica__positivo {
-  color: var(--c-libre);
+  color: var(--verde-texto);
 }
 
 .grafica__filas dd.grafica__negativo {
@@ -217,4 +217,113 @@
   font-size: 8px;
   font-weight: 700;
   font-family: var(--sans);
+}
+
+.grafica__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+
+.grafica__cabecera .grafica__titulo {
+  margin: 0;
+}
+
+.grafica__corte {
+  stroke: var(--gris-azulado);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.grafica__corte-texto {
+  fill: var(--gris-azulado);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.grafica__detalle-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.grafica__momento {
+  padding: 0 8px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 999px;
+  background: var(--crema);
+  color: var(--azul);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.grafica__columnas {
+  display: grid;
+  gap: 8px 24px;
+}
+
+.grafica__filas--saldos {
+  align-content: start;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.grafica__filas--saldos .grafica__total {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.grafica__motivo {
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 600px) {
+  .grafica__columnas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grafica__filas--saldos {
+    padding-top: 0;
+    padding-left: 24px;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+}
+
+/* Detalle en tres pasos: los pasos van firmes y su desglose, sangrado y en gris. */
+.grafica__paso {
+  font-weight: 700;
+}
+
+.grafica__sub {
+  padding-left: 12px;
+  color: var(--gris-azulado);
+}
+
+.grafica__sub small {
+  font-size: 0.75rem;
+}
+
+.grafica__filas dt {
+  flex-wrap: wrap;
+}
+
+.grafica__filas dd {
+  white-space: nowrap;
+}
+
+.grafica__total {
+  align-items: baseline;
+}
+
+.grafica__total dd {
+  font-size: 1.05rem;
+  font-weight: 700;
 }

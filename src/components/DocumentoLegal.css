@@ -1,0 +1,145 @@
+/* Textos largos: líneas de unos 70 caracteres, aire entre párrafos y un índice para saltar. */
+.legal {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 70ch;
+  line-height: 1.6;
+}
+
+.legal__fecha {
+  margin: 0;
+  color: var(--gris-azulado);
+  font-size: 14px;
+}
+
+.legal__indice {
+  padding: 0 14px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--arena);
+}
+
+.legal__indice summary {
+  min-height: 44px;
+  align-content: center;
+  color: var(--azul);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.legal__indice ul {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.legal__indice button {
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.legal__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legal__seccion h2 {
+  margin: 0;
+  font-size: 18px;
+  scroll-margin-top: 12px;
+}
+
+.legal__seccion p,
+.legal__seccion ul,
+.legal__seccion ol {
+  margin: 0;
+}
+
+.legal__seccion li + li {
+  margin-top: 6px;
+}
+
+.legal a,
+.legal li,
+.legal p {
+  overflow-wrap: anywhere;
+}
+
+/* Acciones al final de la ventana */
+.legal__pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 24px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--arena-oscura);
+}
+
+.legal__pie button,
+.legal__pie a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: 600 15px/1.2 var(--sans);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* El enlace que abre la ventana hereda cómo se ve el texto que lo rodea. */
+.enlace-legal {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.enlace-legal:focus-visible,
+.legal__pie button:focus-visible,
+.legal__pie a:focus-visible,
+.legal__indice button:focus-visible,
+.legal__indice summary:focus-visible {
+  outline: 3px solid var(--dorado);
+  outline-offset: 2px;
+}
+
+.lateral__legales .enlace-legal,
+.menu__legales .enlace-legal {
+  color: var(--gris-azulado);
+  font-weight: 400;
+}
+
+.menu__legales .enlace-legal {
+  min-height: 44px;
+}
+
+.legal__subir {
+  align-self: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--azul);
+  border-radius: 8px;
+  background: var(--crema);
+  color: var(--azul);
+  font: 600 15px/1.2 var(--sans);
+  cursor: pointer;
+}

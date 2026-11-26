@@ -1,0 +1,54 @@
+.cupo {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radio);
+  background: var(--surface);
+}
+
+.cupo p {
+  margin: 0;
+}
+
+.cupo__cuenta strong {
+  font: 700 28px/1 var(--serif);
+  color: var(--azul);
+}
+
+.cupo--poco .cupo__cuenta strong {
+  color: var(--precaucion);
+}
+
+.cupo__medidor {
+  display: flex;
+  gap: 4px;
+}
+
+.cupo__segmento {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--arena-oscura);
+}
+
+.cupo__segmento--libre {
+  background: var(--azul);
+}
+
+.cupo__texto {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.cupo-etiqueta {
+  display: inline-block; /* así no hereda el subrayado del enlace */
+  padding: 2px 8px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 999px;
+  background: var(--arena);
+  color: var(--tinta);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

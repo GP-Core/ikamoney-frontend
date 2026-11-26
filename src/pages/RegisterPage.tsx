@@ -6,6 +6,7 @@ import Button from '../components/Button'
 import FormAlert from '../components/FormAlert'
 import PasswordRequirements from '../components/PasswordRequirements'
 import TextField from '../components/TextField'
+import EnlaceLegal from '../components/EnlaceLegal'
 import { useAuth } from '../hooks/useAuth'
 import { mensajeErrorAuth } from '../utils/authErrors'
 import {
@@ -131,13 +132,9 @@ function RegisterPage() {
             />
             <span>
               Acepto el{' '}
-              <Link to="/aviso-de-privacidad" target="_blank" rel="noopener">
-                aviso de privacidad
-              </Link>{' '}
+              <EnlaceLegal documento="privacidad">aviso de privacidad</EnlaceLegal>{' '}
               y los{' '}
-              <Link to="/terminos-de-uso" target="_blank" rel="noopener">
-                términos de uso
-              </Link>
+              <EnlaceLegal documento="terminos">términos de uso</EnlaceLegal>
               .
             </span>
           </label>

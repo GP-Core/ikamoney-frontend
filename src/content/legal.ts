@@ -15,17 +15,25 @@ export interface SeccionLegal {
 
 export interface DocumentoLegal {
   titulo: string
+  /** AAAA-MM-DD. Se cambia cada vez que se cambia el texto. */
+  actualizado: string
   secciones: SeccionLegal[]
 }
 
 export type ClaveDocumentoLegal = 'privacidad' | 'terminos'
 
-const CONTACTO = 'ikasoft_empresa@gmail.com'
+export const RUTAS_LEGALES: Record<ClaveDocumentoLegal, string> = {
+  privacidad: '/aviso-de-privacidad',
+  terminos: '/terminos-de-uso',
+}
+
+export const CONTACTO = 'ikasoft_empresa@gmail.com'
 const PROVEEDOR_IA = 'Google (API de Gemini)'
 
 export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
   privacidad: {
     titulo: 'Aviso de privacidad',
+    actualizado: '2026-11-26',
     secciones: [
       {
         titulo: 'Nuestra promesa',
@@ -45,13 +53,15 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
       {
         titulo: '2. Qué datos recabamos',
         bloques: [
-          { p: 'Para tu cuenta: tu correo y tu contraseña.' },
+          { p: 'Para tu cuenta: tu nombre, tu correo y tu contraseña.' },
           { p: 'Lo que tú registras:' },
           {
             ul: [
               'Ingresos: monto, fecha, descripción y si se repiten.',
               'Gastos fijos y variables: monto, fecha o día de pago, descripción y categoría.',
-              'Tarjetas de crédito: nombre, saldo, límite, tasa de interés, fecha de corte y fecha límite de pago.',
+              'Cuentas de dinero (débito, ahorro, efectivo, monedero u otra): nombre, tipo, saldo y movimientos; y, si quieres, el banco y los últimos 4 dígitos.',
+              'Tarjetas de crédito: nombre, banco, saldo, límite, tasa de interés, fecha de corte y fecha límite de pago; y, si quieres, los últimos 4 dígitos.',
+              'Pagos a tarjetas y deudas: monto, fecha y de qué cuenta salieron.',
               'Deudas que no son de tarjeta: saldo, tasa y pago mensual.',
               'Planes a meses sin intereses (MSI): monto total, número de meses y mes de inicio.',
             ],
@@ -59,6 +69,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
           {
             p: 'Lo que sacamos de tu estado de cuenta, si decides subirlo: los datos de la tarjeta (saldo, límite, tasa, fecha de corte y fecha límite de pago), los movimientos del periodo (fecha, descripción y monto) y los planes MSI vigentes.',
           },
+          { p: 'Además, guardamos cuántas lecturas con inteligencia artificial has usado.' },
           {
             p: 'Lo que calculamos con lo anterior: tu balance, tu proyección de los próximos meses, tu Índice de Salud Financiera, el orden de tus deudas, tus alertas y los límites de alerta que tú configures.',
           },
@@ -70,7 +81,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
           {
             ul: [
               'Nunca pedimos usuario, contraseña ni claves de tu banco.',
-              'No te pedimos el número de tu tarjeta.',
+              'No te pedimos el número completo de tu tarjeta ni su código de seguridad.',
               'Tu nombre, número de tarjeta, CLABE, RFC y CURP, que vienen en el estado de cuenta, se quitan antes de enviar el texto a la inteligencia artificial (ver sección 5) y no forman parte de lo que guardamos.',
             ],
           },
@@ -133,7 +144,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
         titulo: '7. Datos que se guardan en tu dispositivo',
         bloques: [
           {
-            p: 'Para que puedas consultar tus últimos datos sin internet (balance, tarjetas, deudas y score), la aplicación guarda una copia en tu celular o computadora. Sin conexión solo puedes verlos, no modificarlos.',
+            p: 'Para que puedas consultar tus últimos datos sin internet (balance, ingresos y gastos, categorías, cuentas, tarjetas, deudas, score y avisos), la aplicación guarda una copia en tu celular o computadora. Sin conexión solo puedes verlos, no modificarlos.',
           },
           {
             ul: [
@@ -162,7 +173,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
         titulo: '9. Tus derechos y cómo eliminar tu cuenta',
         bloques: [
           {
-            p: `Puedes ver, corregir, eliminar tus datos y oponerte a que los usemos. Casi todo lo haces tú mismo desde la aplicación: editas o borras cualquier ingreso, gasto, tarjeta, deuda o plan MSI. Para cualquier otra solicitud, escríbenos a ${CONTACTO} y responderemos lo más pronto posible.`,
+            p: `Puedes ver, corregir, eliminar tus datos y oponerte a que los usemos. Casi todo lo haces tú mismo desde la aplicación: editas o borras cualquier ingreso, gasto, cuenta, tarjeta, deuda o plan MSI. Para cualquier otra solicitud, escríbenos a ${CONTACTO} y responderemos lo más pronto posible.`,
           },
           {
             p: 'Eliminar tu cuenta: entra a tu perfil y elige “Eliminar cuenta”. Te pediremos confirmar, porque no se puede deshacer. Al confirmar:',
@@ -192,6 +203,7 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
   },
   terminos: {
     titulo: 'Términos de uso',
+    actualizado: '2026-11-26',
     secciones: [
       {
         titulo: '1. Qué es IKAMONEY',
@@ -261,4 +273,14 @@ export const DOCUMENTOS_LEGALES: Record<ClaveDocumentoLegal, DocumentoLegal> = {
       },
     ],
   },
+}
+
+/** Ancla de una sección: "2. Qué datos recabamos" → "2-que-datos-recabamos". */
+export function ancla(titulo: string): string {
+  return titulo
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 }

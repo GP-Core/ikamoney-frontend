@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import type { Tarjeta } from '../types/finanzas'
-import type { EscenarioPedido, Prioridad } from '../types/simulador'
+import { useBalance } from '../hooks/useBalance'
+import type { EscenarioPedido, PedidoSimulacion, Prioridad } from '../types/simulador'
+import { mesActual } from '../utils/formatMes'
 import { prioridadVecina } from '../utils/prioridad'
 import { escenariosAUrl, leerPrecio, MAX_ESCENARIOS, nombreTarjeta, OPCIONES_PRIORIDAD, PLAZOS_MSI } from '../utils/simulador'
 import '../pages/SimuladorPage.css'
@@ -29,14 +31,38 @@ export function SinTarjetas() {
   )
 }
 
-export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
-  const [descripcion, setDescripcion] = useState('')
-  const [precioTexto, setPrecioTexto] = useState('')
-  const [ahorroTexto, setAhorroTexto] = useState('')
-  const [prioridad, setPrioridad] = useState<Prioridad>('media')
-  const [contado, setContado] = useState(true)
-  const [plazos, setPlazos] = useState<number[]>([6, 12, 18])
-  const [tarjetaId, setTarjetaId] = useState<number | ''>(tarjetas.length === 1 ? tarjetas[0].id : '')
+const MONTO = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+interface FormularioProps {
+  tarjetas: Tarjeta[]
+  /** La compra que se está corrigiendo ("Cambiar datos"); null al capturar una nueva. */
+  inicial?: PedidoSimulacion | null
+}
+
+export function Formulario({ tarjetas, inicial = null }: FormularioProps) {
+  const msiInicial = inicial?.escenarios?.filter((e) => e.tipo === 'msi') ?? []
+  const tarjetaInicial = tarjetas.find((t) => t.id === msiInicial[0]?.tarjeta_id)
+  const [descripcion, setDescripcion] = useState(
+    inicial && inicial.descripcion !== 'Tu compra' ? inicial.descripcion : '',
+  )
+  const [precioTexto, setPrecioTexto] = useState(inicial ? String(inicial.precio) : '')
+  // null = sin tocar: se muestra lo que hay en las cuentas.
+  const [ahorroEscrito, setAhorroEscrito] = useState<string | null>(
+    inicial ? (inicial.ahorro_inicial > 0 ? String(inicial.ahorro_inicial) : '') : null,
+  )
+  const cuentas = useBalance(mesActual())
+  const enCuentas = cuentas.data?.en_cuentas ?? 0
+  const prellenado = ahorroEscrito === null && enCuentas > 0
+  const ahorroTexto = ahorroEscrito ?? (enCuentas > 0 ? MONTO.format(enCuentas) : '')
+  const buscandoCuentas = ahorroEscrito === null && cuentas.estado === 'cargando'
+  const [prioridad, setPrioridad] = useState<Prioridad>(inicial?.prioridad ?? 'media')
+  const [contado, setContado] = useState(!inicial?.escenarios || inicial.escenarios.some((e) => e.tipo === 'contado'))
+  const [plazos, setPlazos] = useState<number[]>(
+    inicial?.escenarios ? msiInicial.flatMap((e) => (e.meses ? [e.meses] : [])) : [6, 12, 18],
+  )
+  const [tarjetaId, setTarjetaId] = useState<number | ''>(
+    tarjetaInicial?.id ?? (tarjetas.length === 1 ? tarjetas[0].id : ''),
+  )
   const navigate = useNavigate()
   const [errores, setErrores] = useState<Errores>({})
   const opcionesPrioridad = useRef<Record<string, HTMLButtonElement | null>>({})
@@ -106,6 +132,13 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
     <div className="balance__contenido">
       <form className="sim-form" onSubmit={enviar} noValidate>
         <div className="sim-campo">
+          <label htmlFor="sim-desc">
+            ¿Qué quieres comprar? <span className="sim-opcional">(opcional)</span>
+          </label>
+          <input id="sim-desc" autoFocus maxLength={120} autoComplete="off" placeholder="Ej. Laptop, tenis…" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+        </div>
+
+        <div className="sim-campo">
           <label htmlFor="sim-precio">¿Cuánto cuesta?</label>
           <div className="sim-precio">
             <span aria-hidden="true">$</span>
@@ -113,7 +146,6 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
               id="sim-precio"
               inputMode="decimal"
               autoComplete="off"
-              autoFocus
               placeholder="0"
               value={precioTexto}
               aria-invalid={!!errores.precio}
@@ -133,7 +165,7 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
 
         <div className="sim-campo">
           <label htmlFor="sim-ahorro">
-            ¿Cuánto tienes ahorrado para esto? <span className="sim-opcional">(opcional)</span>
+            ¿Con cuánto dinero cuentas hoy? <span className="sim-opcional">(opcional)</span>
           </label>
           <div className="sim-precio">
             <span aria-hidden="true">$</span>
@@ -141,18 +173,20 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
               id="sim-ahorro"
               inputMode="decimal"
               autoComplete="off"
-              placeholder="0"
+              placeholder={buscandoCuentas ? 'Cargando…' : '0'}
               value={ahorroTexto}
               aria-invalid={!!errores.ahorro}
               aria-describedby="sim-ahorro-ayuda"
               onChange={(e) => {
-                setAhorroTexto(e.target.value)
+                setAhorroEscrito(e.target.value)
                 setErrores((x) => ({ ...x, ahorro: undefined }))
               }}
             />
           </div>
           <p id="sim-ahorro-ayuda" className="sim-nota">
-            Sin este dato, pagar de contado casi siempre saldrá como no recomendable.
+            {prellenado
+              ? 'Tomado de tus cuentas. Cámbialo si parte de ese dinero ya está apartado.'
+              : 'Sin este dato, pagar de contado casi siempre saldrá como no recomendable.'}
           </p>
           {errores.ahorro && (
             <p className="sim-error" role="alert">
@@ -162,7 +196,7 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
         </div>
 
         <fieldset className="sim-campo">
-          <legend>¿Cómo quieres compararlo?</legend>
+          <legend>¿Cómo lo pagarías?</legend>
           <div className="sim-chips">
             <button type="button" className="sim-chip" aria-pressed={contado} disabled={lleno && !contado} onClick={() => { setContado(!contado); setErrores((e) => ({ ...e, escenarios: undefined })) }}>
               Contado
@@ -242,15 +276,8 @@ export function Formulario({ tarjetas }: { tarjetas: Tarjeta[] }) {
           </p>
         </fieldset>
 
-        <div className="sim-campo">
-          <label htmlFor="sim-desc">
-            ¿Qué es? <span className="sim-opcional">(opcional)</span>
-          </label>
-          <input id="sim-desc" maxLength={120} autoComplete="off" placeholder="Ej. Laptop, tenis…" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
-        </div>
-
-        <button type="submit" className="sim-boton">
-          Comparar escenarios
+        <button type="submit" className="sim-boton" disabled={buscandoCuentas}>
+          Ver si me conviene
         </button>
       </form>
     </div>

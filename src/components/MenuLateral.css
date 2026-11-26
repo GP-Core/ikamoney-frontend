@@ -1,0 +1,209 @@
+/* Menú lateral derecho. Solo tema claro. */
+.menu {
+  width: min(82%, 360px);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px 0 0 24px;
+  background: var(--crema);
+  color: var(--tinta);
+}
+
+.menu::backdrop {
+  background: rgb(4 58 94 / 82%);
+}
+
+.menu[open] {
+  animation: menu-entra 220ms cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+@keyframes menu-entra {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu[open] {
+    animation: none;
+  }
+}
+
+/* La página de atrás no se desplaza mientras el menú está abierto. */
+:root:has(.menu[open]) {
+  overflow: hidden;
+}
+
+.menu__panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.menu__desplazable {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(32px + env(safe-area-inset-top)) 16px 16px;
+}
+
+.menu__cabecera {
+  padding: 0 12px 16px;
+}
+
+.menu__nombre {
+  color: var(--azul);
+  font: 700 26px/1.2 var(--serif);
+  overflow-wrap: anywhere;
+}
+
+.menu__perfil {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.menu__perfil[aria-current='page'] {
+  font-weight: 700;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--dorado);
+  text-underline-offset: 6px;
+}
+
+.menu__grupo {
+  margin-top: 12px;
+}
+
+.menu__titulo {
+  padding: 0 12px 4px;
+  color: var(--gris-azulado);
+  font-size: 13px;
+}
+
+.menu__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu__opcion {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  color: var(--azul);
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.menu__opcion svg {
+  flex: none;
+}
+
+/* El hover solo existe con puntero: en táctil se quedaba "pegado" y parecía otra opción marcada. */
+@media (hover: hover) {
+  .menu__opcion:hover {
+    background: color-mix(in srgb, var(--arena) 55%, transparent);
+  }
+}
+
+.menu__opcion:active,
+.menu__opcion--activa {
+  background: var(--arena);
+}
+
+.menu__opcion--activa {
+  font-weight: 700;
+  box-shadow: inset 4px 0 0 var(--dorado);
+}
+
+.menu__opcion--activa svg {
+  color: var(--tinta);
+  stroke-width: 2.25;
+}
+
+.menu__legales {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 0 12px;
+  color: var(--gris-azulado);
+  font-size: 14px;
+}
+
+.menu__legales a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--gris-azulado);
+  font-weight: 400;
+}
+
+.menu__pie {
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 20px -10px rgb(30 51 71 / 28%);
+}
+
+/* El dorado solo va en el ícono: como texto sobre crema no se lee. */
+.menu__salir {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--precaucion);
+  font: 700 17px var(--sans);
+  cursor: pointer;
+}
+
+.menu__salir svg {
+  color: var(--dorado);
+}
+
+@media (hover: hover) {
+  .menu__salir:hover {
+    background: var(--arena);
+  }
+}
+
+/* Oculto a la vista hasta que recibe el foco. */
+.menu__cerrar {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.menu__cerrar:focus-visible {
+  position: static;
+  width: 100%;
+  height: 44px;
+  clip-path: none;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 12px;
+  background: var(--crema);
+  color: var(--azul);
+  font: 600 16px var(--sans);
+}
+
+/* El foco inicial puede caer en la zona desplazable; las opciones ya tienen su propio contorno. */
+.menu__desplazable:focus-visible {
+  outline: none;
+}

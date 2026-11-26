@@ -1,79 +1,4 @@
 /* Ranking de deudas (T44). Semáforo de T20: color + forma de ícono + etiqueta de texto. */
-.ranking {
-  --sem-sano-texto: #2f7d32;
-  --sem-sano-fondo: #e4f1df;
-  --sem-prec-texto: #8a5a00;
-  --sem-prec-fondo: #fff0c8;
-  --sem-riesgo-texto: #b34700;
-  --sem-riesgo-fondo: #ffe2ce;
-  --sem-crit-texto: #a61b1b;
-  --sem-crit-fondo: #fadcd9;
-  --sem-sano: #4ea145;
-  --sem-prec: #f2b705;
-  --sem-riesgo: #e8590c;
-  --sem-crit: #c62828;
-}
-
-.ranking__contenido {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* Lo que debe hacer el usuario: la primera deuda. */
-/* .accion también es la clase de los botones pequeños de Finanzas.css (inline-flex): en la tarjeta se anula para que sea un bloque. */
-section.accion {
-  display: block;
-  min-height: 0;
-  gap: 0;
-  font: inherit;
-}
-
-.accion {
-  padding: 18px 16px;
-  border-radius: 28px;
-  background: var(--b-hero);
-  color: rgba(242, 251, 249, 0.85);
-}
-
-.accion__etiqueta {
-  margin: 0 0 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #f6c76b;
-}
-
-.accion__titulo {
-  margin: 0 0 6px;
-  font-size: 1.375rem;
-  letter-spacing: -0.02em;
-  color: #f2fbf9;
-}
-
-.accion__texto {
-  font-size: 0.9375rem;
-  line-height: 1.5;
-}
-
-.accion__total {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(242, 251, 249, 0.2);
-  font-size: 0.875rem;
-}
-
-.ranking__lista-titulo {
-  margin: 4px 0 0;
-  font-size: 1.125rem;
-}
-
-.ranking__ayuda {
-  margin: -8px 0 0;
-  font-size: 0.875rem;
-}
-
 .ranking__lista {
   display: flex;
   flex-direction: column;
@@ -84,30 +9,29 @@ section.accion {
 }
 
 .deuda {
-  padding: 14px 16px 16px;
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--sem-color, var(--border));
-  border-radius: 16px;
-  background: var(--surface);
+  padding: 14px 16px 8px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--sem-color);
+  border-radius: var(--radio);
+  background: var(--crema);
 }
 
-.deuda--sano { --sem-color: var(--sem-sano); }
-.deuda--precaucion { --sem-color: var(--sem-prec); }
-.deuda--riesgo { --sem-color: var(--sem-riesgo); }
-.deuda--critico { --sem-color: var(--sem-crit); }
+.deuda--sano { --sem-color: #4ea145; }
+.deuda--precaucion { --sem-color: #f2b705; }
+.deuda--riesgo { --sem-color: #e8590c; }
+.deuda--critico { --sem-color: var(--critico-grafica); }
 
-/* La primera: borde y sombra para que se note sin depender solo del color. */
+/* La primera es la recomendación: borde dorado, como la opción sugerida del simulador. */
 .deuda--primera {
-  border-width: 2px;
-  border-top-width: 6px;
-  border-color: var(--sem-color);
-  box-shadow: 0 6px 20px rgba(11, 59, 60, 0.12);
+  border: 2px solid var(--dorado);
+  border-top: 4px solid var(--sem-color);
 }
 
 .deuda__cabeza {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px 10px;
   margin-bottom: 8px;
 }
 
@@ -115,11 +39,12 @@ section.accion {
   flex: none;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: var(--b-hero);
-  color: #f2fbf9;
+  background: var(--azul);
+  color: #fff;
+  font-size: 0.9375rem;
   font-weight: 700;
 }
 
@@ -130,105 +55,78 @@ section.accion {
   font-size: 1.0625rem;
 }
 
-.semaforo {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 10px 2px 6px;
-  border: 1px solid currentColor;
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.semaforo--sano { color: var(--sem-sano-texto); background: var(--sem-sano-fondo); }
-.semaforo--precaucion { color: var(--sem-prec-texto); background: var(--sem-prec-fondo); }
-.semaforo--riesgo { color: var(--sem-riesgo-texto); background: var(--sem-riesgo-fondo); }
-.semaforo--critico { color: var(--sem-crit-texto); background: var(--sem-crit-fondo); }
-
-.deuda__explicacion {
+.deuda__accion {
   margin-bottom: 12px;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--text-strong);
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .deuda__cifras {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 12px;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  justify-content: space-between;
+  align-items: end;
+  gap: 8px;
   margin: 0;
 }
 
-.deuda__cifras div {
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: var(--b-realce);
-}
-
 .deuda__cifras dt {
-  font-size: 0.75rem;
+  color: var(--gris-azulado);
+  font-size: 0.8125rem;
 }
 
 .deuda__cifras dd {
   margin: 0;
-  font-size: 1rem;
+  color: var(--azul);
+  font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--text-strong);
   font-variant-numeric: tabular-nums;
+}
+
+.deuda__uso {
+  margin-top: 12px;
+  font-size: 0.875rem;
 }
 
 .deuda__barra {
   height: 8px;
-  margin-top: 12px;
-  border-radius: 999px;
-  background: var(--b-linea);
+  margin-top: 6px;
   overflow: hidden;
+  border-radius: 999px;
+  background: var(--arena-oscura);
 }
 
 .deuda__barra span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--sem-color);
+  background: var(--azul);
 }
 
 .deuda__aviso {
-  margin-top: 6px;
-  font-size: 0.8125rem;
+  margin-top: 8px;
+  color: var(--critico);
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--sem-crit-texto);
 }
 
-@media (min-width: 520px) {
-  .deuda__cifras {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+.deuda .desplegable {
+  margin-top: 8px;
+  border-top: 1px solid var(--arena-oscura);
 }
 
-/* En modo oscuro las etiquetas pasan a fondo translúcido para conservar el contraste. */
-@media (prefers-color-scheme: dark) {
-  .ranking {
-    --sem-sano-texto: #8fd98a;
-    --sem-prec-texto: #f5cf5f;
-    --sem-riesgo-texto: #ffa56b;
-    --sem-crit-texto: #ff8f8f;
-  }
-  .semaforo--sano { background: rgba(78, 161, 69, 0.2); }
-  .semaforo--precaucion { background: rgba(242, 183, 5, 0.18); }
-  .semaforo--riesgo { background: rgba(232, 89, 12, 0.2); }
-  .semaforo--critico { background: rgba(198, 40, 40, 0.24); }
+.deuda .desplegable p {
+  padding-bottom: 8px;
 }
 
 /* Estado sin deudas */
 .ranking-vacio {
   padding: 28px 16px;
-  border: 1px solid var(--border);
-  border-radius: 28px;
-  background: var(--surface);
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
   text-align: center;
-  color: var(--sem-sano-texto);
+  color: var(--sano);
 }
 
 .ranking-vacio__titulo {
@@ -247,17 +145,13 @@ section.accion {
 /* Nota de orientación (una sola deuda, bola de nieve) */
 .ranking__nota {
   padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--surface);
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
   font-size: 0.9375rem;
 }
 
-.ranking__nota p {
-  margin: 0;
-}
-
-.ranking__nota-titulo {
+.ranking__nota h3 {
   margin: 0 0 6px;
   font-size: 1rem;
 }
@@ -267,7 +161,36 @@ section.accion {
   align-items: center;
   min-height: 44px;
   margin-top: 4px;
-  color: var(--text-strong);
-  font-weight: 700;
   text-decoration: underline;
+}
+
+.ranking__columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+/* Escritorio: el orden a la izquierda; qué hacer este mes, fijo a la derecha. */
+@media (min-width: 1024px) {
+  .ranking__columnas {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  .ranking__principal {
+    grid-area: 1 / 1;
+  }
+
+  .ranking__lado {
+    grid-area: 1 / 2;
+    position: sticky;
+    top: 80px;
+  }
+}
+
+.deuda__pagar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }

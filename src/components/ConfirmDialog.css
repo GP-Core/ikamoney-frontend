@@ -25,3 +25,8 @@
   justify-content: flex-end;
   gap: 8px;
 }
+
+/* Confirmar algo que no borra: sin el rojo de las eliminaciones. */
+.dialogo--confirmar {
+  border-top-color: var(--azul);
+}

@@ -19,20 +19,6 @@
 }
 
 /* T20 no define modo oscuro: los colores de gráfica pasan a ser texto y el fondo es su tinte. */
-@media (prefers-color-scheme: dark) {
-  .balance {
-    --v-bien-texto: #7fcf84;
-    --v-bien-fondo: rgba(78, 161, 69, 0.2);
-    --v-atencion-texto: #f2b705;
-    --v-atencion-fondo: rgba(242, 183, 5, 0.18);
-    --v-riesgo-texto: #ff8a4d;
-    --v-riesgo-fondo: rgba(232, 89, 12, 0.2);
-
-    --sim-tarjeta: var(--surface);
-    --sim-borde: var(--border);
-  }
-}
-
 .sim-contenido {
   display: grid;
   gap: 14px;
@@ -67,23 +53,21 @@
 
 /* ---------- Veredicto general ---------- */
 .sim-resumen {
-  --s-texto: #f2fbf9;
-  --s-suave: rgba(242, 251, 249, 0.8);
-  --s-acento: #4ea145;
+  --linea: var(--sano);
 
-  padding: 20px 18px;
-  border-radius: 28px;
-  background: var(--b-hero);
-  color: var(--s-suave);
-  box-shadow: 0 14px 30px -12px rgba(11, 59, 60, 0.55);
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--crema);
 }
 
 .sim-resumen--atencion {
-  --s-acento: #f2b705;
+  --linea: var(--precaucion);
 }
 
 .sim-resumen--riesgo {
-  --s-acento: #e8590c;
+  --linea: var(--riesgo);
 }
 
 .sim-resumen p {
@@ -91,27 +75,25 @@
 }
 
 .sim-resumen__compra {
+  color: var(--gris-azulado);
   font-size: 0.8125rem;
 }
 
 .sim-resumen__veredicto {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   margin: 8px 0 10px;
-  color: var(--s-texto);
   font-size: 1.5rem;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 
 .sim-resumen .sim-icono {
   flex: none;
-  --v-color: var(--s-acento);
+  --v-color: var(--linea);
 }
 
 .sim-resumen__sugerida {
-  color: var(--s-texto);
   font-size: 0.9375rem;
 }
 
@@ -124,12 +106,12 @@
 .sim-resumen__score {
   margin-top: 14px !important;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid var(--arena-oscura);
   font-size: 0.875rem;
 }
 
 .sim-resumen__score strong {
-  color: var(--s-texto);
+  color: var(--azul);
 }
 
 /* ---------- Comparativa: tarjetas lado a lado ---------- */
@@ -214,6 +196,7 @@
 }
 
 .sim-card__monto {
+  font-variant-numeric: tabular-nums;
   margin: 6px 0 0;
   color: var(--text-strong);
   font-size: 1.5rem;
@@ -302,7 +285,7 @@
   padding: 14px 16px;
   border-left: 3px solid var(--b-linea);
   background: var(--b-realce);
-  border-radius: 0 16px 16px 0;
+  border-radius: 0 var(--radio) var(--radio) 0;
 }
 
 .sim-ia__titulo {
@@ -327,48 +310,157 @@
   outline-offset: 2px;
 }
 
-/* Escritorio: veredicto y gráfica arriba, tarjetas en rejilla debajo. */
-@media (min-width: 900px) {
+/* Escritorio: veredicto junto a la gráfica y las formas de pago en una fila. */
+@media (min-width: 1024px) {
   .sim-contenido {
-    grid-template-columns: 380px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      'aviso aviso'
+      'resumen grafica'
+      'comparativa comparativa'
+      'registrar registrar'
+      'noviables noviables'
+      'ia ia'
+      'supuestos supuestos';
     align-items: start;
   }
 
-  .sim-contenido > * {
+  .sim-contenido > .sim-aviso { grid-area: aviso; }
+  .sim-contenido > .sim-resumen { grid-area: resumen; }
+  .sim-contenido > .ge { grid-area: grafica; }
+  .sim-contenido > .sim-comparativa { grid-area: comparativa; }
+  .sim-contenido > .sim-noviables { grid-area: noviables; }
+  .sim-contenido > .sim-ia { grid-area: ia; }
+  .sim-contenido > .sim-registrar { grid-area: registrar; }
+  .sim-contenido > .score-supuestos { grid-area: supuestos; }
+
+  .sim-contenido:not(:has(> .ge)) > .sim-resumen {
     grid-column: 1 / -1;
   }
 
-  .sim-contenido > .sim-resumen {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-
-  .sim-contenido > .ge {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-  }
-
-  .sim-contenido > .sim-comparativa {
-    grid-row: 3;
-  }
-
   .sim-comparativa__lista {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     margin: 0;
     padding: 14px 0 0;
     overflow: visible;
   }
-
-  .sim-card {
-    flex: 1 1 180px;
-    max-width: 240px;
-  }
 }
 
 /* RF-50: registrar la compra del escenario recomendado */
-.sim-registrar { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); }
+.sim-registrar { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radio); background: var(--surface); }
 .sim-registrar__titulo { margin: 0; font-size: 1rem; }
 
 /* Avisos sobre el resultado: datos de ejemplo y compra sin ahorro */
-.sim-aviso { margin: 0; padding: 10px 14px; border: 1px solid var(--border); border-left: 6px solid var(--precaucion); border-radius: 12px; background: var(--precaucion-fondo); font-size: 0.875rem; }
+.sim-aviso { margin: 0; padding: 10px 14px; border: 1px solid var(--border); border-left: 6px solid var(--precaucion); border-radius: 8px; background: var(--precaucion-fondo); font-size: 0.875rem; }
 .sim-aviso a { font-weight: 700; }
+
+/* Elegir la forma de pago */
+.sim-comparativa__ayuda {
+  margin: -4px 0 4px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.sim-card {
+  cursor: pointer;
+}
+
+.sim-card:focus-visible {
+  outline: 3px solid var(--dorado);
+  outline-offset: 3px;
+}
+
+/* Va después de la destacada: lo que el usuario eligió manda sobre la sugerencia (que conserva su sello). */
+.sim-card--elegida {
+  border-color: var(--marca-azul);
+  box-shadow: 0 0 0 2px var(--marca-azul);
+}
+
+.sim-card__elegir {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin: auto 0 0;
+  border: 1px solid var(--marca-azul);
+  border-radius: 8px;
+  color: var(--marca-azul);
+  font-weight: 700;
+}
+
+.sim-card__punto {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.sim-card--elegida .sim-card__elegir {
+  background: var(--marca-azul);
+  color: #fff;
+}
+
+.sim-card--elegida .sim-card__punto {
+  background: currentColor;
+}
+
+.sim-registrar select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font: inherit;
+}
+
+.sim-registrar select:focus-visible {
+  outline: 3px solid var(--dorado);
+  outline-offset: 2px;
+}
+
+.sim-registrar p {
+  margin: 0;
+}
+
+.sim-registrar .sim-boton:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 479px) {
+  .sim-registrar .sim-fila {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 600px) {
+  .sim-registrar__boton {
+    align-self: flex-start;
+  }
+}
+
+/* Resumen dentro de la confirmación */
+.sim-confirmar {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.sim-confirmar div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sim-confirmar dt {
+  color: var(--gris-azulado);
+}
+
+.sim-confirmar dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}

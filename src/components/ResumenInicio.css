@@ -1,0 +1,93 @@
+/* Tarjeta de contenido de T20: crema, borde arena y línea superior con el color del estado. */
+.principal {
+  --linea: var(--sano);
+
+  padding: 16px 16px 8px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--linea);
+  border-radius: var(--radio);
+  background: var(--crema);
+}
+
+.principal--justo {
+  --linea: var(--precaucion);
+}
+
+.principal--mal {
+  --linea: var(--critico);
+}
+
+.principal__etiqueta {
+  margin: 0;
+  font-size: 18px;
+}
+
+.principal__cifra {
+  color: var(--azul);
+  font-family: var(--serif);
+  font-size: clamp(2rem, 10vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.25;
+  font-variant-numeric: lining-nums tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.principal__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 10px;
+  border: 1px solid var(--sano);
+  border-radius: 999px;
+  background: var(--sano-fondo);
+  color: var(--sano);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.principal--justo .principal__estado {
+  border-color: var(--precaucion);
+  background: var(--precaucion-fondo);
+  color: var(--precaucion);
+}
+
+.principal--mal .principal__estado {
+  border-color: var(--critico);
+  background: var(--critico-fondo);
+  color: var(--critico);
+}
+
+.principal__datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 4px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--arena-oscura);
+}
+
+.principal__datos dt {
+  color: var(--gris-azulado);
+  font-size: 13px;
+}
+
+.principal__datos dd {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.principal__enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 6px;
+}
+
+@media (min-width: 600px) {
+  .principal__datos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

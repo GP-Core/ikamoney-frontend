@@ -4,13 +4,17 @@ import BalanceVacio from '../components/BalanceVacio'
 import CompromisosMsi from '../components/CompromisosMsi'
 import FechaCopia from '../components/FechaCopia'
 import GraficaProyeccion from '../components/GraficaProyeccion'
+import Icon from '../components/Icon'
 import ResumenMes from '../components/ResumenMes'
 import { useBalance } from '../hooks/useBalance'
 import { USANDO_EJEMPLO } from '../services/balance'
-import { CLAVE_HORIZONTE, HORIZONTES, leerHorizonte, recortarMeses } from '../utils/balanceVista'
+import { CLAVE_HORIZONTE, leerHorizonte, momentoDelMes, recortarMeses } from '../utils/balanceVista'
 import type { Horizonte } from '../utils/balanceVista'
-import { mesActual, mesLargo, sumarMeses } from '../utils/formatMes'
+import { mesActual, mesLargo, mesNombre, sumarMeses } from '../utils/formatMes'
 import './BalancePage.css'
+
+/** El backend proyecta desde el mes actual hasta 24 meses. */
+const MESES_ADELANTE = 23
 
 /** Pantalla principal: balance del mes y proyección de los meses siguientes. */
 function BalancePage() {
@@ -24,6 +28,8 @@ function BalancePage() {
     }
   })
   const { estado, data, copiaDe, error, reintentar } = useBalance(mes)
+  const hoy = mesActual()
+  const momento = momentoDelMes(mes, hoy)
 
   function elegirHorizonte(h: Horizonte) {
     setHorizonte(h)
@@ -35,26 +41,53 @@ function BalancePage() {
   }
 
   return (
-    <main className="balance">
+    <main className="balance balance--t20 balance--proyeccion">
       <div className="balance__ancho">
-      <nav className="balance__acciones" aria-label="Acciones">
+      <header className="balance__cabecera">
+        <h1>Balance y proyección</h1>
         <Link className="balance__simular" to="/simulador">
-          <span aria-hidden="true">＋</span> Simular una compra
+          <Icon nombre="calculadora" tamano={20} />
+          Simular una compra
         </Link>
-      </nav>
+      </header>
 
-      <header className="balance__encabezado">
-        <button type="button" className="balance__mes-boton" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">
+      <div className="balance__encabezado">
+        <button
+          type="button"
+          className="balance__mes-boton"
+          onClick={() => setMes(sumarMeses(mes, -1))}
+          disabled={mes <= hoy}
+          title={mes <= hoy ? 'La proyección empieza en el mes actual' : undefined}
+          aria-label="Mes anterior"
+        >
           ‹
         </button>
         <div className="balance__mes">
-          <h1 className="balance__titulo">{mesLargo(mes)}</h1>
+          <h2 className="balance__titulo" aria-live="polite">
+            {mesLargo(mes)}
+          </h2>
+          <span className={`balance__momento balance__momento--${momento}`}>
+            {momento === 'proyeccion' && <Icon nombre="calendario" tamano={14} />}
+            {momento === 'proyeccion' ? 'Proyección' : 'Este mes'}
+          </span>
           {USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}
         </div>
-        <button type="button" className="balance__mes-boton" onClick={() => setMes(sumarMeses(mes, 1))} aria-label="Mes siguiente">
+        <button
+          type="button"
+          className="balance__mes-boton"
+          onClick={() => setMes(sumarMeses(mes, 1))}
+          disabled={mes >= sumarMeses(hoy, MESES_ADELANTE)}
+          aria-label="Mes siguiente"
+        >
           ›
         </button>
-      </header>
+      </div>
+
+      {mes !== hoy && (
+        <button type="button" className="balance__volver" onClick={() => setMes(hoy)}>
+          Volver a {mesNombre(hoy).toLowerCase()}
+        </button>
+      )}
 
       {estado === 'ok' && <FechaCopia fecha={copiaDe} />}
 
@@ -81,20 +114,18 @@ function BalancePage() {
 
       {estado === 'ok' && data && data.tiene_datos && (
         <div className="balance__contenido">
-          <ResumenMes datos={data.resumen} />
+          <ResumenMes datos={data.resumen} momento={momento} variablesEstimadas={data.variables_estimadas} />
           <div className="balance__columna-grafica">
-          <fieldset className="balance__horizonte">
-            <legend>Ver los próximos</legend>
-            {HORIZONTES.map((h) => (
-              <label key={h} className={h === horizonte ? 'balance__horizonte-opcion balance__horizonte-opcion--activa' : 'balance__horizonte-opcion'}>
-                <input type="radio" name="horizonte" value={h} checked={h === horizonte} onChange={() => elegirHorizonte(h)} />
-                {h} meses
-              </label>
-            ))}
-          </fieldset>
-          <GraficaProyeccion meses={recortarMeses([data.resumen, ...data.proyeccion], horizonte)} />
+            <GraficaProyeccion
+              meses={recortarMeses([data.resumen, ...data.proyeccion], horizonte)}
+              mesDeHoy={hoy}
+              horizonte={horizonte}
+              onHorizonte={elegirHorizonte}
+              ahorroInicial={data.en_cuentas}
+              variablesEstimadas={data.variables_estimadas}
+            />
           </div>
-          <CompromisosMsi meses={recortarMeses([data.resumen, ...data.proyeccion], horizonte)} msi={data.msi} />
+          <CompromisosMsi meses={[data.resumen, ...data.proyeccion]} msi={data.msi} momento={momento} />
         </div>
       )}
       </div>

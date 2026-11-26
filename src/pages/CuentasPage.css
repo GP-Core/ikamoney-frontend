@@ -1,86 +1,354 @@
-.cuentas__intro,
-.cuentas__vacio {
-  margin-top: 8px;
-  color: var(--text-muted, inherit);
+/* Cuentas: resumen, grupos y detalle. La paleta viene de .balance--t20. */
+.cuentas__columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
 }
 
-.cuentas__lista,
-.cuentas__movimientos {
+.cuentas__lado {
   display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.cuentas__resumen {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--azul);
+  border-radius: var(--radio);
+  background: var(--crema);
+}
+
+.cuentas__resumen dt {
+  color: var(--gris-azulado);
+  font-size: 0.875rem;
+}
+
+.cuentas__resumen dd {
+  margin: 0;
+}
+
+.cuentas__resumen dd:first-of-type {
+  color: var(--azul);
+  font-family: var(--serif);
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cuentas__resumen a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: 0.875rem;
+}
+
+.cuentas__grupo {
+  margin: 0 0 8px;
+  font-size: 1.0625rem;
+}
+
+.cuentas__lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin: 16px 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .cuentas__cuenta {
   display: grid;
-  width: 100%;
-  min-height: 44px;
   gap: 2px;
+  align-content: start;
+  width: 100%;
+  height: 100%;
   padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--text-strong);
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
+  color: var(--tinta);
+  font: inherit;
   text-align: left;
+  cursor: pointer;
 }
 
 .cuentas__cuenta[aria-pressed='true'] {
-  border-color: var(--text-strong);
-  border-width: 2px;
+  border: 2px solid var(--azul);
+  padding: 11px;
+  background: #fff;
+}
+
+.cuentas__icono {
+  color: var(--azul);
+}
+
+.cuentas__cuenta strong {
+  line-height: 1.25;
+}
+
+.cuentas__cuenta small {
+  color: var(--gris-azulado);
+  font-size: 0.8125rem;
 }
 
 .cuentas__saldo {
+  margin-top: 4px;
+  color: var(--azul);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.cuentas__totales {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 16px 0;
+.cuentas__vacio {
+  padding: 24px 16px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
   text-align: center;
 }
 
-.cuentas__totales dt {
-  font-size: 0.85rem;
+.cuentas__vacio p {
+  margin-bottom: 14px;
 }
 
-.cuentas__totales dd {
+/* ---------- Detalle ---------- */
+.cuentas__detalle {
+  min-width: 0;
+  scroll-margin-top: 90px;
+}
+
+.detalle {
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
+}
+
+.detalle__cabeza h2 {
   margin: 0;
-  font-weight: 700;
 }
 
-.cuentas__movimientos li {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
+.detalle__tipo {
+  color: var(--gris-azulado);
+  font-size: 0.875rem;
+}
+
+.detalle__saldo {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
+  margin: 8px 0 12px;
 }
 
-.cuentas__movimientos small {
-  display: block;
+.detalle__saldo strong {
+  color: var(--azul);
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.cuentas__entra {
-  font-weight: 700;
-}
-
-.cuentas__sale {
-  font-weight: 700;
-}
-
-.cuentas__acciones {
+.detalle__acciones {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 16px;
 }
 
-.cuentas__form {
+.detalle__enlace {
+  text-decoration: none;
+}
+
+.detalle__mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--arena-oscura);
+}
+
+.detalle__mes h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.detalle__mes button,
+.mcuenta__acciones button {
   display: grid;
-  gap: 12px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 8px;
+  background: var(--crema);
+  color: var(--azul);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.detalle__mes button:disabled,
+.mcuenta__acciones button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.detalle__totales {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.detalle__totales > div {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--arena);
+}
+
+.detalle__totales dt {
+  color: var(--gris-azulado);
+  font-size: 0.8125rem;
+}
+
+.detalle__totales dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.detalle__entra,
+.mcuenta__monto--entra {
+  color: var(--verde-texto);
+}
+
+.detalle__vacio {
+  padding: 16px 0;
+  color: var(--gris-azulado);
+  text-align: center;
+}
+
+.detalle__dia {
+  margin: 14px 0 4px;
+  color: var(--gris-azulado);
+  font: 700 0.8125rem var(--sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.detalle__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mcuenta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'datos monto'
+    'datos acciones';
+  gap: 4px 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--arena-oscura);
+}
+
+.mcuenta__datos {
+  grid-area: datos;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mcuenta__datos strong {
+  overflow-wrap: anywhere;
+}
+
+.mcuenta__datos small {
+  color: var(--gris-azulado);
+  font-size: 0.8125rem;
+}
+
+.mcuenta__sello {
+  margin-top: 2px;
+  padding: 1px 8px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 999px;
+  background: var(--arena);
+  color: var(--azul);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.mcuenta__monto {
+  grid-area: monto;
+  justify-self: end;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mcuenta__acciones {
+  grid-area: acciones;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.mcuenta__acciones button {
+  width: 40px;
+  height: 40px;
+}
+
+.detalle__borrar {
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--critico);
+  font: 600 0.9375rem var(--sans);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cuentas__aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  z-index: 20;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--azul);
+  color: #fff;
+  transform: translateX(-50%);
+}
+
+@media (min-width: 600px) {
+  .app__contenido:has(.balance--cuentas) {
+    max-width: 720px;
+  }
+}
+
+/* Escritorio: tus cuentas a la izquierda; la elegida, con más espacio, a la derecha. */
+@media (min-width: 1024px) {
+  .app__contenido:has(.balance--cuentas),
+  .app__columna:has(.balance--cuentas) .superior__interior {
+    max-width: 1040px;
+  }
+
+  .cuentas__columnas {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  .cuentas__aviso {
+    bottom: 24px;
+  }
 }

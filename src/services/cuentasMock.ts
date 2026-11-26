@@ -2,6 +2,7 @@ import type { Cuenta, ListaMovimientosCuenta, MovimientoCuenta, TipoMovimientoCu
 import { ApiError } from './api'
 import { idUsuarioMock } from './authMock'
 import type { CuentasService } from './cuentasApi'
+import { saldoDespues } from '../utils/cuentas'
 
 /**
  * SOLO PARA DESARROLLO Y DEMOSTRACIONES.
@@ -65,6 +66,16 @@ export const cuentasMock: CuentasService = {
     return cuenta
   },
 
+  async editar(id, cambios) {
+    await esperar()
+    const datos = leer()
+    const cuenta = datos.cuentas.find((c) => c.id === id)
+    if (!cuenta) throw new ApiError(404, 'La cuenta no existe.')
+    Object.assign(cuenta, cambios)
+    guardar(datos)
+    return cuenta
+  },
+
   async eliminar(id) {
     await esperar()
     const datos = leer()
@@ -97,7 +108,8 @@ export const cuentasMock: CuentasService = {
   async crearMovimiento(cuentaId, payload) {
     await esperar()
     const datos = leer()
-    if (!datos.cuentas.some((c) => c.id === cuentaId)) throw new ApiError(404, 'La cuenta no existe.')
+    const cuenta = datos.cuentas.find((c) => c.id === cuentaId)
+    if (!cuenta) throw new ApiError(404, 'La cuenta no existe.')
     if (!['abono', 'cargo'].includes(payload.tipo)) {
       throw new ApiError(422, 'Esa cuenta solo admite abonos y cargos.')
     }
@@ -109,10 +121,25 @@ export const cuentasMock: CuentasService = {
       origen: 'manual',
       estado_revision: 'confirmado',
       ...payload,
-      categoria_id: null,
+      categoria_id: payload.categoria_id ?? null,
       plan_msi_id: null,
     }
+    cuenta.saldo_disponible = saldoDespues(cuenta, movimiento.tipo, movimiento.monto)
     datos.movimientos.push(movimiento)
+    guardar(datos)
+    return movimiento
+  },
+
+  async editarMovimiento(cuentaId, movimientoId, payload) {
+    await esperar()
+    const datos = leer()
+    const cuenta = datos.cuentas.find((c) => c.id === cuentaId)
+    const movimiento = datos.movimientos.find((m) => m.id === movimientoId && m.cuenta_id === cuentaId)
+    if (!cuenta || !movimiento) throw new ApiError(404, 'El movimiento no existe.')
+    // Deshacer el anterior y aplicar el nuevo, como el servidor
+    cuenta.saldo_disponible = saldoDespues(cuenta, movimiento.tipo, -movimiento.monto)
+    Object.assign(movimiento, payload)
+    cuenta.saldo_disponible = saldoDespues(cuenta, movimiento.tipo, movimiento.monto)
     guardar(datos)
     return movimiento
   },
@@ -120,9 +147,10 @@ export const cuentasMock: CuentasService = {
   async eliminarMovimiento(cuentaId, movimientoId) {
     await esperar()
     const datos = leer()
-    if (!datos.movimientos.some((m) => m.id === movimientoId && m.cuenta_id === cuentaId)) {
-      throw new ApiError(404, 'El movimiento no existe.')
-    }
+    const cuenta = datos.cuentas.find((c) => c.id === cuentaId)
+    const anterior = datos.movimientos.find((m) => m.id === movimientoId && m.cuenta_id === cuentaId)
+    if (!cuenta || !anterior) throw new ApiError(404, 'El movimiento no existe.')
+    cuenta.saldo_disponible = saldoDespues(cuenta, anterior.tipo, -anterior.monto)
     datos.movimientos = datos.movimientos.filter((m) => m.id !== movimientoId)
     guardar(datos)
   },

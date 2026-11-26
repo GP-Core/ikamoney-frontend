@@ -16,6 +16,7 @@ CLAUDE.md
 .claude/
 contexto/
 PLAN.md
+Capturas/
 # Caché y reportes de herramientas
 coverage
 *.tsbuildinfo

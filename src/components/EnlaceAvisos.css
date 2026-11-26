@@ -1,0 +1,61 @@
+/* Botón redondo, con o sin nombre debajo (campana y "Menú"). */
+.campana {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 52px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: 600 12px/1.3 var(--sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.campana__circulo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 50%;
+  background: var(--crema);
+}
+
+.campana:hover .campana__circulo,
+.campana--activa .campana__circulo {
+  background: var(--arena);
+  border-color: var(--azul);
+}
+
+/* Contador de avisos sin leer (T48). */
+.campana__contador {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--critico);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* Hay avisos activos ya leídos. */
+.campana__punto {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--crema);
+  border-radius: 50%;
+  background: var(--dorado);
+}

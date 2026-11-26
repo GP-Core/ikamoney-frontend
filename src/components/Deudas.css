@@ -1,0 +1,129 @@
+/* Lo que comparten "Tus deudas" y "Tu plan de pago". La paleta viene de .balance--t20. */
+.deudas-pila {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.deudas-titulo {
+  margin: 0 0 6px;
+  font-size: 1.125rem;
+}
+
+.deudas-ayuda {
+  margin: 0 0 12px;
+  font-size: 0.9375rem;
+}
+
+/* El botón dorado ocupa todo el ancho de su columna. */
+.balance--deudas .deudas-boton {
+  width: 100%;
+  min-height: 48px;
+}
+
+/* Tarjeta principal de la pantalla: la recomendación, con la línea dorada de T20. */
+.deudas-accion,
+.balance--deudas .fecha {
+  padding: 18px 16px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--dorado);
+  border-radius: var(--radio);
+  background: var(--crema);
+}
+
+.deudas-accion__etiqueta {
+  margin-bottom: 4px;
+  color: var(--gris-azulado);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.deudas-accion h2 {
+  font-size: 1.5rem;
+}
+
+.deudas-accion__cifras {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--arena-oscura);
+}
+
+.deudas-accion__cifras div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.deudas-accion__cifras dt {
+  font-size: 0.9375rem;
+}
+
+.deudas-accion__cifras dd {
+  margin: 0;
+  color: var(--azul);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Lo que no entra al orden ---------- */
+.fuera {
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
+  font-size: 0.9375rem;
+}
+
+.fuera__bloque + .fuera__bloque {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--arena-oscura);
+}
+
+.fuera__cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.fuera__msi {
+  margin: 6px 0;
+  padding: 0 0 0 10px;
+  border-left: 3px solid var(--dato-msi);
+  list-style: none;
+}
+
+.fuera__msi li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fuera__nota {
+  margin-top: 4px;
+  color: var(--gris-azulado);
+  font-size: 0.875rem;
+}
+
+@media (min-width: 600px) {
+  .app__contenido:has(.balance--deudas) {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app__contenido:has(.balance--deudas),
+  .app__columna:has(.balance--deudas) .superior__interior {
+    max-width: 1040px;
+  }
+}

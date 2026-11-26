@@ -16,15 +16,6 @@
 
 .auth__marca {
   text-align: center;
-  font: 700 32px/1 var(--serif);
-}
-
-.auth__marca-ika {
-  color: var(--azul);
-}
-
-.auth__marca-money {
-  color: var(--verde-texto);
 }
 
 /* Tarjeta de contenido de la guía (T20): crema, borde arena y línea superior de 4 px */
@@ -92,4 +83,14 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+}
+
+.auth__contenedor--lectura {
+  max-width: 720px;
+}
+
+@media (min-width: 640px) {
+  .auth__contenedor--lectura .auth__tarjeta {
+    padding: 32px;
+  }
 }

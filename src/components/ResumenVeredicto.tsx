@@ -1,6 +1,7 @@
 import type { SimulacionResponse } from '../types/simulador'
 import { pesos } from '../utils/pesos'
 import { datoDelEscenario, nombreEscenario, TEXTO_PRIORIDAD, TONO_VEREDICTO } from '../utils/simulador'
+import { titularVeredicto } from '../utils/simuladorVista'
 import IconoVeredicto from './IconoVeredicto'
 import './Simulador.css'
 
@@ -21,23 +22,22 @@ function ResumenVeredicto({ data }: ResumenVeredictoProps) {
         {data.descripcion} · {pesos(data.precio)} · {TEXTO_PRIORIDAD[data.prioridad]}
       </p>
 
-      {data.veredicto ? (
-        <h2 id="sim-resumen-titulo" className="sim-resumen__veredicto">
-          <IconoVeredicto veredicto={data.veredicto} tamano={30} />
-          {data.veredicto_texto}
-        </h2>
-      ) : (
-        <h2 id="sim-resumen-titulo" className="sim-resumen__veredicto">
-          Ninguna forma de pago aplica por ahora
-        </h2>
-      )}
+      <h2 id="sim-resumen-titulo" className="sim-resumen__veredicto">
+        {data.veredicto && <IconoVeredicto veredicto={data.veredicto} tamano={30} />}
+        {titularVeredicto(data)}
+      </h2>
 
-      {sugerida && (
+      {sugerida && data.veredicto === 'no_recomendable' && (
         <p className="sim-resumen__sugerida">
-          {data.veredicto === 'no_recomendable' ? 'La que menos pesa' : 'Opción sugerida'}:{' '}
-          <strong>{nombreEscenario(sugerida)}</strong>
-          {sugerida.tarjeta_nombre && ` con ${sugerida.tarjeta_nombre}`}
-          {sugerida.tipo === 'msi' && sugerida.mensualidad !== null && `, ${pesos(sugerida.mensualidad)} al mes`}.
+          La que menos pesa: <strong>{nombreEscenario(sugerida)}</strong>
+          {sugerida.tarjeta_nombre && ` con ${sugerida.tarjeta_nombre}`}.
+        </p>
+      )}
+      {sugerida && data.veredicto !== 'no_recomendable' && sugerida.mensualidad !== null && (
+        <p className="sim-resumen__sugerida">
+          {sugerida.tipo === 'msi' ? `Con ${sugerida.tarjeta_nombre} pagarías ` : 'Pagarías '}
+          <strong>{pesos(sugerida.mensualidad)}</strong>
+          {sugerida.tipo === 'msi' ? ' al mes.' : ' este mes.'}
         </p>
       )}
       {apoyo && <p className="sim-resumen__apoyo">{apoyo}</p>}

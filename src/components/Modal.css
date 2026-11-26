@@ -41,3 +41,41 @@
   font-size: 1.1rem;
   cursor: pointer;
 }
+
+/* Textos largos: la ventana no hace scroll; lo hace el contenido, y el título queda a la vista. */
+.modal--documento {
+  height: 92svh;
+  overflow: hidden;
+}
+
+.modal--documento[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal--documento .modal__head {
+  flex-shrink: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--arena-oscura);
+  margin-bottom: 0;
+}
+
+.modal--documento .modal__head h2 {
+  font-size: 22px;
+}
+
+.modal__cuerpo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 4px 4px 0;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 640px) {
+  .modal--documento {
+    max-width: 680px;
+    height: 88svh;
+    padding: 20px 24px;
+  }
+}

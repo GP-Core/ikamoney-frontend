@@ -1,32 +1,28 @@
-import { Link } from 'react-router'
 import DatosFaltantes from '../components/DatosFaltantes'
 import FactoresScore from '../components/FactoresScore'
 import FechaCopia from '../components/FechaCopia'
 import HistorialScore from '../components/HistorialScore'
+import NotaIntereses from '../components/NotaIntereses'
 import ScoreResumen from '../components/ScoreResumen'
+import SupuestosCalculo from '../components/SupuestosCalculo'
+import { useEsEscritorio } from '../hooks/useEsEscritorio'
 import { useScore } from '../hooks/useScore'
 import { SCORE_USANDO_EJEMPLO } from '../services/score'
 import type { ScoreResponse } from '../types/score'
-import { efectoDe, maximoPosible, TEXTO_TOPE, tonoDelNivel } from '../utils/score'
+import { consejoDe, factorPrioritario, maximoPosible, numero, resumenFactores, TEXTO_TOPE } from '../utils/score'
 import './BalancePage.css'
 import '../components/ScoreDesglose.css'
 
-/** Pantalla de score (T37): por qué tienes ese score, qué lo sube, qué lo baja y qué puede ayudar. */
+/** Pantalla de score (T37): por qué tienes ese score y qué puede subirlo. */
 function ScorePage() {
   const { estado, data, copiaDe, error, reintentar } = useScore()
 
   return (
-    <main className="balance">
+    <main className="balance balance--t20 balance--score">
       <div className="balance__ancho">
-        <header className="balance__encabezado">
-          <Link className="balance__mes-boton score-volver" to="/" aria-label="Volver al inicio">
-            ‹
-          </Link>
-          <div className="balance__mes">
-            <h1 className="balance__titulo">Tu score</h1>
-            {SCORE_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}
-          </div>
-          <span className="score-volver score-volver--vacio" aria-hidden="true" />
+        <header className="balance__cabecera">
+          <h1>Tu score</h1>
+          {SCORE_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}
         </header>
 
         {estado === 'ok' && <FechaCopia fecha={copiaDe} />}
@@ -64,66 +60,86 @@ function ScorePage() {
 }
 
 function ScoreCalculado({ data, puntaje }: { data: ScoreResponse; puntaje: number }) {
+  const escritorio = useEsEscritorio()
   const factores = data.factores
-  const suman = factores.filter((f) => efectoDe(f) === 'suma').length
-  const restan = factores.filter((f) => efectoDe(f) === 'resta').length
-
-  // Sugerencia principal: la del factor que más puntos deja de sumar.
-  const prioritario = factores.find((f) => f.clave === data.orden_mejora[0])
+  const pagoSupuesto = data.comportamiento_supuesto ?? true
+  const prioritario = factorPrioritario(factores, data.orden_mejora, pagoSupuesto)
   // Datos opcionales que faltan (por ejemplo los gastos): el score se calcula, pero se avisa.
-  const opcionales = data.faltantes.filter((d) => !d.obligatorio)
-  // Mientras no se capture cómo paga el usuario, el comportamiento de pago limita el score (T25).
-  const maximo = maximoPosible(factores)
+  const opcionales = data.faltantes.filter((d) => !d.obligatorio).map((d) => d.mensaje)
+  // Mientras la forma de pago sea un supuesto, ese factor limita el score.
+  const maximo = pagoSupuesto ? maximoPosible(factores) : null
 
-  return (
-    <div className="score-contenido">
+  const resumen = (
+    <>
       <ScoreResumen
         puntaje={puntaje}
+        nivel={data.nivel}
         nivelTexto={data.nivel_texto}
-        tono={tonoDelNivel(data.nivel)}
         periodo={data.periodo}
-        suman={suman}
-        restan={restan}
+        conteo={resumenFactores(factores, pagoSupuesto)}
         puntajeBruto={data.tope_aplicado ? data.puntaje_bruto : null}
         textoTope={data.tope_aplicado && data.motivo_tope ? TEXTO_TOPE[data.motivo_tope] : null}
       />
 
-      {prioritario && (
+      {prioritario && prioritario.puntos_perdidos >= 1 && (
         <section className="sugerencia" aria-labelledby="sugerencia-titulo">
           <h2 id="sugerencia-titulo" className="sugerencia__titulo">
             Lo que más te ayudaría
           </h2>
-          <p className="sugerencia__texto">
-            <strong>{prioritario.nombre}.</strong> {prioritario.como_mejorar}
+          <p className="sugerencia__factor">
+            {prioritario.nombre}: puedes ganar hasta {numero(prioritario.puntos_perdidos)} puntos
           </p>
+          <p>{consejoDe(prioritario)}</p>
         </section>
       )}
 
-      <FactoresScore factores={factores} ordenMejora={data.orden_mejora} claveDestacada={prioritario?.clave} />
+      <NotaIntereses />
+    </>
+  )
 
+  const desglose = (
+    <FactoresScore
+      factores={factores}
+      ordenMejora={data.orden_mejora}
+      claveDestacada={prioritario?.clave}
+      pagoSupuesto={pagoSupuesto}
+    />
+  )
+
+  const supuestos = (
+    <SupuestosCalculo
+      supuestos={data.supuestos}
+      extra={[
+        ...(maximo !== null
+          ? [`Hoy tu score puede llegar como máximo a ${maximo}, porque faltan pagos por registrar.`]
+          : []),
+        ...opcionales,
+      ]}
+    />
+  )
+
+  // En escritorio el resumen y el historial van a un lado de los factores; el árbol cambia para leerse como se ve.
+  if (escritorio) {
+    return (
+      <div className="score-columnas">
+        <div className="score-contenido">
+          {resumen}
+          <HistorialScore />
+        </div>
+        <div className="score-contenido">
+          {desglose}
+          {supuestos}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="score-contenido">
+      {resumen}
+      {desglose}
       <HistorialScore />
-
-      {(data.supuestos.length > 0 || opcionales.length > 0 || maximo !== null) && (
-        <section className="score-supuestos" aria-labelledby="supuestos-titulo">
-          <h2 id="supuestos-titulo" className="score-supuestos__titulo">
-            Qué supusimos para calcularlo
-          </h2>
-          <ul className="score-avisos">
-            {data.supuestos.map((texto) => (
-              <li key={texto}>{texto}</li>
-            ))}
-            {maximo !== null && (
-              <li>
-                Hoy tu score puede llegar como máximo a {maximo}, porque todavía no registramos cómo pagas tus tarjetas.
-              </li>
-            )}
-            {opcionales.map((dato) => (
-              <li key={dato.dato}>{dato.mensaje}</li>
-            ))}
-          </ul>
-          <p className="score-supuestos__modelo">Modelo de cálculo {data.version_modelo}</p>
-        </section>
-      )}
+      {supuestos}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { Cuenta } from '../types/cuenta'
 import type {
   Categoria,
   ClaseGasto,
@@ -10,7 +11,9 @@ import type {
   TipoMovimiento,
   ValoresMovimiento,
 } from '../types/movimiento'
+import { agruparCuentas, notaAlRegistrar } from '../utils/cuentas'
 import { mensajeError } from '../utils/errores'
+import { pesos } from '../utils/pesos'
 import { todayISO } from '../utils/formatDate'
 import { leerMonto, validarMovimiento } from '../utils/validarMovimiento'
 import './MovimientoFormulario.css'
@@ -21,6 +24,8 @@ interface MovimientoFormularioProps {
   inicial?: Movimiento
   /** Categorías para clasificar el gasto; null si todavía no cargan. */
   categorias: Categoria[] | null
+  /** Cuentas con las que se puede pagar o recibir; null si todavía no cargan. */
+  cuentas: Cuenta[] | null
   /** Guarda el movimiento. Si lanza un error, el formulario lo muestra y se queda abierto. */
   onGuardar: (datos: MovimientoPayload) => Promise<void>
   /** Crea una categoría propia y devuelve la creada (la página recarga la lista). */
@@ -45,7 +50,7 @@ const FRECUENCIAS_INGRESO: { valor: Frecuencia; texto: string }[] = [
 const FRECUENCIAS_GASTO_FIJO = FRECUENCIAS_INGRESO.filter((f) => f.valor !== 'unico')
 
 /** Formulario de alta y edición de ingreso o gasto, con validaciones. */
-function MovimientoFormulario({ tipo, inicial, categorias, onGuardar, onCrearCategoria, onCancelar }: MovimientoFormularioProps) {
+function MovimientoFormulario({ tipo, inicial, categorias, cuentas, onGuardar, onCrearCategoria, onCancelar }: MovimientoFormularioProps) {
   const esGasto = tipo === 'gasto'
   const formRef = useRef<HTMLFormElement>(null)
   const [valores, setValores] = useState<ValoresMovimiento>({
@@ -55,6 +60,7 @@ function MovimientoFormulario({ tipo, inicial, categorias, onGuardar, onCrearCat
     categoria_id: inicial?.categoria_id ? String(inicial.categoria_id) : '',
     clase: inicial?.clase ?? '',
     frecuencia: inicial?.frecuencia ?? 'unico',
+    cuenta_id: inicial?.cuenta_id ? String(inicial.cuenta_id) : '',
   })
   const [errores, setErrores] = useState<ErroresMovimiento>({})
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null)
@@ -120,6 +126,7 @@ function MovimientoFormulario({ tipo, inicial, categorias, onGuardar, onCrearCat
         frecuencia: esGasto && valores.clase === 'variable' ? 'unico' : valores.frecuencia,
         fecha: valores.fecha,
         ...(esGasto && { categoria_id: Number(valores.categoria_id), clase: valores.clase as ClaseGasto }),
+        cuenta_id: cuentaElegida ? cuentaElegida.id : null,
       })
     } catch (error) {
       setErrorGeneral(mensajeError(error))
@@ -149,6 +156,12 @@ function MovimientoFormulario({ tipo, inicial, categorias, onGuardar, onCrearCat
   // Un ingreso elige libremente; un gasto fijo solo entre las que se repiten; uno variable no pregunta.
   const opcionesFrecuencia = esGasto ? FRECUENCIAS_GASTO_FIJO : FRECUENCIAS_INGRESO
   const preguntaFrecuencia = esGasto ? valores.clase === 'fijo' : true
+
+  const grupos = agruparCuentas((cuentas ?? []).filter((c) => c.activa))
+  // Con tarjeta solo se registra una compra nueva y de una vez (no suscripciones ni ingresos).
+  const repetido = esGasto ? valores.clase === 'fijo' : seRepite
+  const tarjetas = esGasto && !inicial && !repetido ? grupos.tarjetas : []
+  const cuentaElegida = [...grupos.dinero, ...tarjetas].find((c) => String(c.id) === valores.cuenta_id)
 
   return (
     <form ref={formRef} className="mform" onSubmit={enviar} noValidate>
@@ -282,6 +295,47 @@ function MovimientoFormulario({ tipo, inicial, categorias, onGuardar, onCrearCat
         <label htmlFor="mf-fecha">{seRepite ? 'Fecha de inicio' : 'Fecha'}</label>
         <input {...campo('fecha')} type="date" max={seRepite ? undefined : todayISO()} />
         {error('fecha')}
+      </div>
+
+      <div className="mform__field">
+        <label htmlFor="mf-cuenta_id">{esGasto ? '¿Con qué pagaste?' : '¿Dónde te cayó?'}</label>
+        <select
+          id="mf-cuenta_id"
+          name="cuenta_id"
+          value={cuentaElegida ? String(cuentaElegida.id) : ''}
+          disabled={cuentas === null}
+          onChange={(e) => setValores((previos) => ({ ...previos, cuenta_id: e.target.value }))}
+        >
+          <option value="">{cuentas === null ? 'Cargando cuentas…' : 'Sin cuenta'}</option>
+          {grupos.dinero.length > 0 && (
+            <optgroup label="Tu dinero">
+              {grupos.dinero.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {tarjetas.length > 0 && (
+            <optgroup label="Tarjetas de crédito">
+              {tarjetas.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </optgroup>
+          )}
+        </select>
+        <p className="mform__nota" role="status">
+          {notaAlRegistrar({
+            cuenta: cuentaElegida,
+            monto: inicial?.cuenta_id ? 0 : leerMonto(valores.monto),
+            esIngreso: !esGasto,
+            seRepite: repetido,
+            esFuturo: valores.fecha > todayISO(),
+            formatear: pesos,
+          })}
+        </p>
       </div>
 
       <div className="mform__actions">

@@ -76,7 +76,9 @@ const nuevoId = () => `fila-${++contador}`
 const norm = (v: unknown): number | string | null => {
   if (v === null || v === undefined || v === '') return null
   if (typeof v === 'number') return v
-  const n = Number(v)
+  // Se acepta "12,500" o "$ 12,500.50", como se lee en el estado de cuenta.
+  const limpio = /^\$?\s*\d[\d,]*(\.\d+)?$/.test(String(v).trim()) ? String(v).replace(/[$,\s]/g, '') : v
+  const n = Number(limpio)
   return Number.isNaN(n) ? String(v) : n
 }
 export const igual = (a: unknown, b: unknown): boolean => norm(a) === norm(b)
@@ -126,7 +128,7 @@ export const tarjetaEditada = (tarjeta: EstadoTarjeta): boolean =>
 // ---------- Validación ----------
 const esEntero = (v: number) => Number.isInteger(v)
 
-export function validar({ filas, tarjeta }: Pick<EstadoDatos, 'filas' | 'tarjeta'>): Errores {
+export function validar({ filas, tarjeta }: Pick<EstadoDatos, 'filas' | 'tarjeta'>, hoy?: string): Errores {
   const errores: Errores = { filas: {}, tarjeta: {}, total: 0 }
   const errorFila = (id: string, campo: CampoFila, msg: string) => {
     ;(errores.filas[id] ??= {})[campo] = msg
@@ -138,6 +140,7 @@ export function validar({ filas, tarjeta }: Pick<EstadoDatos, 'filas' | 'tarjeta
     const monto = norm(f.monto)
     if (typeof monto !== 'number' || monto <= 0) errorFila(f.id, 'monto', 'Debe ser mayor a 0.')
     if (!f.esMsi && !f.fecha) errorFila(f.id, 'fecha', 'Elige la fecha.')
+    else if (hoy && String(f.fecha ?? '') > hoy) errorFila(f.id, 'fecha', 'No puede ser futura.')
     if (f.esMsi) {
       const meses = norm(f.meses)
       if (typeof meses !== 'number' || !esEntero(meses) || meses < 2)
@@ -229,7 +232,7 @@ export function reducer(s: EstadoDatos, a: Accion): EstadoDatos {
     case 'MANUAL': // captura a mano desde cero
       return {
         tarjeta: { valores: { ...TARJETA_VACIA }, original: null },
-        filas: [filaManual()],
+        filas: [], // los movimientos son opcionales: se puede registrar solo la tarjeta
         ultimaEliminada: null,
       }
     case 'EDITAR_FILA':
@@ -271,13 +274,28 @@ export function puedeLeerConIa(cupo: CupoExtraccion | null): boolean {
   return cupo === null || cupo.restantes > 0
 }
 
-/** Texto del cupo para la pantalla de subir; null mientras no se conoce. */
+/** Explicación bajo el medidor; null mientras no se conoce. */
 export function textoCupo(cupo: CupoExtraccion | null): string | null {
   if (cupo === null) return null
   if (cupo.restantes <= 0) {
-    return `Ya usaste tus ${cupo.limite} lecturas automáticas gratis. Puedes capturar los datos a mano.`
+    return `Ya usaste tus ${cupo.limite} lecturas gratis. Puedes capturar los datos a mano; toma unos minutos.`
   }
-  return `Te ${cupo.restantes === 1 ? 'queda' : 'quedan'} ${cupo.restantes} de ${cupo.limite} lecturas automáticas gratis.`
+  if (cupo.restantes === 1) return 'Te queda 1. Úsala con el estado de cuenta más reciente.'
+  return `Son ${cupo.limite} en total. Solo se descuenta cuando la lectura sale bien. Capturar a mano no gasta lecturas.`
+}
+
+/** Para la etiqueta de los accesos a "Subir estado de cuenta". */
+export function textoCupoCorto(cupo: CupoExtraccion | null): string | null {
+  if (cupo === null) return null
+  return cupo.restantes <= 0 ? 'Sin lecturas gratis' : `${cupo.restantes} gratis`
+}
+
+/** Se muestra al revisar y al guardar lo que leyó la IA. */
+export function textoLecturaUsada(cupo: CupoExtraccion | null): string {
+  const base = 'Esta lectura usó 1 de tus lecturas gratis.'
+  if (cupo === null) return base
+  if (cupo.restantes <= 0) return `${base} Ya no te quedan.`
+  return `${base} Te ${cupo.restantes === 1 ? 'queda' : 'quedan'} ${cupo.restantes}.`
 }
 
 /** Cupo después de una lectura exitosa, sin volver a pedirlo. */
@@ -302,3 +320,53 @@ export function fechaCortePropuesta(diaCorte: number | null, hoy: Date): string 
   const hoySinHora = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
   return aTextoFecha(esteMes <= hoySinHora ? esteMes : enMes(hoy.getFullYear(), hoy.getMonth() - 1))
 }
+
+// ---------- Ayudas de la pantalla ----------
+export type CampoObligatorio = 'nombre' | 'banco' | 'limiteCredito' | 'diaCorte' | 'diaLimitePago'
+
+/** Lo que falta para crear una tarjeta nueva, para marcarlo en su campo. El banco sirve de nombre. */
+export function faltantesNueva(
+  tarjeta: PayloadConfirmar['tarjeta'], nombre: string,
+): Partial<Record<CampoObligatorio, string>> {
+  const faltan: Partial<Record<CampoObligatorio, string>> = {}
+  if (!nombre.trim() && !tarjeta?.banco) faltan.nombre = 'Escribe un nombre para reconocerla.'
+  if (!tarjeta?.banco) faltan.banco = 'Escribe el banco.'
+  if (!tarjeta?.limiteCredito || tarjeta.limiteCredito <= 0) faltan.limiteCredito = 'Escribe el límite de crédito.'
+  if (!tarjeta?.diaCorte) faltan.diaCorte = 'Escribe el día de corte.'
+  if (!tarjeta?.diaLimitePago) faltan.diaLimitePago = 'Escribe el día límite de pago.'
+  return faltan
+}
+
+const sinAcentos = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase()
+
+/** La tarjeta guardada del banco que leyó la IA, solo si hay exactamente una. */
+export function tarjetaSugerida(
+  banco: Campo | undefined, tarjetas: readonly { id: number; banco: string }[],
+): number | null {
+  const buscado = sinAcentos(String(banco ?? ''))
+  if (!buscado) return null
+  const iguales = tarjetas.filter((t) => sinAcentos(t.banco) === buscado)
+  return iguales.length === 1 ? iguales[0].id : null
+}
+
+/** ¿Hay algo que se perdería al salir? Con lectura de la IA siempre: ya se gastó. */
+export function hayCambios({ filas, tarjeta }: Pick<EstadoDatos, 'filas' | 'tarjeta'>): boolean {
+  if (!tarjeta) return false
+  if (tarjeta.original || filas.length > 0) return true
+  return Object.values(tarjeta.valores).some((v) => norm(v) !== null)
+}
+
+export function textoPeso(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+/** "3 movimientos · 1 compra a MSI". */
+export function resumenFilas(filas: Pick<Fila, 'esMsi'>[]): string {
+  const msi = filas.filter((f) => f.esMsi).length
+  const movs = filas.length - msi
+  return `${movs} ${movs === 1 ? 'movimiento' : 'movimientos'} · ${msi} ${msi === 1 ? 'compra' : 'compras'} a MSI`
+}
+
+export const totalFilas = (filas: Pick<Fila, 'monto'>[]): number =>
+  filas.reduce((total, f) => total + Math.max(num(f.monto) ?? 0, 0), 0)

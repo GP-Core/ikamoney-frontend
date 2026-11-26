@@ -8,6 +8,9 @@ interface ConfirmDialogProps {
   titulo: string
   children: ReactNode
   textoConfirmar: string
+  textoCancelar?: string
+  /** "primario" para confirmar algo que no borra nada. */
+  varianteConfirmar?: 'destructivo' | 'primario'
   /** Muestra "Cargando…" en el botón mientras se elimina. */
   procesando?: boolean
   onConfirmar: () => void
@@ -20,6 +23,8 @@ function ConfirmDialog({
   titulo,
   children,
   textoConfirmar,
+  textoCancelar = 'Cancelar',
+  varianteConfirmar = 'destructivo',
   procesando = false,
   onConfirmar,
   onCancelar,
@@ -36,7 +41,7 @@ function ConfirmDialog({
   return (
     <dialog
       ref={dialogo}
-      className="dialogo"
+      className={`dialogo ${varianteConfirmar === 'primario' ? 'dialogo--confirmar' : ''}`}
       aria-labelledby="dialogo-titulo"
       onCancel={(evento) => {
         // La tecla Esc cierra la ventana como "Cancelar".
@@ -48,9 +53,9 @@ function ConfirmDialog({
       <div className="dialogo__texto">{children}</div>
       <div className="dialogo__acciones">
         <Button variante="secundario" onClick={onCancelar} disabled={procesando}>
-          Cancelar
+          {textoCancelar}
         </Button>
-        <Button variante="destructivo" onClick={onConfirmar} cargando={procesando}>
+        <Button variante={varianteConfirmar} onClick={onConfirmar} cargando={procesando}>
           {textoConfirmar}
         </Button>
       </div>

@@ -48,6 +48,8 @@ export interface Tarjeta {
   /** Lo que manda el backend (límite - saldo - pendiente de MSI). Si falta, se calcula con `disponibleTarjeta`. */
   credito_disponible?: number
   planes_msi: PlanMsi[]
+  /** Dinero de los pagos registrados este mes. */
+  pagado_mes?: number
 }
 
 /** POST /api/v1/tarjetas y PUT /api/v1/tarjetas/{id}. El pago mínimo no se captura: se estima (fórmula 6 de T25). */
@@ -73,6 +75,8 @@ export interface Deuda {
   dia_pago: number | null
   fecha_inicio: string | null
   estatus: 'activa' | 'liquidada'
+  /** Dinero de los pagos registrados este mes. */
+  pagado_mes?: number
 }
 
 /** POST /api/v1/deudas y PUT /api/v1/deudas/{id} */

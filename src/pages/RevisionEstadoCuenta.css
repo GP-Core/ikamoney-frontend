@@ -1,82 +1,427 @@
-.rev {
-  --ia: var(--azul); --ia-fondo: var(--arena);
-  --editado: var(--precaucion); --editado-fondo: var(--precaucion-fondo);
-  --agregado: var(--sano); --agregado-fondo: var(--sano-fondo);
-  --error: var(--critico); --borde: var(--border); --texto: var(--text); --suave: var(--muted);
-  max-width: 880px; margin: 0 auto; padding: 16px; color: var(--texto);
+/* Subir estado de cuenta: tres pasos (subir, revisar, listo) con los colores de T20. */
+
+.balance--estado h2 {
+  margin: 0;
+  font-size: 18px;
 }
-.rev h1 { font-size: 1.5rem; margin: 0 0 8px; }
-.rev h2 { font-size: 1.1rem; margin: 24px 0 8px; }
-.rev-ayuda { color: var(--suave); margin: 0 0 12px; }
 
-/* Botones */
-.rev-btn {
-  border: 1px solid var(--borde); background: var(--surface); color: var(--texto);
-  padding: 8px 14px; border-radius: 8px; cursor: pointer; font: inherit;
+.balance--estado h3 {
+  margin: 8px 0 0;
+  font: 700 15px/1.4 var(--sans);
+  color: var(--tinta);
 }
-.rev-btn { text-decoration: none; display: inline-block; }
-.rev-btn:disabled { opacity: .5; cursor: not-allowed; }
-.rev-btn--principal { background: var(--azul); color: var(--crema); border-color: var(--azul); padding: 10px 20px; }
-.rev-btn--sec { background: var(--surface); }
-.rev-btn--peligro { color: var(--error); border-color: var(--critico); padding: 4px 10px; }
-.rev-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 
-/* Avisos */
-.rev-aviso { border-radius: 8px; padding: 12px 16px; margin: 12px 0; border: 1px solid var(--borde); }
-.rev-aviso p { margin: 0 0 8px; }
-.rev-aviso--error { background: var(--critico-fondo); border-color: var(--critico); }
-.rev-aviso--ok { background: var(--agregado-fondo); border-color: var(--agregado); }
-.rev-aviso--vacio { background: var(--arena); }
-.rev-error { color: var(--error); font-size: .875rem; margin: 4px 0 0; }
-
-/* Cargando */
-.rev-cargando { text-align: center; padding: 48px 0; }
-.rev-spinner {
-  width: 36px; height: 36px; margin: 0 auto 16px; border-radius: 50%;
-  border: 4px solid var(--borde); border-top-color: var(--ia); animation: rev-giro 1s linear infinite;
+.balance--estado p {
+  margin: 0;
 }
-@keyframes rev-giro { to { transform: rotate(360deg); } }
 
-/* Marcas IA / editado / agregado */
-.rev-leyenda { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0; margin: 0 0 16px; font-size: .875rem; color: var(--suave); }
-.rev-marca { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
-.rev-marca--ia { background: var(--ia-fondo); color: var(--ia); }
-.rev-marca--editado { background: var(--editado-fondo); color: var(--editado); }
-.rev-marca--agregado { background: var(--agregado-fondo); color: var(--agregado); }
-
-/* Tarjeta */
-.rev-tarjeta { border: 1px solid var(--borde); border-left: 4px solid var(--ia); border-radius: 8px; padding: 12px 16px; }
-.rev-tarjeta--editado { border-left-color: var(--editado); }
-.rev-tarjeta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
-
-/* Destino */
-.rev-destino { margin-top: 16px; border: 1px solid var(--borde); border-radius: 8px; padding: 12px 16px; display: grid; gap: 12px; }
-.rev select { font: inherit; color: var(--texto); padding: 8px; border: 1px solid var(--borde); border-radius: 6px; background: var(--surface); }
-
-/* Filas */
-.rev-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
-.rev-fila { border: 1px solid var(--borde); border-left: 4px solid var(--ia); border-radius: 8px; padding: 12px; background: var(--surface); }
-.rev-fila--ia { border-left-color: var(--ia); }
-.rev-fila--editado { border-left-color: var(--editado); background: var(--editado-fondo); }
-.rev-fila--agregado { border-left-color: var(--agregado); background: var(--agregado-fondo); }
-.rev-fila-cabecera { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.rev-fila-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: start; }
-.rev-campo--concepto { grid-column: span 2; }
-
-/* Campos */
-.rev label { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--suave); }
-.rev input[type="text"], .rev input[type="number"], .rev input[type="date"] {
-  font: inherit; color: var(--texto); padding: 8px; border: 1px solid var(--borde); border-radius: 6px; background: var(--surface);
+.estado-entrada {
+  color: var(--muted);
 }
-.rev-cambiado input { border-color: var(--editado); box-shadow: 0 0 0 1px var(--editado); }
-.rev input[aria-invalid="true"] { border-color: var(--error); box-shadow: 0 0 0 1px var(--error); }
-.rev-msi { flex-direction: row !important; align-items: center; gap: 8px !important; color: var(--texto) !important; font-size: .9rem !important; padding-top: 18px; }
 
-/* Pie */
-.rev-pie { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--borde); display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
-.rev-resumen { margin: 0; color: var(--suave); }
+.balance--estado .estado-entrada {
+  margin-bottom: 14px;
+}
 
-@media (max-width: 520px) {
-  .rev-campo--concepto { grid-column: span 1; }
-  .rev-pie { align-items: stretch; }
+/* Pasos */
+.estado-pasos {
+  display: flex;
+  gap: 16px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.estado-pasos__paso {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.estado-pasos__numero {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 50%;
+  background: var(--crema);
+  font-weight: 700;
+}
+
+.estado-pasos__paso--hecho .estado-pasos__numero {
+  border-color: var(--azul);
+  color: var(--azul);
+}
+
+.estado-pasos__paso[aria-current='step'] {
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+.estado-pasos__paso[aria-current='step'] .estado-pasos__numero {
+  border-color: var(--azul);
+  background: var(--azul);
+  color: var(--crema);
+}
+
+/* Piezas comunes */
+.estado-ficha {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radio);
+  background: var(--surface);
+}
+
+.estado-ficha__titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.estado-nota {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.estado-enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: 600 15px/1.2 var(--sans);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.estado-botones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.estado-botones .boton {
+  text-decoration: none;
+}
+
+.estado-botones--fila {
+  align-items: flex-start;
+}
+
+/* Paso 1: subir */
+.estado-subir {
+  display: grid;
+  gap: 14px;
+}
+
+.estado-zona {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  border: 2px dashed var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
+  color: var(--azul);
+  text-align: center;
+  cursor: pointer;
+}
+
+.estado-zona span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.estado-zona:hover,
+.estado-zona--encima {
+  border-color: var(--dorado);
+}
+
+.estado-zona:focus-within {
+  outline: 3px solid var(--dorado);
+  outline-offset: 2px;
+}
+
+/* El selector del navegador no se ve, pero sigue recibiendo el foco del teclado. */
+.estado-zona__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.estado-archivo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--azul);
+  border-radius: var(--radio);
+  background: var(--crema);
+  color: var(--azul);
+}
+
+.estado-archivo p {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--tinta);
+}
+
+.estado-archivo p span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.estado-ayudas {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+.estado-ayudas li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.estado-ayudas svg {
+  flex-shrink: 0;
+  color: var(--azul);
+}
+
+/* Leyendo */
+.estado-cargando {
+  justify-items: center;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.estado-spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid var(--arena-oscura);
+  border-top-color: var(--azul);
+  border-radius: 50%;
+  animation: estado-giro 1s linear infinite;
+}
+
+@keyframes estado-giro {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Paso 2: revisar */
+.estado-revision,
+.estado-revision__datos {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.estado-grupo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.estado-selector {
+  display: grid;
+  gap: 6px;
+}
+
+.estado-selector select {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 8px;
+  background: var(--crema);
+  color: var(--tinta);
+  font: 16px/1.5 var(--sans);
+}
+
+.estado-terminos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.estado-cambiado .campo__input {
+  border-color: var(--dorado);
+  box-shadow: 0 0 0 1px var(--dorado);
+}
+
+/* Marcas: de dónde salió cada dato. No usan el semáforo porque no son un estado de salud. */
+.estado-marca {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.estado-marca--ia {
+  color: var(--azul);
+}
+
+.estado-marca--editado {
+  border-color: var(--dorado);
+  background: var(--dorado);
+  color: var(--azul);
+}
+
+.estado-marca--agregado {
+  color: var(--gris-azulado);
+}
+
+.estado-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.estado-lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.estado-fila {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radio);
+}
+
+.estado-fila--ia {
+  border-left-color: var(--azul);
+}
+
+.estado-fila--editado {
+  border-left-color: var(--dorado);
+}
+
+.estado-fila--agregado {
+  border-left-color: var(--gris-azulado);
+}
+
+.estado-fila__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.estado-msi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.estado-msi input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--azul);
+}
+
+.estado-pie {
+  align-content: start;
+}
+
+.estado-pie__total strong {
+  display: block;
+  font: 700 26px/1.2 var(--serif);
+  color: var(--azul);
+}
+
+/* Paso 3: listo */
+.estado-listo h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--verde-texto);
+}
+
+.estado-resumen {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.estado-resumen div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.estado-resumen dt {
+  color: var(--muted);
+}
+
+.estado-resumen dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+@media (min-width: 600px) {
+  .app__contenido:has(.balance--estado) {
+    max-width: 720px;
+  }
+}
+
+/* Escritorio: los datos a la izquierda; el resumen y los botones siempre a la vista. */
+@media (min-width: 1024px) {
+  /* Solo la revisión necesita el ancho de las dos columnas. */
+  .app__contenido:has(.estado-revision),
+  .app__columna:has(.estado-revision) .superior__interior {
+    max-width: 1040px;
+  }
+
+  .estado-revision {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    align-items: start;
+  }
+
+  .estado-pie {
+    position: sticky;
+    top: 88px;
+  }
+
+  .estado-botones--fila,
+  .estado-subir .estado-botones,
+  .estado-listo .estado-botones {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 }

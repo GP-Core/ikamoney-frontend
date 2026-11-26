@@ -64,3 +64,16 @@
   font-weight: 600;
   color: var(--critico);
 }
+
+.campo__prefijo {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--gris-azulado);
+  pointer-events: none;
+}
+
+.campo__control--prefijo .campo__input {
+  padding-left: 28px;
+}

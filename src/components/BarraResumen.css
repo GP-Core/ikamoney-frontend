@@ -1,0 +1,122 @@
+.barra-mes {
+  margin-top: 10px;
+}
+
+/* Punto de referencia del globo: queda justo encima de la barra. */
+.barra-mes__ancla {
+  position: relative;
+}
+
+.barra-mes__globo {
+  position: absolute;
+  bottom: 4px;
+  z-index: 5;
+  width: min(250px, 100%);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--tinta);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+  box-shadow: 0 8px 20px -8px rgb(30 51 71 / 50%);
+  animation: barra-mes-aparece 120ms ease-out;
+}
+
+.barra-mes__globo-titulo {
+  margin-bottom: 4px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.barra-mes__globo-titulo span {
+  font-weight: 400;
+}
+
+.barra-mes__flecha {
+  position: absolute;
+  top: 100%;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: var(--tinta);
+  border-bottom: 0;
+}
+
+@keyframes barra-mes-aparece {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-mes__globo {
+    animation: none;
+  }
+}
+
+.barra-mes__pista {
+  display: flex;
+  gap: 2px;
+}
+
+/* El área para tocar es más alta que la barra visible. */
+.barra-mes__tramo {
+  display: flex;
+  align-items: center;
+  min-width: 8px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.barra-mes__color {
+  display: block;
+}
+
+.barra-mes__tramo .barra-mes__color {
+  width: 100%;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.barra-mes__tramo--apagado .barra-mes__color {
+  opacity: 0.45;
+}
+
+.barra-mes__color--comprometido {
+  background: var(--dato-comprometido);
+}
+
+.barra-mes__color--variable {
+  background: var(--dato-variable);
+}
+
+.barra-mes__color--libre {
+  background: var(--dato-libre);
+}
+
+.barra-mes__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
+
+.barra-mes__leyenda button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gris-azulado);
+  font: 600 13px var(--sans);
+  cursor: pointer;
+}
+
+.barra-mes__punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}

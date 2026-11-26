@@ -1,0 +1,30 @@
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 22px/1 var(--serif);
+  white-space: nowrap;
+}
+
+.marca img {
+  width: 34px;
+  height: 31px;
+}
+
+.marca--grande {
+  gap: 12px;
+  font-size: 32px;
+}
+
+.marca--grande img {
+  width: 52px;
+  height: 48px;
+}
+
+.marca__ika {
+  color: var(--azul);
+}
+
+.marca__money {
+  color: var(--verde-texto);
+}

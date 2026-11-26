@@ -1,90 +1,149 @@
-.home__encabezado {
-  margin-bottom: 20px;
-}
+/* Inicio. Solo la paleta de marca (T20). */
+.inicio {
+  /* BalanceVacio usa las variables de Balance; aquí se llenan con las de marca. */
+  --b-linea: var(--arena-oscura);
+  --b-realce: var(--arena);
+  --b-hero: var(--azul);
+  --c-fijo: var(--azul);
+  --c-variable: var(--dorado);
+  --c-msi: var(--gris-azulado);
+  --c-libre: var(--verde-texto);
 
-.home__subtitle {
-  margin-bottom: 24px;
-  color: var(--gris-azulado);
-}
-
-.home__encabezado .home__subtitle {
-  margin-bottom: 0;
-}
-
-/* Acceso directo a una sección, con el estilo de tarjeta de la guía (T20) */
-.home__acceso {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-  padding: 16px;
-  background: var(--crema);
-  border: 1px solid var(--arena-oscura);
-  border-top: 4px solid var(--azul);
-  border-radius: 10px;
-  color: var(--azul);
-  text-decoration: none;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.home__acceso:hover {
-  border-color: var(--azul);
+.inicio__saludo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 12px;
 }
 
-.home__acceso-texto {
-  display: block;
-  font-weight: 400;
+.inicio__saludo h1 {
+  margin: 0;
+}
+
+.inicio__saludo p {
   color: var(--gris-azulado);
 }
 
-.home__bloque {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 24px;
+.inicio__columna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 }
 
-/* En Inicio la paleta se comparte, pero sin el fondo de pantalla completa de Balance. */
-.home .home__bloque {
-  min-height: 0;
-  background: none;
-}
-
-.home__bloque-titulo {
-  font-size: 1.25rem;
-}
-
-.home__aviso {
-  padding: 12px 16px;
-  border: 1px solid var(--arena-oscura);
-  border-radius: 10px;
-  background: var(--crema);
-  color: var(--tinta);
-}
-
-.home__ver-mas {
-  justify-self: start;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  color: var(--azul);
-  font-weight: 600;
-}
-
-.home__accesos {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.home__acceso--compacto {
-  margin-bottom: 0;
-}
-
-.home__status {
+.inicio__bloque {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.home__api-url {
-  font-size: 0.9rem;
+.inicio__bloque:empty {
+  display: none;
+}
+
+.inicio__mosaicos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.inicio__acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inicio__acciones .boton {
+  min-height: 52px;
+  text-decoration: none;
+}
+
+.inicio__secundario {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.inicio__secundario.sin-conexion__apagado {
+  cursor: not-allowed;
+  color: var(--gris-azulado);
+}
+
+.inicio__esqueleto {
+  border-radius: var(--radio);
+  background: var(--arena-oscura);
+  animation: inicio-pulso 1.4s ease-in-out infinite;
+}
+
+.inicio__esqueleto--principal {
+  height: 360px;
+}
+
+.inicio__esqueleto--pago {
+  height: 110px;
+}
+
+.inicio__esqueleto--mosaico {
+  min-height: 150px;
+}
+
+@keyframes inicio-pulso {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inicio__esqueleto {
+    animation: none;
+  }
+}
+
+.inicio__error {
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--critico);
+  border-radius: var(--radio);
+  background: var(--crema);
+}
+
+.inicio__error h2 {
+  color: var(--critico);
+  font-size: 17px;
+}
+
+.inicio__error p {
+  margin-bottom: 12px;
+}
+
+@media (min-width: 600px) {
+  .app__contenido:has(.inicio) {
+    max-width: 720px;
+  }
+}
+
+/* Escritorio: resumen, score y MSI a la izquierda; lo pendiente y la acción a la derecha. */
+@media (min-width: 1024px) {
+  .app__contenido:has(.inicio) {
+    max-width: 1040px;
+  }
+
+  .inicio__saludo {
+    justify-content: flex-start;
+  }
+
+  .inicio__columnas {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+    gap: 20px;
+  }
 }

@@ -183,13 +183,14 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
           />
         </div>
         <p className="pagina__nota">
-          En el saldo no incluyas lo que te falta pagar de tus compras a meses sin intereses: esas se registran aparte y
-          nosotros las sumamos. <AyudaTermino termino="msi" />
+          En el saldo no incluyas lo que te falta pagar de tus{' '}
+          <AyudaTermino termino="msi">compras a meses sin intereses</AyudaTermino>: esas se registran aparte y nosotros
+          las sumamos.
         </p>
 
         <p className="pagina__nota">
-          ¿Qué son el día de corte <AyudaTermino termino="fechaCorte" /> y la fecha límite de pago{' '}
-          <AyudaTermino termino="fechaLimitePago" />?
+          ¿Qué son el <AyudaTermino termino="fechaCorte">día de corte</AyudaTermino> y la{' '}
+          <AyudaTermino termino="fechaLimitePago">fecha límite de pago</AyudaTermino>?
         </p>
         <div className="formulario__fila">
           <TextField
@@ -221,8 +222,9 @@ function FormularioTarjeta({ tarjeta }: { tarjeta: Tarjeta | null }) {
           error={errores.tasa_anual}
         />
         <p className="pagina__nota">
-          La tasa aparece en tu estado de cuenta como "tasa de interés ordinaria anual"; sin ella no podemos estimar tus
-          intereses. El pago mínimo lo estimamos con la regla de Banxico. <AyudaTermino termino="tasaAnual" />
+          La tasa aparece en tu estado de cuenta como "
+          <AyudaTermino termino="tasaAnual">tasa de interés ordinaria anual</AyudaTermino>"; sin ella no podemos estimar
+          tus intereses. El pago mínimo lo estimamos con la regla de Banxico.
         </p>
 
         <div className="formulario__acciones">

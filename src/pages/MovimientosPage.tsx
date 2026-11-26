@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router'
 import Modal from '../components/Modal'
 import MovimientoFormulario from '../components/MovimientoFormulario'
 import MovimientosLista from '../components/MovimientosLista'
 import FechaCopia from '../components/FechaCopia'
+import FormularioOcurrencia from '../components/FormularioOcurrencia'
 import { useConexion } from '../hooks/useConexion'
-import { useCategorias, useMovimientos } from '../hooks/useFinanzas'
+import { useCategorias, useCuentas, useMovimientos } from '../hooks/useFinanzas'
 import { movimientosService } from '../services/movimientos'
 import type { MovimientoDelMes, MovimientoPayload, TipoMovimiento } from '../types/movimiento'
 import { mensajeError } from '../utils/errores'
@@ -20,28 +22,40 @@ function MovimientosPage() {
   const [mes, setMes] = useState(mesActual)
   const { datos, copiaDe, error, cargando, recargar } = useMovimientos(mes)
   const { datos: categorias, recargar: recargarCategorias } = useCategorias()
+  const { datos: cuentas, recargar: recargarCuentas } = useCuentas()
   const [pestana, setPestana] = useState<TipoMovimiento>('gasto')
+  const [porPagar, setPorPagar] = useState<MovimientoDelMes | null>(null)
   // null = cerrado; con "movimiento" es edición, sin él es alta.
   const [formulario, setFormulario] = useState<{ movimiento?: MovimientoDelMes } | null>(null)
   const [porEliminar, setPorEliminar] = useState<MovimientoDelMes | null>(null)
   const [eliminando, setEliminando] = useState(false)
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null)
-  const [aviso, setAviso] = useState('')
+  // Otras pantallas (el simulador) llegan aquí con un aviso de lo que registraron.
+  const llegada = useLocation().state as { aviso?: string } | null
+  const [aviso, setAviso] = useState(llegada?.aviso ?? '')
 
   useEffect(() => {
     if (!aviso) return
-    const timer = setTimeout(() => setAviso(''), 2500)
+    const timer = setTimeout(() => setAviso(''), 3500)
     return () => clearTimeout(timer)
   }, [aviso])
 
   const etiqueta = pestana === 'gasto' ? 'gasto' : 'ingreso'
   const delTipo = (tipo: TipoMovimiento) => datos?.movimientos.filter((m) => m.tipo === tipo) ?? []
 
+  function recargarTodo() {
+    recargar()
+    recargarCuentas()
+  }
+
   async function guardar(payload: MovimientoPayload) {
     const editando = formulario?.movimiento
+    let guardado
     if (editando) {
       // El tipo no se puede cambiar: el backend rechaza el campo en la edición.
-      await movimientosService.actualizar(editando.id, {
+      guardado = await movimientosService.actualizar(editando.id, {
+        // Solo si cambió: enviar la misma no hace falta
+        ...(payload.cuenta_id !== (editando.cuenta_id ?? null) && { cuenta_id: payload.cuenta_id }),
         concepto: payload.concepto,
         monto: payload.monto,
         frecuencia: payload.frecuencia,
@@ -50,11 +64,18 @@ function MovimientosPage() {
         clase: payload.clase,
       })
     } else {
-      await movimientosService.crear(payload)
+      guardado = await movimientosService.crear(payload)
     }
-    setAviso(`${payload.tipo === 'gasto' ? 'Gasto' : 'Ingreso'} ${editando ? 'actualizado' : 'guardado'}`)
+    const que = payload.tipo === 'gasto' ? 'Gasto' : 'Ingreso'
+    setAviso(
+      guardado.registrado_como === 'compra_tarjeta'
+        ? `Guardado como compra en ${guardado.cuenta_nombre}. La verás en Cuentas.`
+        : guardado.saldo_negativo
+          ? `${que} guardado. Ojo: ${guardado.cuenta_nombre} quedó en negativo.`
+          : `${que} ${editando ? 'actualizado' : 'guardado'}`,
+    )
     setFormulario(null)
-    recargar()
+    recargarTodo()
   }
 
   async function crearCategoria(nombre: string) {
@@ -71,11 +92,21 @@ function MovimientosPage() {
       await movimientosService.eliminar(porEliminar.id)
       setAviso(`${porEliminar.tipo === 'gasto' ? 'Gasto' : 'Ingreso'} eliminado`)
       setPorEliminar(null)
-      recargar()
+      recargarTodo()
     } catch (err) {
       setErrorEliminar(mensajeError(err))
     } finally {
       setEliminando(false)
+    }
+  }
+
+  async function deshacerPago(m: MovimientoDelMes) {
+    try {
+      await movimientosService.quitarOcurrencia(m.id, m.fecha_ocurrencia)
+      setAviso('Listo: el dinero regresó a la cuenta')
+      recargarTodo()
+    } catch (err) {
+      setAviso(mensajeError(err))
     }
   }
 
@@ -144,6 +175,8 @@ function MovimientosPage() {
             tipo={pestana}
             movimientos={delTipo(pestana)}
             soloLectura={!enLinea}
+            onMarcar={setPorPagar}
+            onDeshacer={deshacerPago}
             onEditar={(movimiento) => setFormulario({ movimiento })}
             onEliminar={(movimiento) => {
               setErrorEliminar(null)
@@ -175,6 +208,7 @@ function MovimientosPage() {
             tipo={formulario.movimiento?.tipo ?? pestana}
             inicial={formulario.movimiento}
             categorias={categorias}
+            cuentas={cuentas}
             onGuardar={guardar}
             onCrearCategoria={crearCategoria}
             onCancelar={() => setFormulario(null)}
@@ -182,11 +216,30 @@ function MovimientosPage() {
         )}
       </Modal>
 
+      <Modal
+        open={porPagar !== null}
+        title={porPagar ? porPagar.concepto : ''}
+        onClose={() => setPorPagar(null)}
+      >
+        {porPagar && (
+          <FormularioOcurrencia
+            movimiento={porPagar}
+            onListo={() => {
+              setPorPagar(null)
+              setAviso(porPagar.tipo === 'gasto' ? 'Marcado como pagado' : 'Marcado como recibido')
+              recargarTodo()
+            }}
+            onCancelar={() => setPorPagar(null)}
+          />
+        )}
+      </Modal>
+
       <Modal open={porEliminar !== null} title="¿Eliminar este movimiento?" onClose={() => setPorEliminar(null)}>
         <p>
           {porEliminar?.concepto} · {porEliminar && dinero(porEliminar.monto)}.
-          {porEliminar && porEliminar.frecuencia !== 'unico' && ' Se quitará también de los demás meses.'} Esta acción no
-          se puede deshacer.
+          {porEliminar && porEliminar.frecuencia !== 'unico' && ' Se quitará también de los demás meses; lo que ya pagaste se queda en tu cuenta.'}
+          {porEliminar?.cuenta_nombre && porEliminar.frecuencia === 'unico' && ` El dinero regresa a ${porEliminar.cuenta_nombre}.`}{' '}
+          Esta acción no se puede deshacer.
         </p>
         {errorEliminar && (
           <p className="movements__warn" role="alert">

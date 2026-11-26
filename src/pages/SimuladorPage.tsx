@@ -1,24 +1,25 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import ComparativaEscenarios from '../components/ComparativaEscenarios'
 import EscenariosNoViables from '../components/EscenariosNoViables'
 import ExplicacionIa from '../components/ExplicacionIa'
+import Icon from '../components/Icon'
 import GraficaEscenarios from '../components/GraficaEscenarios'
-import RegistrarCompra from '../components/RegistrarCompra'
+import RegistroDeCompra from '../components/RegistroDeCompra'
 import ResumenVeredicto from '../components/ResumenVeredicto'
 import { Formulario, SinTarjetas } from '../components/SimuladorFormulario'
 import { useTarjetasYDeudas } from '../hooks/useFinanzas'
 import { useSimulacion } from '../hooks/useSimulacion'
-import { finanzasService } from '../services/finanzas'
 import { SIMULADOR_USANDO_EJEMPLO } from '../services/simulador'
 import type { PedidoSimulacion, SimulacionResponse } from '../types/simulador'
-import { mensajeError } from '../utils/errores'
-import { hoyIso } from '../utils/finanzas'
 import { pesos } from '../utils/pesos'
 import { leerPedidoDeUrl } from '../utils/simulador'
+import { eleccionInicial } from '../utils/simuladorVista'
 import './BalancePage.css'
 import '../components/ScoreDesglose.css'
 import '../components/Simulador.css'
+import '../components/Button.css'
+import './SimuladorPage.css'
 
 /** Texto de muestra para revisar el diseño del espacio de la IA con /simulador?ia (solo con datos de ejemplo). */
 const EXPLICACION_MUESTRA =
@@ -29,7 +30,8 @@ function SimuladorPage() {
   // useLocation suscribe la página a la ruta: sin él, navegar de /simulador a /simulador?precio=… no la vuelve a pintar.
   const { search } = useLocation()
   const p = new URLSearchParams(search)
-  const hayCompra = p.has('precio') || p.has('demo') || p.has('ia')
+  // "Cambiar datos" vuelve al formulario con la compra en la URL.
+  const hayCompra = !p.has('editar') && (p.has('precio') || p.has('demo') || p.has('ia'))
   return hayCompra ? <ResultadoSimulador /> : <CapturaCompra />
 }
 
@@ -37,18 +39,15 @@ function SimuladorPage() {
 function CapturaCompra() {
   const { datos, error, cargando, recargar } = useTarjetasYDeudas()
   const tarjetas = datos?.tarjetas.filter((t) => t.activa) ?? []
+  const { search } = useLocation()
+  const inicial = new URLSearchParams(search).has('editar') ? leerPedidoDeUrl(search, false) : null
 
   return (
-    <main className="balance">
-      <div className="balance__ancho">
-        <header className="balance__encabezado">
-          <Link className="balance__mes-boton score-volver" to="/balance" aria-label="Volver al balance">
-            ‹
-          </Link>
-          <div className="balance__mes">
-            <h1 className="balance__titulo">¿Me conviene?</h1>
-          </div>
-          <span className="score-volver score-volver--vacio" aria-hidden="true" />
+    <main className="balance balance--t20 balance--simulador">
+      <div className="balance__ancho sim-captura">
+        <header className="balance__cabecera">
+          <h1>Simular una compra</h1>
+          <p className="sim-subtitulo">Mira cómo quedaría tu dinero antes de comprar.</p>
         </header>
 
         {cargando && (
@@ -70,7 +69,7 @@ function CapturaCompra() {
         )}
 
         {datos && tarjetas.length === 0 && <SinTarjetas />}
-        {datos && tarjetas.length > 0 && <Formulario tarjetas={tarjetas} />}
+        {datos && tarjetas.length > 0 && <Formulario tarjetas={tarjetas} inicial={inicial} />}
       </div>
     </main>
   )
@@ -79,22 +78,21 @@ function CapturaCompra() {
 /** Pantalla del resultado del simulador: ¿debería comprarlo? Los escenarios, cómo queda el dinero y el veredicto. */
 function ResultadoSimulador() {
   const [pedido] = useState(() => leerPedidoDeUrl(window.location.search, SIMULADOR_USANDO_EJEMPLO))
+  const [urlCambiar] = useState(() => `/simulador?editar=1&${window.location.search.slice(1)}`)
   const { estado, data, error, reintentar } = useSimulacion(pedido)
   const explicacion =
     SIMULADOR_USANDO_EJEMPLO && new URLSearchParams(window.location.search).has('ia') ? EXPLICACION_MUESTRA : null
 
   return (
-    <main className="balance">
+    <main className="balance balance--t20 balance--simulador">
       <div className="balance__ancho">
-        <header className="balance__encabezado">
-          <Link className="balance__mes-boton score-volver" to="/balance" aria-label="Volver al balance">
-            ‹
+        <header className="balance__cabecera">
+          <h1>Simular una compra</h1>
+          <Link to={urlCambiar} className="boton boton--secundario sim-editar">
+            <Icon nombre="editar" tamano={18} />
+            Cambiar datos
           </Link>
-          <div className="balance__mes">
-            <h1 className="balance__titulo">¿Debería comprarlo?</h1>
-            {SIMULADOR_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}
-          </div>
-          <span className="score-volver score-volver--vacio" aria-hidden="true" />
+          {SIMULADOR_USANDO_EJEMPLO && <span className="balance__ejemplo">Datos de ejemplo</span>}
         </header>
 
         {estado === 'sin_pedido' && (
@@ -123,15 +121,27 @@ function ResultadoSimulador() {
           </section>
         )}
 
-        {estado === 'ok' && data && <Resultado data={data} pedido={pedido} explicacion={explicacion} />}
+        {estado === 'ok' && data && (
+          <Resultado data={data} pedido={pedido} explicacion={explicacion} urlCambiar={urlCambiar} />
+        )}
       </div>
     </main>
   )
 }
 
-function Resultado({ data, pedido, explicacion }: { data: SimulacionResponse; pedido: PedidoSimulacion | null; explicacion: string | null }) {
+interface ResultadoProps {
+  data: SimulacionResponse
+  pedido: PedidoSimulacion | null
+  explicacion: string | null
+  /** Formulario con esta misma compra, para corregirla. */
+  urlCambiar: string
+}
+
+function Resultado({ data, pedido, explicacion, urlCambiar }: ResultadoProps) {
   const aplican = data.escenarios.filter((e) => e.aplica)
   const noAplican = data.escenarios.filter((e) => !e.aplica)
+  const [elegidoId, setElegidoId] = useState(() => eleccionInicial(data))
+  const elegido = aplican.find((e) => e.id === elegidoId) ?? null
 
   // Con datos de ejemplo el resultado es siempre el mismo: se avisa si lo capturado fue otra compra.
   const ignoraCompra = SIMULADOR_USANDO_EJEMPLO && pedido !== null && (pedido.precio !== data.precio || pedido.prioridad !== data.prioridad)
@@ -149,7 +159,7 @@ function Resultado({ data, pedido, explicacion }: { data: SimulacionResponse; pe
       )}
       {sinAhorro && (
         <p className="sim-aviso" role="status">
-          Calculamos el contado sin ahorro. Si tienes dinero apartado para esta compra, <Link to="/simulador">vuelve a simular e indícalo</Link>.
+          Calculamos el contado sin ahorro. Si tienes dinero apartado para esta compra, <Link to={urlCambiar}>agrégalo en la compra</Link>.
         </p>
       )}
 
@@ -162,9 +172,11 @@ function Resultado({ data, pedido, explicacion }: { data: SimulacionResponse; pe
             menorImpacto={data.menor_impacto}
             scoreActual={data.score_actual}
             hayOpcionSugerida={data.veredicto !== 'no_recomendable'}
+            elegido={elegidoId}
+            onElegir={setElegidoId}
           />
-          <GraficaEscenarios escenarios={aplican} menorImpacto={data.menor_impacto} />
-          <RegistroDeCompra data={data} />
+          <RegistroDeCompra data={data} elegido={elegido} />
+          <GraficaEscenarios escenarios={aplican} menorImpacto={data.menor_impacto} elegido={elegidoId} />
         </>
       )}
 
@@ -181,56 +193,9 @@ function Resultado({ data, pedido, explicacion }: { data: SimulacionResponse; pe
               <li key={texto}>{texto}</li>
             ))}
           </ul>
-          <p className="score-supuestos__modelo">Modelo de cálculo {data.version_modelo}</p>
         </section>
       )}
     </div>
-  )
-}
-
-/**
- * RF-50: ofrece registrar la compra solo si el escenario recomendado es a MSI y alcanza el dinero.
- * Contado no crea un plan MSI, y con datos de ejemplo las tarjetas no son reales.
- */
-function RegistroDeCompra({ data }: { data: SimulacionResponse }) {
-  const navigate = useNavigate()
-  const [guardando, setGuardando] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const elegido = data.escenarios.find((e) => e.id === data.menor_impacto)
-
-  if (SIMULADOR_USANDO_EJEMPLO || data.veredicto === 'no_recomendable') return null
-  if (!elegido || elegido.tipo !== 'msi' || elegido.tarjeta_id === null || elegido.meses === null || elegido.mensualidad === null) return null
-  const { tarjeta_id: tarjetaId, meses, mensualidad } = elegido
-
-  async function registrar() {
-    setGuardando(true)
-    setError(null)
-    try {
-      await finanzasService.crearPlanMsi(tarjetaId, {
-        descripcion: data.descripcion,
-        monto_original: data.precio,
-        num_mensualidades: meses,
-        mensualidades_pagadas: 0,
-        monto_mensualidad: mensualidad,
-        fecha_compra: hoyIso(),
-      })
-      navigate(`/tarjetas/${tarjetaId}`, { state: { aviso: `Compra "${data.descripcion}" agregada.` } })
-    } catch (err) {
-      setError(mensajeError(err))
-      setGuardando(false)
-    }
-  }
-
-  return (
-    <RegistrarCompra
-      descripcion={data.descripcion}
-      meses={meses}
-      tarjetaNombre={elegido.tarjeta_nombre ?? 'tu tarjeta'}
-      mensualidad={mensualidad}
-      guardando={guardando}
-      error={error}
-      onRegistrar={registrar}
-    />
   )
 }
 

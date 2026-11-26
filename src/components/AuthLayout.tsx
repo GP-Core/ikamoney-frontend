@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { MODO_PRUEBA } from '../services/auth'
+import Marca from './Marca'
 import './AuthLayout.css'
 
 interface AuthLayoutProps {
@@ -8,16 +9,17 @@ interface AuthLayoutProps {
   children: ReactNode
   /** Enlaces o texto bajo la tarjeta (por ejemplo, "¿No tienes cuenta?"). */
   pie?: ReactNode
+  /** Tarjeta más ancha, para textos largos. */
+  ancho?: 'lectura'
 }
 
 /** Marco común de las pantallas de cuenta: logo, tarjeta del formulario y pie. */
-function AuthLayout({ titulo, subtitulo, children, pie }: AuthLayoutProps) {
+function AuthLayout({ titulo, subtitulo, children, pie, ancho }: AuthLayoutProps) {
   return (
     <main className="auth">
-      <div className="auth__contenedor">
+      <div className={`auth__contenedor ${ancho ? 'auth__contenedor--lectura' : ''}`}>
         <p className="auth__marca">
-          <span className="auth__marca-ika">Ika</span>
-          <span className="auth__marca-money">Money</span>
+          <Marca tamano="grande" />
         </p>
 
         <section className="auth__tarjeta" aria-labelledby="auth-titulo">

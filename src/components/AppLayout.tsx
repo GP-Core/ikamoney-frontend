@@ -1,91 +1,96 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router'
-import { useAuth } from '../hooks/useAuth'
-import { useAlertas } from '../hooks/useAlertas'
+import { useState } from 'react'
+import { Link, Outlet, useLocation } from 'react-router'
 import { useConexion } from '../hooks/useConexion'
-import { textoContador } from '../utils/alertas'
+import { useEsEscritorio } from '../hooks/useEsEscritorio'
 import AvisoSinConexion from './AvisoSinConexion'
-import Button from './Button'
+import BarraLateral from './BarraLateral'
+import BarraSuperior from './BarraSuperior'
+import EnlaceAvisos from './EnlaceAvisos'
 import Icon from './Icon'
-import type { NombreIcono } from './Icon'
+import Marca from './Marca'
+import MenuLateral from './MenuLateral'
+import { estaActiva, SECCIONES } from './menu'
 import './AppLayout.css'
 
-/** Las cuatro pestañas del prototipo (T21). `tambien` son pantallas hijas que dejan la pestaña marcada. */
-const SECCIONES: { ruta: string; texto: string; icono: NombreIcono; tambien?: string[] }[] = [
-  { ruta: '/', texto: 'Inicio', icono: 'inicio' },
-  { ruta: '/simulador', texto: 'Simulador', icono: 'calculadora' },
-  { ruta: '/ranking', texto: 'Deudas', icono: 'recibo', tambien: ['/plan'] },
-  { ruta: '/score', texto: 'Score', icono: 'sano' },
-]
-
 /**
- * Marco de las pantallas con sesión: barra superior con el botón de cerrar sesión
- * (disponible en cualquier pantalla, REQ-CU-08) y navegación inferior fija.
+ * Marco de las pantallas con sesión. En celular: encabezado, barra inferior y menú derecho. En
+ * escritorio: barra lateral fija y barra superior. "Salir" está disponible en cualquier pantalla
+ * (REQ-CU-08).
  */
 function AppLayout() {
-  const { cerrarSesion } = useAuth()
   const enLinea = useConexion()
+  const escritorio = useEsEscritorio()
   const { pathname } = useLocation()
-  const { sinLeer } = useAlertas()
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const [rutaVista, setRutaVista] = useState(pathname)
+
+  // Al cambiar de pantalla (también con "atrás") o de tamaño, el menú se cierra.
+  if (rutaVista !== pathname || (escritorio && menuAbierto)) {
+    setRutaVista(pathname)
+    setMenuAbierto(false)
+  }
 
   return (
     <div className="app">
-      <header className="app__barra">
-        <Link to="/" className="app__marca" aria-label="IkaMoney, ir al inicio">
-          <span className="app__marca-ika">Ika</span>
-          <span className="app__marca-money">Money</span>
-        </Link>
-        <div className="app__acciones">
-          <NavLink
-            to="/alertas"
-            aria-label={sinLeer > 0 ? `Avisos, ${sinLeer} sin leer` : 'Avisos'}
-            className={({ isActive }) => (isActive ? 'app__cuenta app__cuenta--activo' : 'app__cuenta')}
-          >
-            <span className="app__campana">
-              <Icon nombre="campana" />
-              {sinLeer > 0 && (
-                <span className="app__contador" aria-hidden="true">
-                  {textoContador(sinLeer)}
+      {escritorio && <BarraLateral />}
+
+      <div className="app__columna">
+        {escritorio ? (
+          <BarraSuperior />
+        ) : (
+          <header className="app__barra">
+            <Link to="/" className="app__marca" aria-label="IkaMoney, ir al inicio">
+              <Marca />
+            </Link>
+            <div className="app__acciones">
+              <EnlaceAvisos conEtiqueta />
+              <button
+                type="button"
+                className="campana"
+                aria-haspopup="dialog"
+                aria-expanded={menuAbierto}
+                aria-controls="menu-lateral"
+                onClick={() => setMenuAbierto(true)}
+              >
+                <span className="campana__circulo">
+                  <Icon nombre="menu" />
                 </span>
-              )}
-            </span>
-          </NavLink>
-          <NavLink
-            to="/cuenta"
-            aria-label="Mi cuenta"
-            className={({ isActive }) => (isActive ? 'app__cuenta app__cuenta--activo' : 'app__cuenta')}
-          >
-            <Icon nombre="usuario" />
-          </NavLink>
-          <Button variante="secundario" onClick={() => cerrarSesion('manual')}>
-            <Icon nombre="salir" tamano={20} />
-            Cerrar sesión
-          </Button>
-        </div>
-      </header>
+                <span>Menú</span>
+              </button>
+            </div>
+          </header>
+        )}
 
-      {!enLinea && <AvisoSinConexion />}
+        {!enLinea && <AvisoSinConexion />}
 
-      <main className="app__contenido">
-        <Outlet />
-      </main>
+        <main className="app__contenido">
+          <Outlet />
+        </main>
+      </div>
 
-      <nav className="app__nav" aria-label="Navegación principal">
-        {SECCIONES.map((s) => (
-          <NavLink
-            key={s.ruta}
-            to={s.ruta}
-            end={s.ruta === '/'}
-            className={({ isActive }) =>
-              isActive || s.tambien?.some((r) => pathname.startsWith(r))
-                ? 'app__nav-item app__nav-item--activo'
-                : 'app__nav-item'
-            }
-          >
-            <Icon nombre={s.icono} />
-            <span>{s.texto}</span>
-          </NavLink>
-        ))}
-      </nav>
+      {!escritorio && (
+        <>
+          <nav className="app__nav" aria-label="Navegación principal">
+            {SECCIONES.map((s) => {
+              const activa = estaActiva(s, pathname)
+              return (
+                <Link
+                  key={s.ruta}
+                  to={s.ruta}
+                  aria-current={activa ? 'page' : undefined}
+                  className={activa ? 'app__nav-item app__nav-item--activo' : 'app__nav-item'}
+                >
+                  <span className="app__nav-icono">
+                    <Icon nombre={s.icono} />
+                  </span>
+                  <span>{s.texto}</span>
+                </Link>
+              )
+            })}
+          </nav>
+          <MenuLateral abierto={menuAbierto} onCerrar={() => setMenuAbierto(false)} />
+        </>
+      )}
     </div>
   )
 }

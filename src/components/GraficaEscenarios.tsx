@@ -1,14 +1,18 @@
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { EscenarioSimulacion } from '../types/simulador'
 import { mesCorto, mesLargo, pesosCompacto } from '../utils/formatMes'
 import { pesos } from '../utils/pesos'
 import { mesMasJusto, nombreCorto, TONO_VEREDICTO } from '../utils/simulador'
+import { coloresPorFormaDePago } from '../utils/simuladorVista'
 import './GraficaEscenarios.css'
 
 interface GraficaEscenariosProps {
   /** Solo los que aplican. */
   escenarios: EscenarioSimulacion[]
   menorImpacto: string | null
+  /** La forma de pago que el usuario eligió; sin elegir, se resalta la de menor impacto. */
+  elegido: string | null
 }
 
 const ANCHO = 360
@@ -34,12 +38,14 @@ function separar(posiciones: { id: string; y: number }[], minimo: number, maximo
  * Una línea por forma de pago con el dinero disponible mes a mes. La línea de $0 es la referencia:
  * lo que cae debajo no alcanza. Sin ejes ni leyenda: cada línea lleva su nombre y su cifra al final.
  */
-function GraficaEscenarios({ escenarios, menorImpacto }: GraficaEscenariosProps) {
+function GraficaEscenarios({ escenarios, menorImpacto, elegido }: GraficaEscenariosProps) {
+  const resaltado = elegido ?? menorImpacto
   const horizonte = Math.max(...escenarios.map((e) => e.balance.length))
   const [verTodo, setVerTodo] = useState(false)
   const hayVentana = horizonte > MESES_CORTOS
   const meses = hayVentana && !verTodo ? MESES_CORTOS : horizonte
 
+  const colores = coloresPorFormaDePago(escenarios)
   const series = escenarios.map((e) => ({ e, puntos: e.balance.slice(0, meses) }))
   const valores = series.flatMap((s) => s.puntos.map((p) => p.acumulado))
   const maximo = Math.max(...valores, 0)
@@ -59,8 +65,8 @@ function GraficaEscenarios({ escenarios, menorImpacto }: GraficaEscenariosProps)
     MARGEN.arriba + 5,
     MARGEN.arriba + areaAlto,
   )
-  // Primero las no sugeridas, para que la sugerida quede encima.
-  const orden = [...series].sort((a, b) => Number(a.e.id === menorImpacto) - Number(b.e.id === menorImpacto))
+  // La resaltada se dibuja al final, para que quede encima.
+  const orden = [...series].sort((a, b) => Number(a.e.id === resaltado) - Number(b.e.id === resaltado))
   const paso = meses > 8 ? 3 : 1
   const periodos = escenarios[0].balance.slice(0, meses).map((m) => m.periodo)
 
@@ -81,7 +87,7 @@ function GraficaEscenarios({ escenarios, menorImpacto }: GraficaEscenariosProps)
           </div>
         )}
       </div>
-      <p className="ge__ayuda">Una línea por forma de pago. Por debajo de $0 el dinero no alcanza.</p>
+      <p className="ge__ayuda">Azul es contado y violeta, meses sin intereses. Por debajo de $0 el dinero no alcanza.</p>
 
       <svg className="ge__svg" viewBox={`0 0 ${ANCHO} ${ALTO}`} role="img" aria-labelledby="ge-resumen">
         <title id="ge-resumen">
@@ -106,13 +112,17 @@ function GraficaEscenarios({ escenarios, menorImpacto }: GraficaEscenariosProps)
 
         {orden.map(({ e, puntos }) => {
           const tono = TONO_VEREDICTO[e.veredicto ?? 'con_precaucion']
-          const sugerida = e.id === menorImpacto
+          const sugerida = e.id === resaltado
           const justo = mesMasJusto({ ...e, balance: puntos })
           const iJusto = puntos.findIndex((p) => p.periodo === justo?.periodo)
           const ultimo = puntos.length - 1
           const yEtiqueta = etiquetas.get(e.id) ?? y(puntos[ultimo].acumulado)
           return (
-            <g key={e.id} className={`ge__serie ge__serie--${tono} ${sugerida ? 'ge__serie--sugerida' : ''}`}>
+            <g
+              key={e.id}
+              className={`ge__serie ge__serie--${tono} ${sugerida ? 'ge__serie--sugerida' : ''}`}
+              style={{ '--serie': colores.get(e.id) } as CSSProperties}
+            >
               <polyline points={puntos.map((p, i) => `${x(i)},${y(p.acumulado)}`).join(' ')} fill="none" />
               {justo && iJusto >= 0 && <circle cx={x(iJusto)} cy={y(justo.acumulado)} r={justo.acumulado < 0 ? 4.5 : 3} />}
               <line className="ge__guia" x1={x(ultimo)} y1={y(puntos[ultimo].acumulado)} x2={ANCHO - MARGEN.der + 4} y2={yEtiqueta} />
@@ -124,7 +134,7 @@ function GraficaEscenarios({ escenarios, menorImpacto }: GraficaEscenariosProps)
         })}
       </svg>
 
-      <p className="ge__nota">Los puntos marcan el mes más justo de cada forma de pago.</p>
+      <p className="ge__nota">El punto marca el mes más justo; su color dice qué tan bien queda.</p>
 
       {/* Lo mismo que la gráfica, en tabla, para lectores de pantalla. */}
       <div className="ge__tabla">

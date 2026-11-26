@@ -46,4 +46,11 @@ export interface BalanceResponse {
   /** Los meses siguientes, en orden. Solo traen gastos fijos y MSI (los variables no se pueden prever). */
   proyeccion: MesBalance[]
   msi: ResumenMsi
+  /** Lo que hoy hay en las cuentas (débito, ahorro, efectivo, monedero): de ahí parte `acumulado`. */
+  /** Con lo que arranca el mes: lo de hoy más lo que este mes ya pasó por las cuentas. */
+  ahorro_inicial?: number
+  /** El dinero que hay hoy en las cuentas. */
+  en_cuentas?: number
+  /** true si los gastos variables son el promedio de los últimos 3 meses. */
+  variables_estimadas?: boolean
 }

@@ -187,7 +187,7 @@ function FormularioDeuda({ deuda }: { deuda: Deuda | null }) {
           />
         </div>
         <p className="pagina__nota">
-          ¿Qué es la tasa anual? <AyudaTermino termino="tasaAnual" />
+          <AyudaTermino termino="tasaAnual">¿Qué es la tasa anual?</AyudaTermino>
         </p>
         <TextField
           etiqueta="Día de pago (opcional)"

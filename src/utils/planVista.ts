@@ -52,3 +52,18 @@ export function desplazarMeses<T>(valor: T, delta: number): T {
 export function indiceDeEjemplo(extra: number, paso: number, total: number): number {
   return Math.min(Math.max(0, Math.round(extra / paso)), total - 1)
 }
+
+/** Tope del deslizador: deja aire a la derecha del monto sugerido para que no quede pegado al final. */
+export function maximoDeslizador(sugerido: number): number {
+  return Math.max(10000, Math.ceil((sugerido * 1.25) / 1000) * 1000)
+}
+
+/** El sugerido redondeado hacia abajo al paso del control: no se propone más de lo que sobra. */
+export function extraAplicable(sugerido: number, paso: number): number {
+  return Math.max(0, Math.floor(sugerido / paso) * paso)
+}
+
+/** Si la deuda se liquida con un solo pago, "al mes" sobra. */
+export function cuandoAbonar(meses: number | null): 'este mes' | 'al mes' {
+  return meses === 1 ? 'este mes' : 'al mes'
+}

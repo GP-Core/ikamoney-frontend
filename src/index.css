@@ -32,6 +32,16 @@
   --critico-fondo: #fadcd9;
   --critico-grafica: #c62828;
 
+  /* Barra del resumen: azul (apartado), azul medio (variable) y verde (libre) */
+  --dato-comprometido: #043a5e;
+  --dato-variable: #5f8fb5;
+  --dato-libre: #4ea145;
+  /* Violeta solo para lo que es MSI */
+  --dato-msi: #6b55b8;
+  --dato-msi-claro: #e6e0f3;
+  /* Radio de las tarjetas de contenido (T20) */
+  --radio: 10px;
+
   /* Alias usados por los componentes existentes (StatusBadge, HomePage) */
   --text: var(--tinta);
   --text-strong: var(--tinta);

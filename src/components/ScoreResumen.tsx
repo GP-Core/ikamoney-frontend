@@ -1,16 +1,18 @@
-import { mesLargo } from '../utils/formatMes'
-import { FRASE_DEL_TONO, numero, type Tono } from '../utils/score'
+import type { NivelScore } from '../types/score'
+import { mesEnFrase } from '../utils/formatPlan'
+import { FRASE_DEL_TONO, numero, semaforoDelNivel, tonoDelNivel } from '../utils/score'
+import AyudaTermino from './AyudaTermino'
+import IconoSemaforo from './IconoSemaforo'
 import './ScoreDesglose.css'
 
 interface ScoreResumenProps {
   puntaje: number
+  nivel: NivelScore | null
   nivelTexto: string | null
-  tono: Tono
   /** Mes evaluado, AAAA-MM. */
   periodo: string
-  /** Cuántos factores suman y cuántos restan, para la línea de resumen. */
-  suman: number
-  restan: number
+  /** "3 bien · 1 supuesto". */
+  conteo: string
   /** Si se aplicó un tope: el score que salía antes de aplicarlo y por qué. */
   puntajeBruto?: number | null
   textoTope?: string | null
@@ -19,16 +21,17 @@ interface ScoreResumenProps {
 const RADIO = 52
 const CIRCUNFERENCIA = 2 * Math.PI * RADIO
 
-function plural(n: number, uno: string, varios: string): string {
-  return `${n} ${n === 1 ? uno : varios}`
-}
-
 /** Encabezado de la pantalla: el score, su nivel y una frase que informa sin juzgar. */
-function ScoreResumen({ puntaje, nivelTexto, tono, periodo, suman, restan, puntajeBruto, textoTope }: ScoreResumenProps) {
+function ScoreResumen({ puntaje, nivel, nivelTexto, periodo, conteo, puntajeBruto, textoTope }: ScoreResumenProps) {
   const porcentaje = Math.min(Math.max(puntaje, 0), 100)
+  const semaforo = semaforoDelNivel(nivel)
 
   return (
-    <section className={`score-resumen score-resumen--${tono}`} aria-labelledby="score-titulo">
+    <section className={`score-resumen score-resumen--${semaforo}`} aria-labelledby="score-titulo">
+      <h2 id="score-titulo" className="score-resumen__titulo">
+        <AyudaTermino termino="score">Tu score</AyudaTermino>
+      </h2>
+
       <div className="score-resumen__medidor">
         <svg viewBox="0 0 120 120" aria-hidden="true">
           <circle className="score-resumen__pista" cx="60" cy="60" r={RADIO} />
@@ -47,16 +50,13 @@ function ScoreResumen({ puntaje, nivelTexto, tono, periodo, suman, restan, punta
         </div>
       </div>
 
-      <h2 id="score-titulo" className="score-resumen__nivel">
-        Tu score: {nivelTexto ?? 'sin nivel'}
-      </h2>
-      <p className="score-resumen__frase">{FRASE_DEL_TONO[tono]}</p>
-      <p className="score-resumen__periodo">Con tus datos de {mesLargo(periodo)}</p>
-
-      <p className="score-resumen__conteo">
-        <span className="score-resumen__suma">↑ {plural(suman, 'factor suma', 'factores suman')}</span>
-        <span className="score-resumen__resta">↓ {plural(restan, 'factor resta', 'factores restan')}</span>
+      <p className="score-resumen__nivel">
+        <IconoSemaforo nivel={semaforo} />
+        {nivelTexto ?? 'Sin nivel'}
       </p>
+      <p className="score-resumen__frase">{FRASE_DEL_TONO[tonoDelNivel(nivel)]}</p>
+      <p className="score-resumen__periodo">Con tus datos de {mesEnFrase(periodo)}</p>
+      <p className="score-resumen__conteo">Tus factores: {conteo}</p>
 
       {textoTope && (
         <p className="score-resumen__tope">

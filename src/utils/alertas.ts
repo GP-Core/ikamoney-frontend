@@ -15,7 +15,7 @@ export interface DestinoAlerta {
 }
 
 /** El id de tarjeta de una referencia 'tarjeta:7' o 'tarjeta:7:2026-04-30'; null si no tiene. */
-function idDeTarjeta(referencia: string): number | null {
+export function idDeTarjeta(referencia: string): number | null {
   const partes = referencia.split(':')
   if (partes[0] !== 'tarjeta') return null
   const id = Number(partes[1])

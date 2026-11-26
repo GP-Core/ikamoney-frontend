@@ -26,6 +26,7 @@ interface ProyeccionApi {
   estado: string // "completo" | "sin_datos" | "sin_ingresos"
   avisos: string[]
   proyeccion: MesApi[]
+  supuestos?: { ahorro_inicial: number; ahorro_en_cuentas?: number; base_gastos_variables: string }
 }
 
 function aMesBalance(m: MesApi): MesBalance {
@@ -69,6 +70,9 @@ export async function obtenerBalance(mes: string): Promise<BalanceResponse> {
     tiene_datos: true,
     resumen: visibles[0],
     proyeccion: visibles.slice(1),
+    ahorro_inicial: r.supuestos?.ahorro_inicial,
+    en_cuentas: r.supuestos?.ahorro_en_cuentas ?? r.supuestos?.ahorro_inicial,
+    variables_estimadas: r.supuestos?.base_gastos_variables === 'promedio_3_meses',
     msi: {
       saldo_pendiente: r.proyeccion.reduce((s, m) => s + m.mensualidades_msi, 0),
       planes_activos: r.proyeccion[0].msi_activos,

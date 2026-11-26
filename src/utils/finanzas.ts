@@ -186,3 +186,67 @@ export function hoyIso(): string {
 export function formatPorcentaje(proporcion: number): string {
   return `${new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 }).format(proporcion * 100)} %`
 }
+
+
+// ---------- Próximos pagos ----------
+
+export interface ProximoPagoDato {
+  clave: string
+  nombre: string
+  fecha: Date
+  dias: number
+  /** Pago mínimo (tarjeta) o pago mensual (deuda); null si no se puede estimar. */
+  minimo: number | null
+  /** Solo tarjetas: lo que hay que pagar para no generar intereses. */
+  sinIntereses: number | null
+  ruta: string
+  /** Id de la tarjeta, para no repetir su aviso de pago próximo; null en deudas. */
+  tarjetaId: number | null
+  /** Para pagarlo desde aquí. */
+  destino: { tipo: 'tarjeta' | 'deuda'; id: number }
+  /** true si lo pagado este mes ya cubre el mínimo o la mensualidad. */
+  pagado: boolean
+  pagadoMes: number
+}
+
+/** El siguiente pago de cada tarjeta con deuda y de cada préstamo activo, del más cercano al más lejano. */
+export function proximosPagos(tarjetas: Tarjeta[], deudas: Deuda[], hoy = new Date()): ProximoPagoDato[] {
+  const fechas = (dia: number) => {
+    const fecha = proximaFecha(dia, hoy)
+    return { fecha, dias: diasHasta(fecha, hoy) }
+  }
+  const deTarjetas: ProximoPagoDato[] = tarjetas
+    .filter((t) => t.activa && deudaTarjeta(t) > UMBRAL_SALDO_CERO)
+    .map((t) => ({
+      clave: `tarjeta-${t.id}`,
+      nombre: t.nombre,
+      ...fechas(t.dia_pago),
+      minimo: pagoMinimo(t).monto,
+      sinIntereses: pagoNoIntereses(t),
+      ruta: `/tarjetas/${t.id}`,
+      tarjetaId: t.id,
+      destino: { tipo: 'tarjeta' as const, id: t.id },
+      pagado: (t.pagado_mes ?? 0) > 0 && (t.pagado_mes ?? 0) >= (pagoMinimo(t).monto ?? 0),
+      pagadoMes: t.pagado_mes ?? 0,
+    }))
+  const deDeudas: ProximoPagoDato[] = deudas.flatMap((d) =>
+    d.estatus === 'activa' && d.saldo_actual > UMBRAL_SALDO_CERO && d.dia_pago !== null && d.pago_mensual !== null
+      ? [{
+          clave: `deuda-${d.id}`,
+          nombre: d.nombre,
+          ...fechas(d.dia_pago),
+          minimo: d.pago_mensual,
+          sinIntereses: null,
+          ruta: '/tarjetas',
+          tarjetaId: null,
+          destino: { tipo: 'deuda' as const, id: d.id },
+          pagado: (d.pagado_mes ?? 0) >= d.pago_mensual,
+          pagadoMes: d.pagado_mes ?? 0,
+        }]
+      : [],
+  )
+  // Lo que falta pagar va primero; lo ya pagado este mes, al final.
+  return [...deTarjetas, ...deDeudas].sort(
+    (a, b) => Number(a.pagado) - Number(b.pagado) || a.dias - b.dias || a.nombre.localeCompare(b.nombre, 'es'),
+  )
+}

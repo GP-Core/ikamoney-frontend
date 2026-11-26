@@ -1,0 +1,45 @@
+/* Desplegable de ayuda ("¿Por qué va en este lugar?", "Cómo se calcula"): flecha que gira y 44 px de toque. */
+.desplegable summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--azul);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.desplegable summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Flecha que gira al abrir. */
+.desplegable summary::before {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border: solid currentColor;
+  border-width: 2px 2px 0 0;
+  transform: rotate(45deg);
+  transition: transform 150ms ease;
+}
+
+.desplegable[open] summary::before {
+  transform: rotate(135deg);
+}
+
+.desplegable p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desplegable summary::before {
+    transition: none;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import BarraUso from '../components/BarraUso'
+import BotonPagar from '../components/BotonPagar'
 import Button from '../components/Button'
 import AyudaTermino from '../components/AyudaTermino'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -168,8 +169,7 @@ function TarjetaDetallePage() {
           </div>
           <div className="datos__fila">
             <dt>
-              Pendiente de compras a MSI
-              <AyudaTermino termino="msi" />
+              <AyudaTermino termino="msi">Pendiente de compras a MSI</AyudaTermino>
             </dt>
             <dd>{formatMoney(saldoMsiTarjeta(tarjeta))}</dd>
           </div>
@@ -179,16 +179,32 @@ function TarjetaDetallePage() {
           </div>
           <div className="datos__fila">
             <dt>
-              Disponible
-              <AyudaTermino termino="creditoDisponible" />
+              <AyudaTermino termino="creditoDisponible">Disponible</AyudaTermino>
             </dt>
             <dd>{formatMoney(disponibleTarjeta(tarjeta))}</dd>
           </div>
         </dl>
         <BarraUso proporcion={utilizacion(tarjeta)} etiqueta="Uso del límite (incluye MSI)" />
         <p className="pagina__nota">
-          ¿Qué es el uso del límite? <AyudaTermino termino="usoLimite" />
+          <AyudaTermino termino="usoLimite">¿Qué es el uso del límite?</AyudaTermino>
         </p>
+        {!!tarjeta.pagado_mes && <p className="pagina__nota">Este mes llevas {formatMoney(tarjeta.pagado_mes)} pagados.</p>}
+        <BotonPagar
+          destino={{
+            tipo: 'tarjeta',
+            id: tarjeta.id,
+            nombre: tarjeta.nombre,
+            minimo: minimo.monto,
+            sinIntereses: pagoNoIntereses(tarjeta),
+          }}
+          texto="Pagar tarjeta"
+          variante="primario"
+          deshabilitado={!enLinea}
+          onPagado={() => {
+            setMensaje('Pago registrado. Puedes verlo o deshacerlo en Cuentas.')
+            recargar()
+          }}
+        />
       </section>
 
       <section className="ficha" aria-labelledby="pagos-titulo">
@@ -196,8 +212,7 @@ function TarjetaDetallePage() {
         <dl className="datos">
           <div className="datos__fila">
             <dt>
-              Fecha límite de pago
-              <AyudaTermino termino="fechaLimitePago" />
+              <AyudaTermino termino="fechaLimitePago">Fecha límite de pago</AyudaTermino>
             </dt>
             <dd>
               {textoProximaFecha(tarjeta.dia_pago)}
@@ -206,8 +221,7 @@ function TarjetaDetallePage() {
           </div>
           <div className="datos__fila">
             <dt>
-              Fecha de corte
-              <AyudaTermino termino="fechaCorte" />
+              <AyudaTermino termino="fechaCorte">Fecha de corte</AyudaTermino>
             </dt>
             <dd>
               {textoProximaFecha(tarjeta.dia_corte)}
@@ -216,8 +230,7 @@ function TarjetaDetallePage() {
           </div>
           <div className="datos__fila">
             <dt>
-              Pago para no generar intereses
-              <AyudaTermino termino="pagoNoIntereses" />
+              <AyudaTermino termino="pagoNoIntereses">Pago para no generar intereses</AyudaTermino>
             </dt>
             <dd>
               {formatMoney(pagoNoIntereses(tarjeta))}
@@ -226,8 +239,7 @@ function TarjetaDetallePage() {
           </div>
           <div className="datos__fila">
             <dt>
-              Pago mínimo
-              <AyudaTermino termino="pagoMinimo" />
+              <AyudaTermino termino="pagoMinimo">Pago mínimo</AyudaTermino>
             </dt>
             <dd>
               {minimo.monto === null ? 'Sin calcular' : formatMoney(minimo.monto)}
@@ -240,8 +252,7 @@ function TarjetaDetallePage() {
           </div>
           <div className="datos__fila">
             <dt>
-              Tasa de interés anual
-              <AyudaTermino termino="tasaAnual" />
+              <AyudaTermino termino="tasaAnual">Tasa de interés anual</AyudaTermino>
             </dt>
             <dd>{tarjeta.tasa_anual === null ? 'Sin registrar' : `${tarjeta.tasa_anual} %`}</dd>
           </div>

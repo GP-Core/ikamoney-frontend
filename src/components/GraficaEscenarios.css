@@ -78,7 +78,7 @@
 }
 
 .ge__serie polyline {
-  stroke: var(--v-color);
+  stroke: var(--serie);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -92,7 +92,7 @@
 }
 
 .ge__guia {
-  stroke: var(--v-color);
+  stroke: var(--serie);
   stroke-width: 1;
   opacity: 0.5;
 }

@@ -13,7 +13,10 @@ const servicio: CuentasService = MODO_PRUEBA ? cuentasMock : cuentasApi
 export const cuentasService: CuentasService = {
   ...servicio,
   crear: (datos) => escribir(() => servicio.crear(datos)),
+  editar: (id, datos) => escribir(() => servicio.editar(id, datos)),
   eliminar: (id) => escribir(() => servicio.eliminar(id)),
   crearMovimiento: (cuentaId, datos) => escribir(() => servicio.crearMovimiento(cuentaId, datos)),
+  editarMovimiento: (cuentaId, movimientoId, datos) =>
+    escribir(() => servicio.editarMovimiento(cuentaId, movimientoId, datos)),
   eliminarMovimiento: (cuentaId, movimientoId) => escribir(() => servicio.eliminarMovimiento(cuentaId, movimientoId)),
 }

@@ -78,4 +78,8 @@ export interface ResultadoGuardado {
   tarjetaNueva: boolean
   planesCreados: number
   movimientosGuardados: number
+  /** Cómo quedó la tarjeta. No viene en modo de prueba. */
+  saldoTarjeta?: number
+  /** Pagos registrados después del corte, ya descontados del saldo del estado. */
+  pagosDespuesDelCorte?: number
 }

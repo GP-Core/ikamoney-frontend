@@ -2,10 +2,8 @@
  * Paleta de esta pantalla. Verde profundo (marca) para el resumen; ámbar, violeta y verde menta
  * para distinguir gastos variables, MSI y dinero libre. El violeta rayado queda reservado a MSI.
  */
-/* Los bloques de Inicio (.home__bloque) reutilizan la misma paleta. */
-.balance,
-.home__bloque {
-  --b-fondo: #eaf3f0;
+.balance {
+  --b-fondo: var(--arena);
   --b-hero: #0b3b3c;
   --b-realce: #eef5f3;
   --b-linea: #bfd4cf;
@@ -25,29 +23,6 @@
 
   min-height: 100svh;
   background: var(--b-fondo);
-}
-
-@media (prefers-color-scheme: dark) {
-  .balance,
-  .home__bloque {
-    --b-fondo: #0c1416;
-    --b-hero: #0f3a3a;
-    --b-realce: #1c2b2f;
-    --b-linea: #34484c;
-    --b-msi-fondo: #1d1733;
-    --b-msi-borde: #382c61;
-    --b-msi-pista: #2c2350;
-
-    --c-fijo: #86b0b8;
-    --c-variable: #f2bd57;
-    --c-msi: #a78bfa;
-    --c-msi-claro: #46386f;
-    --c-libre: #3ddc97;
-    --c-tarjetas: #f08a9b;
-
-    --surface: #142024;
-    --border: #25363a;
-  }
 }
 
 .balance__ancho {
@@ -197,64 +172,6 @@
   }
 }
 
-/* Tablet y escritorio: resumen y MSI a la izquierda, gráfica a la derecha. */
-@media (min-width: 900px) {
-  .balance__ancho {
-    max-width: 1060px;
-    padding-top: 32px;
-  }
-
-  .balance__contenido {
-    grid-template-columns: 380px minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      'resumen grafica'
-      'msi grafica';
-    align-items: start;
-  }
-}
-
-/* Acceso al simulador (T39): botón dorado de marca, arriba a la derecha y fácil de tocar. */
-.balance__acciones {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-
-.balance__simular {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 46px;
-  padding: 0 20px;
-  border-radius: 999px;
-  background: var(--marca-dorado);
-  color: var(--marca-azul);
-  font-weight: 700;
-  text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s, filter 0.15s;
-}
-
-.balance__simular:hover {
-  filter: brightness(1.06);
-}
-
-.balance__simular:active {
-  transform: scale(0.96);
-}
-
-.balance__simular:focus-visible {
-  outline: 3px solid var(--c-msi);
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .balance__simular {
-    transition: none;
-  }
-}
-
 /* Selector de horizonte (RF-40): 3, 6 o 12 meses. */
 .balance__columna-grafica {
   grid-area: grafica;
@@ -310,4 +227,132 @@
 .balance__horizonte-opcion:focus-within {
   outline: 2px solid var(--c-msi);
   outline-offset: 2px;
+}
+
+/* ---------- Paleta T20 para Balance y simulador ---------- */
+.balance--t20 {
+  --surface: var(--crema);
+  --border: var(--arena-oscura);
+  --b-linea: var(--arena-oscura);
+  --b-realce: var(--arena);
+  --b-hero: var(--azul);
+  --c-fijo: var(--azul);
+  --c-variable: var(--dato-variable);
+  --c-tarjetas: var(--gris-azulado);
+  --c-msi: var(--dato-msi);
+  --c-msi-claro: var(--dato-msi-claro);
+  --c-libre: var(--verde);
+
+  min-height: 0;
+}
+
+.balance--t20 .balance__ancho {
+  max-width: none;
+  padding: 0;
+}
+
+.balance--t20 :focus-visible,
+.balance--t20 .balance__horizonte-opcion:focus-within {
+  outline: 3px solid var(--dorado);
+  outline-offset: 2px;
+}
+
+.balance__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.balance__cabecera h1 {
+  margin: 0;
+}
+
+/* Botón dorado de "recomendación" de T20: radio de 8 px y sin sombra. */
+.balance__simular {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: var(--dorado);
+  color: var(--azul);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.balance__simular:hover {
+  filter: brightness(1.06);
+}
+
+.balance__mes h2 {
+  margin: 0;
+}
+
+.balance__momento {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 1px 10px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: 999px;
+  background: var(--crema);
+  color: var(--azul);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.balance__momento--proyeccion {
+  border-color: var(--azul);
+}
+
+.balance__mes-boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.balance__volver {
+  display: block;
+  min-height: 44px;
+  margin: -6px auto 8px;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: 600 15px var(--sans);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 479px) {
+  .balance__simular {
+    width: 100%;
+  }
+}
+
+@media (min-width: 600px) {
+  .app__contenido:has(.balance--proyeccion) {
+    max-width: 720px;
+  }
+}
+
+/* Escritorio: resumen y MSI a la izquierda; la gráfica, con más espacio, a la derecha. */
+@media (min-width: 1024px) {
+  .app__contenido:has(.balance--proyeccion),
+  .app__columna:has(.balance--proyeccion) .superior__interior {
+    max-width: 1040px;
+  }
+
+  .balance--proyeccion .balance__contenido {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'resumen grafica'
+      'msi grafica';
+    align-items: start;
+  }
 }

@@ -158,6 +158,44 @@ const ICONOS = {
       <line x1="16" x2="16" y1="18" y2="22" />
     </>
   ),
+  menu: (
+    <>
+      <path d="M4 6h16" />
+      <path d="M4 12h16" />
+      <path d="M4 18h16" />
+    </>
+  ),
+  grafica: (
+    <>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M18 17V9" />
+      <path d="M13 17V5" />
+      <path d="M8 17v-3" />
+    </>
+  ),
+  movimientos: (
+    <>
+      <path d="M8 3 4 7l4 4" />
+      <path d="M4 7h16" />
+      <path d="m16 21 4-4-4-4" />
+      <path d="M20 17H4" />
+    </>
+  ),
+  actividad: (
+    <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+  ),
+  cartera: (
+    <>
+      <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+    </>
+  ),
+  salirCirculo: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m14 16-4-4 4-4" />
+    </>
+  ),
 } as const
 
 export type NombreIcono = keyof typeof ICONOS

@@ -1,11 +1,11 @@
 /* Formulario de captura rápida (T39). Reutiliza la paleta de .balance. */
-.sim-form, .simf-vacio { display: flex; flex-direction: column; gap: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+.sim-form, .simf-vacio { display: flex; flex-direction: column; gap: 18px; background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--azul); border-radius: var(--radio); padding: 18px; }
 .simf-vacio h2 { margin: 0; }
 .sim-campo { display: flex; flex-direction: column; gap: 6px; border: 0; padding: 0; margin: 0; min-width: 0; }
 .sim-campo label, .sim-campo legend { font-weight: 600; color: var(--text-strong); padding: 0; }
 .sim-opcional { font-weight: 400; color: var(--muted); }
 .sim-form input, .sim-form select { width: 100%; min-height: 48px; padding: 0 12px; font: inherit; color: var(--text-strong); background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
-.sim-form input:focus-visible, .sim-form select:focus-visible, .sim-chip:focus-visible, .sim-segmento:focus-visible, .sim-boton:focus-visible { outline: 3px solid var(--c-msi); outline-offset: 2px; }
+.sim-form input:focus-visible, .sim-form select:focus-visible, .sim-chip:focus-visible, .sim-segmento:focus-visible, .sim-boton:focus-visible { outline: 3px solid var(--dorado); outline-offset: 2px; }
 .sim-form [aria-invalid='true'] { border-color: var(--danger); }
 .sim-precio { display: flex; align-items: center; gap: 8px; }
 .sim-precio span { font-size: 1.75rem; color: var(--muted); }
@@ -19,7 +19,7 @@
 .sim-segmento[aria-checked='true'] { color: #fff; background: var(--b-hero); border-color: var(--b-hero); }
 .sim-nota { font-size: 0.875rem; color: var(--text); }
 .sim-error { font-size: 0.875rem; color: var(--danger); font-weight: 600; }
-.sim-boton { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px; font: inherit; font-weight: 700; color: #fff; background: var(--b-hero); border: 0; border-radius: 12px; cursor: pointer; text-decoration: none; }
+.sim-boton { display: flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 20px; font: inherit; font-weight: 700; color: #fff; background: var(--b-hero); border: 0; border-radius: 8px; cursor: pointer; text-decoration: none; }
 .sim-boton:disabled { opacity: 0.6; cursor: progress; }
 .sim-chip:disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -29,6 +29,38 @@
 .sim-mas summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; color: var(--text-strong); cursor: pointer; }
 .sim-mas__campos { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
 
-.sim-enlace { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--c-msi); text-decoration: none; }
+.sim-enlace { align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; color: var(--azul); text-decoration: none; }
 .sim-enlace:hover { text-decoration: underline; }
-.sim-enlace:focus-visible { outline: 3px solid var(--c-msi); outline-offset: 2px; }
+.sim-enlace:focus-visible { outline: 3px solid var(--dorado); outline-offset: 2px; }
+
+
+/* ---------- Pantalla ---------- */
+.sim-subtitulo {
+  flex-basis: 100%;
+  margin-top: -6px;
+  color: var(--gris-azulado);
+}
+
+/* Un formulario se lee mejor angosto, aunque la pantalla sea ancha. */
+.balance--simulador .sim-captura {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.sim-editar {
+  text-decoration: none;
+}
+
+@media (min-width: 600px) {
+  .app__contenido:has(.balance--simulador) {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app__contenido:has(.balance--simulador),
+  .app__columna:has(.balance--simulador) .superior__interior {
+    max-width: 1040px;
+  }
+}

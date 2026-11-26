@@ -1,7 +1,8 @@
 import type { AvisoPlan } from '../types/plan'
 import { pesos } from '../utils/pesos'
+import { extraAplicable, maximoDeslizador } from '../utils/planVista'
+import AyudaTermino from './AyudaTermino'
 
-const MAX_SLIDER = 10000
 const MAX_INPUT = 1000000
 
 interface Props {
@@ -13,24 +14,26 @@ interface Props {
   actualizando: boolean
   /** Lo que le sobra al usuario en su peor mes; se ofrece como punto de partida. */
   sugerido: number
+  /** true mientras el monto es el que se puso solo, sin que el usuario lo haya cambiado. */
+  esSugerido: boolean
   avisos: AvisoPlan[]
   errorAlActualizar: string | null
   onReintentar: () => void
 }
 
 /** Captura `extraMensual`. Cada cambio pide el plan de nuevo; mientras llega se conserva el anterior. */
-function ControlExtra({ valor, paso, onCambio, calculadoCon, actualizando, sugerido, avisos, errorAlActualizar, onReintentar }: Props) {
+function ControlExtra({ valor, paso, onCambio, calculadoCon, actualizando, sugerido, esSugerido, avisos, errorAlActualizar, onReintentar }: Props) {
   const fijar = (texto: string) => {
     const n = Number(texto)
     onCambio(Number.isFinite(n) ? Math.min(Math.max(0, Math.round(n)), MAX_INPUT) : 0)
   }
-  // El sugerido va redondeado hacia abajo al paso del control, para no proponer más de lo que sobra.
-  const aplicable = Math.floor(sugerido / paso) * paso
+  const aplicable = extraAplicable(sugerido, paso)
+  const maximo = maximoDeslizador(aplicable)
 
   return (
     <section className="extra" aria-labelledby="extra-titulo">
-      <h2 id="extra-titulo" className="plan__titulo">
-        ¿Cuánto extra puedes abonar al mes?
+      <h2 id="extra-titulo" className="deudas-titulo">
+        ¿Cuánto <AyudaTermino termino="abonoExtra">abono extra</AyudaTermino> puedes hacer al mes?
       </h2>
       <p className="extra__ayuda">Además de los pagos mínimos. Mueve el número y mira cómo se adelanta tu fecha.</p>
 
@@ -56,17 +59,23 @@ function ControlExtra({ valor, paso, onCambio, calculadoCon, actualizando, suger
         className="extra__slider"
         type="range"
         min={0}
-        max={MAX_SLIDER}
+        max={maximo}
         step={paso}
-        value={Math.min(valor, MAX_SLIDER)}
+        value={Math.min(valor, maximo)}
         onChange={(e) => fijar(e.target.value)}
         aria-label="Abono extra mensual"
         aria-valuetext={pesos(valor)}
       />
       <div className="extra__marcas" aria-hidden="true">
         <span>$0</span>
-        <span>{pesos(MAX_SLIDER)}</span>
+        <span>{pesos(maximo)}</span>
       </div>
+
+      {esSugerido && (
+        <p className="extra__nota">
+          Usamos {pesos(valor)}, lo que te sobra en tu peor mes. Cámbialo si no puedes abonar todo eso.
+        </p>
+      )}
 
       <p className="extra__estado" aria-live="polite">
         {actualizando

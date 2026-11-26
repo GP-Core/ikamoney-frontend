@@ -108,9 +108,9 @@ export const MAX_ESCENARIOS = 6
 
 /** Qué significa cada nivel; refleja RN-16 del motor: la prioridad decide qué tan estricto es el veredicto. */
 export const OPCIONES_PRIORIDAD: { valor: Prioridad; etiqueta: string; ayuda: string }[] = [
-  { valor: 'alta', etiqueta: 'Alta', ayuda: 'Es una necesidad: se recomienda si tu dinero alcanza, aunque tu índice baje.' },
-  { valor: 'media', etiqueta: 'Media', ayuda: 'Se recomienda si tu dinero alcanza y tu índice no cae a En riesgo o Crítico.' },
-  { valor: 'baja', etiqueta: 'Baja', ayuda: 'Es un gusto: solo se recomienda si tu índice no baja de nivel.' },
+  { valor: 'alta', etiqueta: 'Alta', ayuda: 'Es una necesidad: se recomienda si tu dinero alcanza, aunque tu score baje.' },
+  { valor: 'media', etiqueta: 'Media', ayuda: 'Se recomienda si tu dinero alcanza y tu score no cae a En riesgo o Crítico.' },
+  { valor: 'baja', etiqueta: 'Baja', ayuda: 'Es un gusto: solo se recomienda si tu score no baja de nivel.' },
 ]
 
 /** Convierte lo escrito ("12,300.50") en número; NaN si no es un monto válido. */

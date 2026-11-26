@@ -1,0 +1,23 @@
+.por-marcar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
+  color: var(--tinta);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.por-marcar > span {
+  display: grid;
+  font-size: 0.875rem;
+}
+
+.por-marcar strong {
+  color: var(--azul);
+  font-size: 0.9375rem;
+}

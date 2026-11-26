@@ -27,11 +27,31 @@ export interface Movimiento {
   categoria_id: number | null
   categoria: string | null
   clase: ClaseGasto | null
+  cuenta_id?: number | null
+  cuenta_nombre?: string | null
+  cuenta_tipo?: string | null
+  /** Solo al crear o editar. */
+  saldo_cuenta?: number | null
+  saldo_negativo?: boolean
+  /** "compra_tarjeta": no quedó como gasto del mes, sino como compra en la tarjeta. */
+  registrado_como?: 'registro' | 'compra_tarjeta'
 }
 
 /** Un movimiento tal como cae en el mes consultado: los recurrentes salen una vez por ocurrencia. */
 export interface MovimientoDelMes extends Movimiento {
   fecha_ocurrencia: string
+  /** Esta repetición ya movió el saldo de una cuenta; `monto` es entonces el real. */
+  pagado?: boolean
+  fecha_pago?: string | null
+  monto_planeado?: number | null
+}
+
+/** "Ya lo pagué" / "Ya me cayó" de una repetición de algo recurrente. */
+export interface OcurrenciaPayload {
+  ocurrencia: string
+  cuenta_id: number
+  monto: number
+  fecha: string
 }
 
 export interface Totales {
@@ -59,6 +79,8 @@ export interface MovimientoPayload {
   fecha: string
   categoria_id?: number
   clase?: ClaseGasto
+  /** null al editar = quitar la cuenta. */
+  cuenta_id?: number | null
 }
 
 /** Cuerpo de PUT /api/v1/movimientos/{id}: el tipo no se puede cambiar. */
@@ -72,6 +94,8 @@ export interface ValoresMovimiento {
   categoria_id: string
   clase: ClaseGasto | ''
   frecuencia: Frecuencia
+  /** '' = sin cuenta. */
+  cuenta_id?: string
 }
 
 export type ErroresMovimiento = Partial<Record<keyof ValoresMovimiento, string>>

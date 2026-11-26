@@ -182,10 +182,10 @@ function FormularioMsi({ tarjeta, plan }: { tarjeta: Tarjeta; plan: PlanMsi | nu
           Las mensualidades pagadas son las que ya aparecieron en tus estados de cuenta. Si apenas la compraste, deja 0.
         </p>
         <p className="pagina__nota">
-          ¿Qué son los meses sin intereses? <AyudaTermino termino="msi" />
+          <AyudaTermino termino="msi">¿Qué son los meses sin intereses?</AyudaTermino>
         </p>
         <p className="pagina__nota">
-          Crédito disponible de la tarjeta: {formatMoney(disponible)} <AyudaTermino termino="creditoDisponible" />
+          <AyudaTermino termino="creditoDisponible">Crédito disponible</AyudaTermino> de la tarjeta: {formatMoney(disponible)}
         </p>
 
         <div className="calculo" aria-live="polite">

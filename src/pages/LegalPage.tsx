@@ -1,46 +1,45 @@
 import { Link } from 'react-router'
 import AuthLayout from '../components/AuthLayout'
-import { DOCUMENTOS_LEGALES } from '../content/legal'
-import type { Bloque, ClaveDocumentoLegal } from '../content/legal'
+import DocumentoLegal from '../components/DocumentoLegal'
+import { DOCUMENTOS_LEGALES, RUTAS_LEGALES } from '../content/legal'
+import type { ClaveDocumentoLegal } from '../content/legal'
+import { useAuth } from '../hooks/useAuth'
 
-interface LegalPageProps {
-  documento: ClaveDocumentoLegal
-}
-
-function BloqueLegal({ bloque }: { bloque: Bloque }) {
-  if ('p' in bloque) return <p>{bloque.p}</p>
-  const Lista = 'ol' in bloque ? 'ol' : 'ul'
-  const items = 'ol' in bloque ? bloque.ol : bloque.ul
-  return (
-    <Lista>
-      {items.map((texto) => (
-        <li key={texto}>{texto}</li>
-      ))}
-    </Lista>
-  )
-}
-
-/** Aviso de privacidad o términos de uso (T55). El texto vive en content/legal.ts. */
-function LegalPage({ documento }: LegalPageProps) {
-  const { titulo, secciones } = DOCUMENTOS_LEGALES[documento]
+/** Página pública del aviso de privacidad o los términos (T55): sirve para un enlace directo y para imprimir. */
+function LegalPage({ documento }: { documento: ClaveDocumentoLegal }) {
+  const { usuario } = useAuth()
+  const otro: ClaveDocumentoLegal = documento === 'privacidad' ? 'terminos' : 'privacidad'
 
   return (
     <AuthLayout
-      titulo={titulo}
+      titulo={DOCUMENTOS_LEGALES[documento].titulo}
+      ancho="lectura"
       pie={
-        <Link to="/registro" className="auth-enlace">
-          Volver al registro
-        </Link>
+        <>
+          <button type="button" className="legal__subir" onClick={() => window.scrollTo({ top: 0 })}>
+            Volver arriba
+          </button>
+          <Link to={RUTAS_LEGALES[otro]} className="auth-enlace" onClick={() => window.scrollTo({ top: 0 })}>
+            Ver también: {DOCUMENTOS_LEGALES[otro].titulo}
+          </Link>
+          {usuario ? (
+            <Link to="/" className="auth-enlace">
+              Volver a IKAMONEY
+            </Link>
+          ) : (
+            <>
+              <Link to="/registro" className="auth-enlace">
+                Crear cuenta
+              </Link>
+              <Link to="/iniciar-sesion" className="auth-enlace">
+                Iniciar sesión
+              </Link>
+            </>
+          )}
+        </>
       }
     >
-      {secciones.map((s, i) => (
-        <section key={s.titulo ?? i}>
-          {s.titulo && <h2>{s.titulo}</h2>}
-          {s.bloques.map((b, j) => (
-            <BloqueLegal key={j} bloque={b} />
-          ))}
-        </section>
-      ))}
+      <DocumentoLegal key={documento} documento={documento} />
     </AuthLayout>
   )
 }

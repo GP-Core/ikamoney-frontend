@@ -4,6 +4,7 @@ import AyudaTermino from '../components/AyudaTermino'
 import BarraUso from '../components/BarraUso'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
+import BotonPagar from '../components/BotonPagar'
 import EncabezadoPagina from '../components/EncabezadoPagina'
 import EnlaceEscritura from '../components/EnlaceEscritura'
 import EstadoCarga from '../components/EstadoCarga'
@@ -13,6 +14,7 @@ import Icon from '../components/Icon'
 import NotaSinConexion from '../components/NotaSinConexion'
 import { useConexion } from '../hooks/useConexion'
 import { useTarjetasYDeudas } from '../hooks/useFinanzas'
+import { useCupoLecturas } from '../hooks/useCupoLecturas'
 import { MODO_PRUEBA } from '../services/auth'
 import { finanzasService } from '../services/finanzas'
 import { cargarDatosDeEjemplo } from '../services/finanzasMock'
@@ -33,6 +35,7 @@ import {
 } from '../utils/finanzas'
 import { formatMoney } from '../utils/formatMoney'
 import '../components/Button.css'
+import { EtiquetaCupo } from '../components/CupoLecturas'
 import './Finanzas.css'
 
 /** Ordena por la próxima fecha de pago; las que no tienen fecha van al final. */
@@ -86,7 +89,7 @@ function TarjetaResumen({ tarjeta }: { tarjeta: Tarjeta }) {
   )
 }
 
-function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => void }) {
+function DeudaResumen({ deuda, onEliminar, onPagado }: { deuda: Deuda; onEliminar: () => void; onPagado: () => void }) {
   const enLinea = useConexion()
   return (
     <div className="ficha">
@@ -116,8 +119,7 @@ function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => v
         )}
         <div className="datos__fila">
           <dt>
-            Tasa anual
-            <AyudaTermino termino="tasaAnual" />
+            <AyudaTermino termino="tasaAnual">Tasa anual</AyudaTermino>
           </dt>
           <dd>{deuda.tasa_anual === null ? 'Sin registrar' : `${deuda.tasa_anual} %`}</dd>
         </div>
@@ -128,6 +130,14 @@ function DeudaResumen({ deuda, onEliminar }: { deuda: Deuda; onEliminar: () => v
           </div>
         )}
       </dl>
+      {!!deuda.pagado_mes && <p className="pagina__nota">Este mes llevas {formatMoney(deuda.pagado_mes)} pagados.</p>}
+      {deuda.estatus === 'activa' && (
+        <BotonPagar
+          destino={{ tipo: 'deuda', id: deuda.id, nombre: deuda.nombre, minimo: deuda.pago_mensual }}
+          deshabilitado={!enLinea}
+          onPagado={onPagado}
+        />
+      )}
       <div className="ficha__acciones">
         <EnlaceEscritura to={`/deudas/${deuda.id}/editar`} className="accion">
           <Icon nombre="editar" tamano={18} />
@@ -153,6 +163,7 @@ function TarjetasDeudasPage() {
   const { datos, copiaDe, error, cargando, recargar } = useTarjetasYDeudas()
   const enLinea = useConexion()
   const aviso = (useLocation().state as { aviso?: string } | null)?.aviso
+  const [cupo] = useCupoLecturas()
   const [porEliminar, setPorEliminar] = useState<Deuda | null>(null)
   const [eliminando, setEliminando] = useState(false)
   const [errorAccion, setErrorAccion] = useState<string | null>(null)
@@ -200,8 +211,8 @@ function TarjetasDeudasPage() {
       {errorAccion && <FormAlert tipo="critico">{errorAccion}</FormAlert>}
 
       <p className="pagina__nota">
-        ¿Qué es el crédito disponible? <AyudaTermino termino="creditoDisponible" /> ¿Y los meses sin intereses?{' '}
-        <AyudaTermino termino="msi" />
+        <AyudaTermino termino="creditoDisponible">¿Qué es el crédito disponible?</AyudaTermino>{' '}
+        <AyudaTermino termino="msi">¿Y los meses sin intereses?</AyudaTermino>
       </p>
 
       <div className="pagina__acciones">
@@ -216,6 +227,7 @@ function TarjetasDeudasPage() {
         <EnlaceEscritura to="/estado-cuenta" className="boton boton--secundario">
           <Icon nombre="subir" tamano={20} />
           Subir estado de cuenta
+        <EtiquetaCupo cupo={cupo} />
         </EnlaceEscritura>
       </div>
       <NotaSinConexion />
@@ -293,7 +305,14 @@ function TarjetasDeudasPage() {
               <ul className="lista">
                 {deudas.map((d) => (
                   <li key={d.id}>
-                    <DeudaResumen deuda={d} onEliminar={() => setPorEliminar(d)} />
+                    <DeudaResumen
+                      deuda={d}
+                      onEliminar={() => setPorEliminar(d)}
+                      onPagado={() => {
+                        setMensaje(`Pago de "${d.nombre}" registrado.`)
+                        recargar()
+                      }}
+                    />
                   </li>
                 ))}
               </ul>

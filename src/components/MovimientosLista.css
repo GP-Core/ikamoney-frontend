@@ -119,3 +119,47 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.mlist__pago {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.mlist__pagado {
+  color: var(--verde-texto);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.mlist__pendiente {
+  color: var(--gris-azulado);
+  font-size: 0.875rem;
+}
+
+.mlist__marcar,
+.mlist__deshacer {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--azul);
+  border-radius: 8px;
+  background: var(--crema);
+  color: var(--azul);
+  font: 600 0.9375rem var(--sans);
+  cursor: pointer;
+}
+
+.mlist__deshacer {
+  border-color: transparent;
+  background: none;
+  text-decoration: underline;
+}
+
+.mlist__marcar:disabled,
+.mlist__deshacer:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

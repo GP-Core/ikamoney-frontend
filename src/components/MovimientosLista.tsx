@@ -1,6 +1,8 @@
 import type { Frecuencia, MovimientoDelMes, TipoMovimiento } from '../types/movimiento'
-import { formatDate } from '../utils/formatDate'
+import { faltaMarcar } from '../utils/cuentas'
+import { formatDate, todayISO } from '../utils/formatDate'
 import { formatMoney } from '../utils/formatMoney'
+import { mesActual } from '../utils/formatMes'
 import './MovimientosLista.css'
 
 interface MovimientosListaProps {
@@ -8,6 +10,9 @@ interface MovimientosListaProps {
   movimientos: MovimientoDelMes[]
   /** Sin conexión no se edita ni se elimina (T60). */
   soloLectura: boolean
+  /** "Ya lo pagué" / "Ya me cayó" en lo que se repite. */
+  onMarcar: (movimiento: MovimientoDelMes) => void
+  onDeshacer: (movimiento: MovimientoDelMes) => void
   onEditar: (movimiento: MovimientoDelMes) => void
   onEliminar: (movimiento: MovimientoDelMes) => void
 }
@@ -23,7 +28,7 @@ const TEXTO_FRECUENCIA: Record<Frecuencia, string | null> = {
 }
 
 /** Listado de ingresos o gastos del mes con editar y eliminar; muestra el estado vacío si no hay nada. */
-function MovimientosLista({ tipo, movimientos, soloLectura, onEditar, onEliminar }: MovimientosListaProps) {
+function MovimientosLista({ tipo, movimientos, soloLectura, onMarcar, onDeshacer, onEditar, onEliminar }: MovimientosListaProps) {
   const esGasto = tipo === 'gasto'
 
   if (movimientos.length === 0) {
@@ -56,6 +61,7 @@ function MovimientosLista({ tipo, movimientos, soloLectura, onEditar, onEliminar
                 {formatDate(m.fecha_ocurrencia)}
                 {m.categoria && ` · ${m.categoria}`}
                 {TEXTO_FRECUENCIA[m.frecuencia] && ` · ${TEXTO_FRECUENCIA[m.frecuencia]}`}
+                {m.cuenta_nombre && ` · ${m.cuenta_nombre}`}
               </p>
             </div>
             <p className={`mlist__amount mlist__amount--${m.tipo}`}>
@@ -63,6 +69,31 @@ function MovimientosLista({ tipo, movimientos, soloLectura, onEditar, onEliminar
               {dinero(m.monto)}
             </p>
           </div>
+          {/* Lo que se repite se marca cuando de verdad pasa; los meses que no llegan, todavía no.
+              Un único solo lo pide si se registró con fecha futura y ya llegó. */}
+          {(m.frecuencia !== 'unico' ? m.fecha_ocurrencia.slice(0, 7) <= mesActual() : faltaMarcar(m, todayISO())) && (
+            <div className="mlist__pago">
+              {m.pagado ? (
+                <>
+                  <span className="mlist__pagado">
+                    ✓ {esGasto ? 'Pagado' : 'Recibido'}
+                    {m.fecha_pago && ` el ${formatDate(m.fecha_pago)}`}
+                    {m.monto_planeado != null && ` (planeado: ${dinero(m.monto_planeado)})`}
+                  </span>
+                  <button type="button" className="mlist__deshacer" disabled={soloLectura} onClick={() => onDeshacer(m)}>
+                    Deshacer
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="mlist__pendiente">Pendiente</span>
+                  <button type="button" className="mlist__marcar" disabled={soloLectura} onClick={() => onMarcar(m)}>
+                    {esGasto ? 'Ya lo pagué' : 'Ya me cayó'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
           <div className="mlist__row mlist__row--foot">
             {m.clase && (
               <span className={`mlist__badge mlist__badge--${m.clase}`}>{m.clase === 'fijo' ? 'Fijo' : 'Variable'}</span>

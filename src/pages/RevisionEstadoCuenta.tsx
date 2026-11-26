@@ -1,82 +1,95 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
-import type { ChangeEvent, InputHTMLAttributes } from 'react'
-import { Link } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
+import Button from '../components/Button'
+import ConfirmDialog from '../components/ConfirmDialog'
+import EstadoCuentaGuardado from '../components/EstadoCuentaGuardado'
+import FormAlert from '../components/FormAlert'
+import PasosEstadoCuenta from '../components/PasosEstadoCuenta'
+import RevisionMovimientos from '../components/RevisionMovimientos'
+import RevisionTarjeta from '../components/RevisionTarjeta'
+import SubirEstadoCuenta from '../components/SubirEstadoCuenta'
+import { useCupoLecturas } from '../hooks/useCupoLecturas'
 import { useTarjetasYDeudas } from '../hooks/useFinanzas'
-import { errorDeExtraccion, esReintentable, extraerEstadoCuenta, faltantesDeTarjetaNueva, guardarEstadoCuenta, obtenerCupo } from '../services/estadosCuenta'
-import type { ApiError } from '../services/api'
-import type { CupoExtraccion, DestinoTarjeta, ResultadoGuardado } from '../types/estadoCuenta'
+import { ApiError } from '../services/api'
+import { errorDeExtraccion, extraerEstadoCuenta, guardarEstadoCuenta } from '../services/estadosCuenta'
+import type { DestinoTarjeta, ResultadoGuardado } from '../types/estadoCuenta'
+import type { Tarjeta } from '../types/finanzas'
 import { mensajeError } from '../utils/errores'
-import { formatMoney } from '../utils/formatMoney'
+import { pesos } from '../utils/pesos'
 import {
-  aPayload, aTextoFecha, campoCambiado, campoTarjetaCambiado, CAMPOS_TARJETA, cupoTrasLectura, estadoDeFila,
-  estadoInicial, fechaCortePropuesta, puedeLeerConIa, reducer, tarjetaEditada, textoCupo, validar,
+  aPayload, aTextoFecha, cupoTrasLectura, estadoInicial, faltantesNueva, fechaCortePropuesta, hayCambios, reducer,
+  resumenFilas, tarjetaSugerida, textoLecturaUsada, totalFilas, validar,
 } from '../utils/revisionEstado'
-import type { CampoFilaTexto, Errores, EstadoFila } from '../utils/revisionEstado'
+import './BalancePage.css'
 import './RevisionEstadoCuenta.css'
 
 const MAX_MB = 10
-const ETIQUETA: Record<EstadoFila, string> = {
-  ia: 'IA',
-  editado: 'Editado por ti',
-  agregado: 'Agregado por ti',
-}
-
 type Etapa = 'subir' | 'extrayendo' | 'revisar' | 'guardado'
-
-const SIN_ERRORES: Errores = { filas: {}, tarjeta: {}, total: 0 }
 
 /** Pantalla obligatoria entre la extracción y el guardado: nada se guarda hasta que el usuario confirma. */
 export default function RevisionEstadoCuenta() {
-  const { datos: finanzas } = useTarjetasYDeudas()
-  const tarjetasGuardadas = finanzas?.tarjetas ?? []
+  const navegar = useNavigate()
+  const { key } = useLocation()
+  const { datos: finanzas, recargar } = useTarjetasYDeudas()
+  // Mientras se recarga se conservan las anteriores, para que el selector no se vacíe.
+  const [tarjetas, setTarjetas] = useState<Tarjeta[]>([])
+  if (finanzas && finanzas.tarjetas !== tarjetas) setTarjetas(finanzas.tarjetas)
+
+  const [cupo, setCupo] = useCupoLecturas()
   const [etapa, setEtapa] = useState<Etapa>('subir')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [errorArchivo, setErrorArchivo] = useState('')
   const [errorApi, setErrorApi] = useState<ApiError | null>(null)
-  const [datos, dispatch] = useReducer(reducer, estadoInicial)
+  const [datos, despachar] = useReducer(reducer, estadoInicial)
   const [intentoConfirmar, setIntentoConfirmar] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [errorGuardar, setErrorGuardar] = useState('')
-  const [modoManual, setModoManual] = useState(false)
-  // 'nueva' o el id de una tarjeta ya guardada.
-  const [destinoId, setDestinoId] = useState('nueva')
+  const [errorCorte, setErrorCorte] = useState('')
+  // null = lo que se propone solo; el usuario puede cambiarlo.
+  const [destinoElegido, setDestinoElegido] = useState<string | null>(null)
+  const [fechaElegida, setFechaElegida] = useState<string | null>(null)
   const [nombreNueva, setNombreNueva] = useState('')
   const [resultado, setResultado] = useState<ResultadoGuardado | null>(null)
-  const [cupo, setCupo] = useState<CupoExtraccion | null>(null)
-  // null = la que se propone a partir del día de corte; el usuario puede cambiarla.
-  const [fechaCorteElegida, setFechaCorteElegida] = useState<string | null>(null)
+  const [descartando, setDescartando] = useState(false)
   // Una clave por revisión: si el guardado se corta y se reintenta, el backend no duplica nada (N1).
   const claveConfirmacion = useRef(crypto.randomUUID())
   const abortar = useRef<AbortController | null>(null)
+  const revision = useRef<HTMLDivElement>(null)
+
+  const conIa = !!datos.tarjeta?.original
+  const sinGuardar = etapa === 'revisar' && (hayCambios(datos) || nombreNueva !== '' || fechaElegida !== null)
 
   useEffect(() => () => abortar.current?.abort(), [])
-  // Cupo de lecturas gratis (H-04). Si no se puede consultar se deja intentar: el backend decide.
+  // Cerrar o recargar la pestaña con una revisión abierta: el navegador pregunta antes.
   useEffect(() => {
-    let activo = true
-    obtenerCupo().then((c) => activo && setCupo(c)).catch(() => {})
-    return () => { activo = false }
-  }, [])
+    if (!sinGuardar) return
+    const avisar = (e: BeforeUnloadEvent) => e.preventDefault()
+    window.addEventListener('beforeunload', avisar)
+    return () => window.removeEventListener('beforeunload', avisar)
+  }, [sinGuardar])
 
   // ---------- Subir y extraer ----------
-  function elegirArchivo(e: ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
+  function elegirArchivo(f: File | null) {
     setErrorApi(null)
-    if (!f) {
-      setArchivo(null)
-      return
-    }
-    if (f.type !== 'application/pdf') {
-      setArchivo(null)
-      setErrorArchivo('Solo se aceptan archivos PDF.')
-      return
-    }
-    if (f.size > MAX_MB * 1024 * 1024) {
-      setArchivo(null)
-      setErrorArchivo(`El PDF pesa más de ${MAX_MB} MB.`)
-      return
-    }
+    setArchivo(null)
+    if (!f) return setErrorArchivo('')
+    if (f.type !== 'application/pdf') return setErrorArchivo('Solo se aceptan archivos PDF.')
+    if (f.size > MAX_MB * 1024 * 1024) return setErrorArchivo(`El PDF pesa más de ${MAX_MB} MB.`)
     setErrorArchivo('')
     setArchivo(f)
+  }
+
+  function empezarRevision() {
+    setDestinoElegido(null)
+    setFechaElegida(null)
+    setNombreNueva('')
+    setIntentoConfirmar(false)
+    setErrorGuardar('')
+    setErrorCorte('')
+    setErrorApi(null)
+    claveConfirmacion.current = crypto.randomUUID()
+    setEtapa('revisar')
+    window.scrollTo(0, 0)
   }
 
   async function extraer() {
@@ -86,10 +99,9 @@ export default function RevisionEstadoCuenta() {
     abortar.current = new AbortController()
     try {
       const respuesta = await extraerEstadoCuenta(archivo, { signal: abortar.current.signal })
-      dispatch({ type: 'CARGAR', respuesta })
+      despachar({ type: 'CARGAR', respuesta })
       setCupo(cupoTrasLectura)
-      setModoManual(false)
-      setEtapa('revisar')
+      empezarRevision()
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') return
       const error = errorDeExtraccion(e)
@@ -105,334 +117,199 @@ export default function RevisionEstadoCuenta() {
   }
 
   function capturarAMano() {
-    dispatch({ type: 'MANUAL' })
-    setModoManual(true)
-    setErrorApi(null)
-    setEtapa('revisar')
+    despachar({ type: 'MANUAL' })
+    empezarRevision()
+  }
+
+  /** Si se entró directo a esta pantalla no hay a dónde regresar dentro de la app. */
+  function salir() {
+    if (key === 'default') navegar('/tarjetas')
+    else navegar(-1)
+  }
+
+  function volverASubir() {
+    setDescartando(false)
+    setArchivo(null)
+    setResultado(null)
+    setErrorArchivo('')
+    setEtapa('subir')
+    window.scrollTo(0, 0)
   }
 
   // ---------- Confirmar ----------
-  const errores = etapa === 'revisar' ? validar(datos) : SIN_ERRORES
-  const hoyTexto = aTextoFecha(new Date())
-  const fechaCorte = fechaCorteElegida ?? fechaCortePropuesta(aPayload(datos).tarjeta?.diaCorte ?? null, new Date())
+  const hoy = aTextoFecha(new Date())
+  const payload = aPayload(datos)
+  const sugeridaId = tarjetaSugerida(datos.tarjeta?.original?.banco, tarjetas)
+  const destinoId = destinoElegido ?? (sugeridaId === null ? 'nueva' : String(sugeridaId))
+  const esNueva = destinoId === 'nueva'
+  const fechaCorte = fechaElegida ?? fechaCortePropuesta(payload.tarjeta?.diaCorte ?? null, new Date())
+  const errores = validar(datos, hoy)
+  const faltan = esNueva ? faltantesNueva(payload.tarjeta, nombreNueva) : {}
+  const errorFecha = !fechaCorte ? 'Elige la fecha de corte.' : fechaCorte > hoy ? 'No puede ser futura.' : ''
+  const porCorregir = errores.total + Object.keys(faltan).length + (errorFecha ? 1 : 0)
+
+  function irAlPrimerError() {
+    requestAnimationFrame(() => revision.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus())
+  }
 
   async function confirmar() {
     setIntentoConfirmar(true)
     setErrorGuardar('')
-    if (errores.total > 0) return
+    setErrorCorte('')
+    if (porCorregir > 0) return irAlPrimerError()
 
-    if (!fechaCorte || fechaCorte > hoyTexto) {
-      setErrorGuardar('Elige la fecha de corte del estado de cuenta (no puede ser futura).')
-      return
-    }
-    const payload = aPayload(datos)
-    const nombre = nombreNueva.trim() || (payload.tarjeta?.banco ?? '')
-    if (destinoId === 'nueva') {
-      const faltan = faltantesDeTarjetaNueva(payload.tarjeta)
-      if (faltan.length > 0) {
-        setErrorGuardar(`Para crear la tarjeta falta ${faltan.join(', ')}. Complétalo arriba o elige una tarjeta que ya tengas.`)
-        return
-      }
-      if (!nombre) {
-        setErrorGuardar('Escribe un nombre para reconocer la tarjeta.')
-        return
-      }
-    }
-    const destino: DestinoTarjeta = destinoId === 'nueva' ? { tipo: 'nueva', nombre } : { tipo: 'existente', id: Number(destinoId) }
+    const destino: DestinoTarjeta = esNueva
+      ? { tipo: 'nueva', nombre: nombreNueva.trim() || (payload.tarjeta?.banco ?? '') }
+      : { tipo: 'existente', id: Number(destinoId) }
+    // En una tarjeta que ya existe no se muestra el banco, así que tampoco se cambia.
+    const envio = esNueva || !payload.tarjeta ? payload : { ...payload, tarjeta: { ...payload.tarjeta, banco: null } }
 
     setGuardando(true)
     try {
-      setResultado(await guardarEstadoCuenta(payload, destino, { claveConfirmacion: claveConfirmacion.current, fechaCorte }))
+      setResultado(await guardarEstadoCuenta(envio, destino, { claveConfirmacion: claveConfirmacion.current, fechaCorte }))
       setEtapa('guardado')
+      recargar()
+      window.scrollTo(0, 0)
     } catch (e) {
-      setErrorGuardar(mensajeError(e))
+      const codigo = e instanceof ApiError ? e.codigo : undefined
+      if (codigo === 'ESTADO_DUPLICADO' || codigo === 'FECHA_INVALIDA') {
+        setErrorCorte(mensajeError(e))
+        irAlPrimerError()
+      } else {
+        setErrorGuardar(mensajeError(e))
+      }
     } finally {
       setGuardando(false)
     }
   }
 
-  // ---------- Vistas ----------
-  if (etapa === 'guardado' && resultado) {
-    const { planesCreados: planes, tarjetaNueva, movimientosGuardados: movs } = resultado
-    return (
-      <section className="rev">
-        <div className="rev-aviso rev-aviso--ok" role="status">
-          <p>
-            {tarjetaNueva ? 'Tarjeta creada' : 'Tarjeta actualizada'}
-            {planes > 0 && ` y ${planes} ${planes === 1 ? 'compra' : 'compras'} a MSI guardadas`}.
-          </p>
-          {movs > 0 && <p>Se guardaron {movs} {movs === 1 ? 'movimiento' : 'movimientos'} del estado de cuenta.</p>}
-        </div>
-        <div className="rev-acciones">
-          <Link className="rev-btn rev-btn--principal" to={`/tarjetas/${resultado.tarjetaId}`}>
-            Ver la tarjeta
-          </Link>
-          <Link className="rev-btn rev-btn--sec" to="/tarjetas">
-            Ir a Tarjetas y deudas
-          </Link>
-        </div>
-      </section>
-    )
-  }
-
-  if (etapa === 'extrayendo') {
-    return (
-      <section className="rev">
-        <div className="rev-cargando" role="status" aria-live="polite">
-          <div className="rev-spinner" aria-hidden="true" />
-          <p>Leyendo tu estado de cuenta… puede tardar hasta un minuto.</p>
-          <button type="button" className="rev-btn rev-btn--sec" onClick={cancelarExtraccion}>
-            Cancelar
-          </button>
-        </div>
-      </section>
-    )
-  }
-
-  if (etapa === 'subir') {
-    return (
-      <section className="rev">
-        <h1>Sube tu estado de cuenta</h1>
-        <p className="rev-ayuda">
-          PDF de tarjeta de crédito, máximo {MAX_MB} MB. Antes de enviarlo a la IA se ocultan tu
-          número de tarjeta, CLABE, RFC, CURP y nombre. Siempre podrás revisar y corregir lo que lea.
-        </p>
-        {textoCupo(cupo) && <p className="rev-ayuda" role="status">{textoCupo(cupo)}</p>}
-        <input type="file" accept="application/pdf" onChange={elegirArchivo} aria-label="Estado de cuenta en PDF" disabled={!puedeLeerConIa(cupo)} />
-        {errorArchivo && <p className="rev-error" role="alert">{errorArchivo}</p>}
-        {errorApi && (
-          <div className="rev-aviso rev-aviso--error" role="alert">
-            <p>{errorApi.message}</p>
-            <div className="rev-acciones">
-              {esReintentable(errorApi) && archivo && (
-                <button type="button" className="rev-btn" onClick={extraer}>Reintentar</button>
-              )}
-              <button type="button" className="rev-btn rev-btn--sec" onClick={capturarAMano}>
-                Capturar a mano
-              </button>
-            </div>
-          </div>
-        )}
-        <div className="rev-acciones">
-          <button type="button" className="rev-btn" disabled={!archivo || !puedeLeerConIa(cupo)} onClick={extraer}>
-            Leer con IA
-          </button>
-          <button type="button" className="rev-btn rev-btn--sec" onClick={capturarAMano}>
-            Prefiero capturar a mano
-          </button>
-        </div>
-      </section>
-    )
-  }
-
-  // etapa === 'revisar'
-  const { filas, tarjeta, ultimaEliminada } = datos
-  if (!tarjeta) return null
-  const sinNada = filas.length === 0
+  const paso = etapa === 'revisar' ? 2 : etapa === 'guardado' ? 3 : 1
+  const titulos = {
+    subir: ['Sube tu estado de cuenta', 'Leemos tu PDF y tú revisas todo antes de guardar.'],
+    extrayendo: ['Leyendo tu estado de cuenta', 'Puede tardar hasta un minuto.'],
+    revisar: conIa
+      ? ['Revisa lo que leyó la IA', 'La IA puede equivocarse: corrige lo que haga falta. Nada se guarda hasta que confirmes.']
+      : ['Captura tus datos', 'Escribe lo que aparece en tu estado de cuenta.'],
+    guardado: ['Listo', 'Tu estado de cuenta quedó guardado.'],
+  }[etapa]
 
   return (
-    <section className="rev">
-      <h1>{modoManual ? 'Captura tus datos' : 'Revisa lo que leyó la IA'}</h1>
-      {!modoManual && (
-        <p className="rev-ayuda">
-          La IA puede equivocarse. Corrige lo que haga falta, elimina lo que sobre y agrega lo que
-          falte. Nada se guarda hasta que confirmes.
-        </p>
-      )}
-      <ul className="rev-leyenda" aria-label="Significado de las marcas">
-        <li><span className="rev-marca rev-marca--ia">IA</span> Tal como lo leyó la IA</li>
-        <li><span className="rev-marca rev-marca--editado">Editado por ti</span> Lo cambiaste</li>
-        <li><span className="rev-marca rev-marca--agregado">Agregado por ti</span> Lo capturaste tú</li>
-      </ul>
+    <main className="balance balance--t20 balance--estado">
+      <div className="balance__ancho">
+        <PasosEstadoCuenta paso={paso} />
+        <header className="balance__cabecera">
+          <h1>{titulos[0]}</h1>
+        </header>
+        <p className="estado-entrada">{titulos[1]}</p>
 
-      {/* ---------- Tarjeta ---------- */}
-      <fieldset className={`rev-tarjeta ${tarjetaEditada(tarjeta) ? 'rev-tarjeta--editado' : ''}`}>
-        <legend>
-          Datos de la tarjeta{' '}
-          {tarjeta.original && (
-            <span className={`rev-marca rev-marca--${tarjetaEditada(tarjeta) ? 'editado' : 'ia'}`}>
-              {tarjetaEditada(tarjeta) ? ETIQUETA.editado : ETIQUETA.ia}
-            </span>
-          )}
-        </legend>
-        <div className="rev-tarjeta-grid">
-          {CAMPOS_TARJETA.map(({ campo, etiqueta, tipo }) => {
-            const msg = errores.tarjeta[campo]
-            const sinDato = tarjeta.original !== null && tarjeta.original[campo] === null
-            return (
-              <label key={campo} className={campoTarjetaCambiado(tarjeta, campo) ? 'rev-cambiado' : ''}>
-                <span>{etiqueta}</span>
-                <input
-                  type={tipo === 'text' ? 'text' : 'number'}
-                  step={tipo === 'number' ? '0.01' : '1'}
-                  min={tipo === 'dia' ? 1 : 0}
-                  max={tipo === 'dia' ? 31 : undefined}
-                  value={tarjeta.valores[campo] ?? ''}
-                  placeholder={sinDato ? 'No se detectó' : ''}
-                  aria-invalid={intentoConfirmar && !!msg}
-                  onChange={(e) => dispatch({ type: 'EDITAR_TARJETA', campo, valor: e.target.value })}
-                />
-                {intentoConfirmar && msg && <small className="rev-error">{msg}</small>}
-              </label>
-            )
-          })}
-        </div>
-      </fieldset>
-
-      {/* ---------- Destino ---------- */}
-      <fieldset className="rev-destino">
-        <legend>¿A qué tarjeta corresponde?</legend>
-        <label>
-          <span>Tarjeta</span>
-          <select value={destinoId} onChange={(e) => setDestinoId(e.target.value)}>
-            <option value="nueva">Es una tarjeta nueva</option>
-            {tarjetasGuardadas.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.nombre}
-              </option>
-            ))}
-          </select>
-        </label>
-        {destinoId === 'nueva' ? (
-          <label>
-            <span>Nombre para reconocerla</span>
-            <input
-              type="text"
-              maxLength={60}
-              value={nombreNueva}
-              placeholder={tarjeta.valores.banco ? String(tarjeta.valores.banco) : 'Ej. BBVA Azul'}
-              onChange={(e) => setNombreNueva(e.target.value)}
-            />
-          </label>
-        ) : (
-          <p className="rev-ayuda">
-            Se actualizarán el saldo, el límite, la tasa y las fechas de esa tarjeta con los datos de arriba, y se
-            agregarán sus compras a MSI y sus movimientos.
-          </p>
-        )}
-        <label>
-          <span>Fecha de corte del estado de cuenta</span>
-          <input
-            type="date"
-            max={hoyTexto}
-            value={fechaCorte}
-            aria-invalid={intentoConfirmar && (!fechaCorte || fechaCorte > hoyTexto)}
-            onChange={(e) => setFechaCorteElegida(e.target.value)}
+        {etapa === 'subir' && (
+          <SubirEstadoCuenta
+            maxMb={MAX_MB}
+            cupo={cupo}
+            archivo={archivo}
+            errorArchivo={errorArchivo}
+            errorApi={errorApi}
+            onArchivo={elegirArchivo}
+            onLeer={extraer}
+            onManual={capturarAMano}
+            onCancelar={salir}
           />
-        </label>
-      </fieldset>
+        )}
 
-      {/* ---------- Movimientos ---------- */}
-      <h2>Movimientos ({filas.length})</h2>
+        {etapa === 'extrayendo' && (
+          <section className="estado-ficha estado-cargando" role="status" aria-live="polite">
+            <div className="estado-spinner" aria-hidden="true" />
+            <p>Leyendo {archivo?.name}…</p>
+            <p className="estado-nota">Si cancelas ahora, puede que la lectura ya cuente en tu cupo.</p>
+            <Button variante="secundario" onClick={cancelarExtraccion}>
+              Cancelar
+            </Button>
+          </section>
+        )}
 
-      {sinNada && (
-        <div className="rev-aviso rev-aviso--vacio" role="status">
-          <p>
-            {modoManual
-              ? 'Todavía no hay movimientos.'
-              : 'No encontramos movimientos en este estado de cuenta.'}{' '}
-            Puedes capturarlos a mano.
-          </p>
-          <button type="button" className="rev-btn" onClick={() => dispatch({ type: 'AGREGAR' })}>
-            Capturar a mano
-          </button>
-        </div>
-      )}
+        {etapa === 'guardado' && resultado && (
+          <EstadoCuentaGuardado resultado={resultado} conIa={conIa} cupo={cupo} onOtro={volverASubir} />
+        )}
 
-      <ul className="rev-lista">
-        {filas.map((f) => {
-          const estado = estadoDeFila(f)
-          const e = errores.filas[f.id] ?? {}
-          const campo = (
-            nombre: CampoFilaTexto,
-            etiqueta: string,
-            props: InputHTMLAttributes<HTMLInputElement>,
-          ) => (
-            <label className={`rev-campo rev-campo--${nombre} ${campoCambiado(f, nombre) ? 'rev-cambiado' : ''}`}>
-              <span>{etiqueta}</span>
-              <input
-                {...props}
-                value={f[nombre] ?? ''}
-                aria-invalid={intentoConfirmar && !!e[nombre]}
-                onChange={(ev) =>
-                  dispatch({ type: 'EDITAR_FILA', id: f.id, campo: nombre, valor: ev.target.value })
-                }
+        {etapa === 'revisar' && datos.tarjeta && (
+          <div className="estado-revision" ref={revision}>
+            <div className="estado-revision__datos">
+              {conIa && cupo && <p className="estado-nota">{textoLecturaUsada(cupo)}</p>}
+              <RevisionTarjeta
+                tarjetas={tarjetas}
+                destinoId={destinoId}
+                sugerida={destinoElegido === null && sugeridaId !== null}
+                onDestino={setDestinoElegido}
+                nombre={nombreNueva}
+                onNombre={setNombreNueva}
+                tarjeta={datos.tarjeta}
+                onCampo={(campo, valor) => despachar({ type: 'EDITAR_TARJETA', campo, valor })}
+                errores={intentoConfirmar ? errores.tarjeta : {}}
+                faltan={intentoConfirmar ? faltan : {}}
+                fechaCorte={fechaCorte}
+                onFechaCorte={(f) => {
+                  setFechaElegida(f)
+                  setErrorCorte('')
+                }}
+                errorFecha={errorCorte || (intentoConfirmar ? errorFecha : '')}
+                hoy={hoy}
               />
-              {intentoConfirmar && e[nombre] && <small className="rev-error">{e[nombre]}</small>}
-            </label>
-          )
-          return (
-            <li key={f.id} className={`rev-fila rev-fila--${estado}`}>
-              <div className="rev-fila-cabecera">
-                <span className={`rev-marca rev-marca--${estado}`}>{ETIQUETA[estado]}</span>
-                <button
-                  type="button"
-                  className="rev-btn rev-btn--peligro"
-                  onClick={() => dispatch({ type: 'ELIMINAR', id: f.id })}
-                  aria-label={`Eliminar ${f.concepto || 'movimiento'}`}
+              <RevisionMovimientos
+                filas={datos.filas}
+                errores={intentoConfirmar ? errores.filas : {}}
+                conIa={conIa}
+                hayEliminada={!!datos.ultimaEliminada}
+                hoy={hoy}
+                despachar={despachar}
+              />
+            </div>
+
+            <aside className="estado-ficha estado-pie">
+              <h2>Antes de guardar</h2>
+              <p>{resumenFilas(datos.filas)}</p>
+              <p className="estado-pie__total">
+                Total <strong>{pesos(totalFilas(datos.filas))}</strong>
+              </p>
+              {datos.filas.some((f) => !f.esMsi) && (
+                <p className="estado-nota">
+                  Los movimientos se guardan como historial de la tarjeta; no vuelven a mover tus saldos porque ya
+                  vienen en el saldo al corte.
+                </p>
+              )}
+              {intentoConfirmar && porCorregir > 0 && (
+                <FormAlert tipo="critico">
+                  Hay {porCorregir} dato{porCorregir === 1 ? '' : 's'} por corregir (marcados en rojo).
+                </FormAlert>
+              )}
+              {errorGuardar && <FormAlert tipo="critico">{errorGuardar}</FormAlert>}
+              <div className="estado-botones">
+                <Button cargando={guardando} onClick={confirmar}>
+                  Confirmar y guardar
+                </Button>
+                <Button
+                  variante="secundario"
+                  disabled={guardando}
+                  onClick={() => (sinGuardar ? setDescartando(true) : volverASubir())}
                 >
-                  Eliminar
-                </button>
+                  Cancelar
+                </Button>
               </div>
-              <div className="rev-fila-campos">
-                {campo('fecha', f.esMsi ? 'Fecha de compra (opcional)' : 'Fecha', { type: 'date' })}
-                {campo('concepto', 'Concepto', { type: 'text', maxLength: 120 })}
-                {campo('monto', f.esMsi ? 'Monto total (MXN)' : 'Monto (MXN)', { type: 'number', step: '0.01', min: '0' })}
-                <label className={`rev-msi ${campoCambiado(f, 'esMsi') ? 'rev-cambiado' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={f.esMsi}
-                    onChange={(ev) =>
-                      dispatch({ type: 'EDITAR_FILA', id: f.id, campo: 'esMsi', valor: ev.target.checked })
-                    }
-                  />
-                  <span>Es a meses sin intereses</span>
-                </label>
-                {f.esMsi && (
-                  <>
-                    {campo('meses', 'Meses', { type: 'number', step: '1', min: '2' })}
-                    {campo('mensualidadesPagadas', 'Mensualidades pagadas', { type: 'number', step: '1', min: '0' })}
-                  </>
-                )}
-              </div>
-            </li>
-          )
-        })}
-      </ul>
-
-      <div className="rev-acciones">
-        <button type="button" className="rev-btn rev-btn--sec" onClick={() => dispatch({ type: 'AGREGAR' })}>
-          + Agregar movimiento
-        </button>
-        {ultimaEliminada && (
-          <button type="button" className="rev-btn rev-btn--sec" onClick={() => dispatch({ type: 'DESHACER' })}>
-            Deshacer eliminación
-          </button>
+            </aside>
+          </div>
         )}
       </div>
 
-      {/* ---------- Confirmar ---------- */}
-      <div className="rev-pie">
-        {intentoConfirmar && errores.total > 0 && (
-          <p className="rev-error" role="alert">
-            Hay {errores.total} dato{errores.total === 1 ? '' : 's'} por corregir (marcados en rojo).
-          </p>
-        )}
-        {errorGuardar && <p className="rev-error" role="alert">{errorGuardar}</p>}
-        <p className="rev-resumen">
-          {filas.filter((f) => !f.esMsi).length} movimientos · {filas.filter((f) => f.esMsi).length} compras a MSI
-          {' · '}Total:{' '}
-          {formatMoney(filas.reduce((t, f) => t + (Number(f.monto) > 0 ? Number(f.monto) : 0), 0))}
-        </p>
-        {filas.some((f) => !f.esMsi) && (
-          <p className="rev-aviso rev-aviso--vacio" role="note">
-            Por ahora se guardan la tarjeta y las compras a MSI. Los movimientos sueltos todavía no se pueden guardar.
-          </p>
-        )}
-        <button type="button" className="rev-btn rev-btn--principal" disabled={guardando} onClick={confirmar}>
-          {guardando ? 'Guardando…' : 'Confirmar y guardar'}
-        </button>
-      </div>
-    </section>
+      <ConfirmDialog
+        abierto={descartando}
+        titulo="¿Descartar este estado de cuenta?"
+        textoConfirmar="Descartar"
+        textoCancelar="Seguir revisando"
+        onConfirmar={volverASubir}
+        onCancelar={() => setDescartando(false)}
+      >
+        <p>No se ha guardado nada y se perderá lo que capturaste.</p>
+        {conIa && <p>La lectura ya se descontó de tu cupo.</p>}
+      </ConfirmDialog>
+    </main>
   )
 }

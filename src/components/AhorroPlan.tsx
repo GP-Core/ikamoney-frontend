@@ -9,7 +9,7 @@ function AhorroPlan({ plan }: { plan: PlanResponse }) {
 
   return (
     <section className="ahorro" aria-labelledby="ahorro-titulo">
-      <h2 id="ahorro-titulo" className="plan__titulo">
+      <h2 id="ahorro-titulo" className="deudas-titulo">
         Lo que te ahorras (estimado)
       </h2>
 

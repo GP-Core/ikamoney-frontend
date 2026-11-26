@@ -1,24 +1,25 @@
-/* Pantalla de plan de pago. Reutiliza la paleta y el encabezado de BalancePage.css. */
-.plan-volver {
-  display: grid;
-  place-items: center;
+/* Pantalla de plan de pago. La paleta viene de .balance--t20 y lo compartido de Deudas.css. */
+.plan__cabecera {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.plan__volver {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   text-decoration: none;
 }
 
-.plan-volver--vacio {
-  flex: none;
-  width: 46px;
-  height: 46px;
+.plan__volver:hover {
+  text-decoration: underline;
 }
 
 .plan__contenido {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
-}
-
-.plan__titulo {
-  margin: 0 0 6px;
-  font-size: 1.0625rem;
 }
 
 .plan__esqueleto--fecha {
@@ -32,13 +33,11 @@
 .plan__vacio,
 .extra,
 .ahorro,
-.porDeuda,
-.fuera,
-.supuestos {
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: var(--surface);
+.porDeuda {
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: var(--crema);
 }
 
 .plan__vacio {
@@ -46,32 +45,27 @@
 }
 
 /* ---------- Fecha de liquidación: lo primero y lo más grande ---------- */
-.fecha {
-  padding: 24px 20px 22px;
-  border-radius: 28px;
-  background: var(--b-hero);
-  color: rgba(242, 251, 249, 0.78);
+.balance--deudas .fecha {
   text-align: center;
-  box-shadow: 0 14px 30px -12px rgba(11, 59, 60, 0.55);
 }
 
 .fecha__etiqueta {
-  font-size: 0.9375rem;
+  color: var(--gris-azulado);
   font-weight: 600;
 }
 
 .fecha__valor {
-  margin: 4px 0 10px;
-  color: #f2fbf9;
-  font-size: clamp(2.25rem, 11vw, 3.5rem);
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  margin: 4px 0 8px;
+  color: var(--azul);
+  font-family: var(--serif);
+  font-size: clamp(2rem, 9vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
 .fecha__valor--sin {
-  font-size: clamp(1.75rem, 8vw, 2.5rem);
+  font-size: clamp(1.625rem, 7vw, 2rem);
 }
 
 .fecha__detalle {
@@ -79,7 +73,7 @@
 }
 
 .fecha__detalle strong {
-  color: #5ee0a0;
+  color: var(--verde-texto);
 }
 
 /* ---------- Control de extraMensual ---------- */
@@ -93,18 +87,19 @@
   align-items: center;
   gap: 8px;
   padding: 6px 14px;
-  border: 2px solid var(--b-linea);
-  border-radius: 16px;
-  background: var(--b-realce);
+  border: 1px solid var(--arena-oscura);
+  border-radius: var(--radio);
+  background: #fff;
 }
 
 .extra__campo:focus-within {
-  border-color: var(--c-msi);
+  outline: 3px solid var(--dorado);
+  outline-offset: 2px;
 }
 
 .extra__signo,
 .extra__input {
-  color: var(--text-strong);
+  color: var(--azul);
   font-size: 1.75rem;
   font-weight: 700;
 }
@@ -119,6 +114,11 @@
   font-family: inherit;
 }
 
+/* El contorno de foco lo lleva la caja completa. */
+.balance--deudas .extra__input:focus-visible {
+  outline: 0;
+}
+
 .extra__sufijo {
   font-size: 0.9375rem;
 }
@@ -127,30 +127,83 @@
   width: 100%;
   height: 44px;
   margin: 8px 0 0;
-  accent-color: var(--c-libre);
+  accent-color: var(--azul);
   cursor: pointer;
 }
 
 .extra__marcas {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
+  color: var(--gris-azulado);
+  font-size: 0.8125rem;
+}
+
+.extra__nota {
+  margin-top: 10px;
+  font-size: 0.875rem;
+}
+
+.extra__estado {
+  margin-top: 6px;
+  font-size: 0.8125rem;
+}
+
+.extra__estado:empty {
+  margin: 0;
+}
+
+.extra__sugerido {
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 0 16px;
+  border: 1px solid var(--azul);
+  border-radius: 8px;
+  background: var(--crema);
+  color: var(--azul);
+  font: 600 0.9375rem var(--sans);
+  cursor: pointer;
+}
+
+.plan__aviso {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-left: 4px solid #f2b705;
+  border-radius: 8px;
+  background: var(--precaucion-fondo);
+  font-size: 0.875rem;
+}
+
+.plan__aviso--error {
+  border-left-color: var(--critico-grafica);
+  background: var(--critico-fondo);
+}
+
+.plan__enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--azul);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* ---------- Ahorro y su comparación ---------- */
 .ahorro__cifra {
-  color: var(--c-libre);
+  color: var(--verde-texto);
+  font-family: var(--serif);
   font-size: 2.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 
 .ahorro__compara {
   margin-top: 14px;
   padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--b-realce);
+  border-radius: 8px;
+  background: var(--arena);
   font-size: 0.875rem;
 }
 
@@ -171,13 +224,9 @@
   align-items: baseline;
 }
 
-.ahorro__tabla dt {
-  color: var(--text);
-}
-
 .ahorro__tabla dd {
   margin: 0;
-  color: var(--text-strong);
+  color: var(--azul);
   font-weight: 600;
   text-align: right;
 }
@@ -189,199 +238,92 @@
 }
 
 .porDeuda__lista {
-  display: grid;
-  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.deuda {
-  padding: 14px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--b-realce);
+.plan-deuda {
+  padding: 14px 0 4px;
+  border-top: 1px solid var(--arena-oscura);
 }
 
-.deuda__cabeza {
+.plan-deuda__cabeza {
   display: flex;
   gap: 10px;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.deuda__num {
+.plan-deuda__num {
   flex: none;
   display: grid;
   place-items: center;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--b-hero);
-  color: #f2fbf9;
+  background: var(--azul);
+  color: #fff;
   font-size: 0.875rem;
   font-weight: 700;
 }
 
-.deuda__nombre h3 {
+.plan-deuda__nombre h3 {
   margin: 0;
   font-size: 1rem;
 }
 
-.deuda__nombre p,
-.deuda__nota,
-.deuda__pie {
-  font-size: 0.8125rem;
-}
-
-.deuda__abono {
-  color: var(--text-strong);
-}
-
-.deuda__nota {
-  margin-top: 2px;
-}
-
-.deuda__barra {
-  height: 10px;
-  margin: 10px 0 6px;
-  border-radius: 999px;
-  background: var(--b-linea);
-  overflow: hidden;
-}
-
-.deuda__relleno {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--c-libre);
-  transition: width 200ms ease;
-}
-
-.deuda__relleno--sin {
-  background: var(--c-tarjetas);
-}
-
-/* ---------- Supuestos ---------- */
-.supuestos__lista {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding-left: 20px;
+.plan-deuda__nombre p,
+.plan-deuda__nota,
+.plan-deuda__pie {
+  color: var(--gris-azulado);
   font-size: 0.875rem;
 }
 
-.extra__slider:focus-visible {
-  outline: 3px solid var(--c-msi);
-  outline-offset: 2px;
+.plan-deuda__nota {
+  margin-top: 2px;
+}
+
+.plan-deuda__barra {
+  height: 8px;
+  margin: 10px 0 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--arena-oscura);
+}
+
+.plan-deuda__relleno {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--azul);
+  transition: width 200ms ease;
+}
+
+.plan-deuda__relleno--sin {
+  background: var(--critico-grafica);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .deuda__relleno {
+  .plan-deuda__relleno {
     transition: none;
   }
 }
 
-@media (min-width: 900px) {
-  .plan__contenido {
-    grid-template-columns: 1fr 1fr;
+/* Escritorio: fecha y monto fijos a la izquierda; el detalle del plan a la derecha. */
+@media (min-width: 1024px) {
+  .plan__columnas {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     align-items: start;
+    gap: 20px;
   }
 
-  .fecha,
-  .supuestos,
-  .fuera {
+  .plan__lado {
+    position: sticky;
+    top: 80px;
+  }
+
+  .plan__ancho {
     grid-column: 1 / -1;
   }
-}
-
-/* ---------- Avisos, sugerido y estado del control ---------- */
-.extra__estado {
-  min-height: 1.25rem;
-  margin-top: 6px;
-  font-size: 0.8125rem;
-}
-
-.extra__sugerido {
-  min-height: 44px;
-  margin-top: 6px;
-  padding: 0 16px;
-  border: 1px solid var(--b-linea);
-  border-radius: 999px;
-  background: var(--b-realce);
-  color: var(--text-strong);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.extra__sugerido:hover {
-  background: var(--b-linea);
-}
-
-.plan__aviso {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: var(--b-realce);
-  border-left: 4px solid var(--c-variable);
-  font-size: 0.875rem;
-}
-
-.plan__aviso--error {
-  border-left-color: var(--c-tarjetas);
-}
-
-.plan__enlace {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--text-strong);
-  font: inherit;
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.extra__sugerido:focus-visible,
-.plan__enlace:focus-visible,
-.deuda__porque summary:focus-visible {
-  outline: 3px solid var(--c-msi);
-  outline-offset: 2px;
-}
-
-/* ---------- Por qué va en ese lugar ---------- */
-.deuda__porque {
-  margin-top: 8px;
-  font-size: 0.8125rem;
-}
-
-.deuda__porque summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--text-strong);
-}
-
-.deuda__porque p {
-  margin-top: 6px;
-}
-
-/* ---------- Fuera del plan ---------- */
-.fuera__msi {
-  margin-bottom: 8px;
-  font-size: 0.9375rem;
-}
-
-.fuera__lista {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.875rem;
-}
-
-.fuera__lista span {
-  font-size: 0.8125rem;
 }

@@ -1,142 +1,150 @@
 import { Link } from 'react-router'
+import AvisosInicio from '../components/AvisosInicio'
 import BalanceVacio from '../components/BalanceVacio'
-import CompromisosMsi from '../components/CompromisosMsi'
+import EnlaceEscritura from '../components/EnlaceEscritura'
 import FechaCopia from '../components/FechaCopia'
 import Icon from '../components/Icon'
-import type { NombreIcono } from '../components/Icon'
-import ResumenMes from '../components/ResumenMes'
-import ScoreResumen from '../components/ScoreResumen'
+import MosaicoMsi from '../components/MosaicoMsi'
+import MosaicoScore from '../components/MosaicoScore'
+import PorMarcar from '../components/PorMarcar'
+import ProximoPago from '../components/ProximoPago'
+import ResumenInicio from '../components/ResumenInicio'
+import { useAlertas } from '../hooks/useAlertas'
 import { useAuth } from '../hooks/useAuth'
 import { useBalance } from '../hooks/useBalance'
+import { useEsEscritorio } from '../hooks/useEsEscritorio'
+import { useTarjetasYDeudas } from '../hooks/useFinanzas'
 import { useScore } from '../hooks/useScore'
+import { useCupoLecturas } from '../hooks/useCupoLecturas'
+import { proximosPagos } from '../utils/finanzas'
 import { mesActual, mesLargo } from '../utils/formatMes'
-import { HORIZONTE_DEFECTO, recortarMeses } from '../utils/balanceVista'
-import { efectoDe, TEXTO_TOPE, tonoDelNivel } from '../utils/score'
-import './BalancePage.css'
+import '../components/Button.css'
+import { EtiquetaCupo } from '../components/CupoLecturas'
 import './HomePage.css'
-import '../components/ScoreDesglose.css'
 
-const ACCESOS: { ruta: string; titulo: string; texto: string; icono: NombreIcono }[] = [
-  { ruta: '/simulador', titulo: 'Simular una compra', texto: 'Mira cómo quedaría tu dinero antes de comprar.', icono: 'calculadora' },
-  { ruta: '/ranking', titulo: 'Tus deudas', texto: 'En qué orden conviene pagarlas.', icono: 'recibo' },
-  { ruta: '/tarjetas', titulo: 'Tarjetas y deudas', texto: 'Tus tarjetas, compras a MSI y préstamos.', icono: 'tarjeta' },
-  { ruta: '/movimientos', titulo: 'Ingresos y gastos', texto: 'Lo que entra y lo que sale cada mes.', icono: 'mas' },
-  { ruta: '/cuentas', titulo: 'Cuentas', texto: 'Débito, ahorro, efectivo y lo que pasó en cada una.', icono: 'tarjeta' },
-  { ruta: '/balance', titulo: 'Balance y proyección', texto: 'Cómo se ven tus próximos meses.', icono: 'calendario' },
-  { ruta: '/estado-cuenta', titulo: 'Subir estado de cuenta', texto: 'Lee el PDF y revisa lo que encuentre.', icono: 'subir' },
-]
-
-/** Inicio (RF-35): lo que te queda del mes, tu score, lo comprometido a MSI y accesos a todo lo demás. */
+/** Inicio (RF-35): cómo va el mes, qué atender y qué toca pagar. El resto se abre desde el menú. */
 function HomePage() {
   const { usuario } = useAuth()
+  const [cupo] = useCupoLecturas()
   const mes = mesActual()
+  // Cada bloque carga y falla por su cuenta: si uno no responde, los demás se siguen viendo.
+  const balance = useBalance(mes)
+  const score = useScore()
+  const finanzas = useTarjetasYDeudas()
+  const { alertas } = useAlertas()
+  const escritorio = useEsEscritorio()
+
+  const datos = balance.estado === 'ok' && balance.data?.tiene_datos ? balance.data : null
+  const pagos = finanzas.datos ? proximosPagos(finanzas.datos.tarjetas, finanzas.datos.deudas) : []
+  const maximoPagos = escritorio ? 3 : 1
+  const tarjetasConPago = pagos.slice(0, maximoPagos).flatMap((p) => (p.tarjetaId === null ? [] : [p.tarjetaId]))
+
+  const principal = (
+    <div className="inicio__bloque">
+      {balance.estado === 'ok' && <FechaCopia fecha={balance.copiaDe} />}
+      {balance.estado === 'cargando' && <Esqueleto texto="Cargando tu balance…" clase="inicio__esqueleto--principal" />}
+      {balance.estado === 'error' && (
+        <ErrorDelBloque titulo="No pudimos cargar tu balance" error={balance.error} onReintentar={balance.reintentar} />
+      )}
+      {balance.estado === 'ok' && balance.data && !balance.data.tiene_datos && <BalanceVacio />}
+      {datos && <ResumenInicio datos={datos.resumen} />}
+    </div>
+  )
+
+  // Si las tarjetas fallan, este bloque no se muestra: el resumen ya ofrece reintentar.
+  const pendientes = (
+    <div className="inicio__bloque">
+      {alertas && <AvisosInicio alertas={alertas} tarjetasConPago={tarjetasConPago} />}
+      {finanzas.cargando && <Esqueleto texto="Cargando tus próximos pagos…" clase="inicio__esqueleto--pago" />}
+      <ProximoPago
+        pagos={pagos}
+        maximo={maximoPagos}
+        onPagado={() => {
+          finanzas.recargar()
+          balance.reintentar()
+        }}
+      />
+      <PorMarcar />
+    </div>
+  )
+
+  const mosaicos = (
+    <div className="inicio__bloque">
+      {score.estado === 'ok' && <FechaCopia fecha={score.copiaDe} />}
+      <div className="inicio__mosaicos">
+        {score.estado === 'cargando' && <Esqueleto texto="Cargando tu score…" clase="inicio__esqueleto--mosaico" />}
+        {score.estado === 'error' && (
+          <ErrorDelBloque titulo="No pudimos cargar tu score" error={score.error} onReintentar={score.reintentar} />
+        )}
+        {score.estado === 'ok' && score.data && <MosaicoScore score={score.data} />}
+        {datos && (
+          <MosaicoMsi meses={[datos.resumen, ...datos.proyeccion]} msi={datos.msi} />
+        )}
+      </div>
+    </div>
+  )
+
+  const acciones = (
+    <div className="inicio__acciones">
+      <Link to="/simulador" className="boton boton--primario boton--ancho">
+        <Icon nombre="calculadora" tamano={20} />
+        Simular una compra
+      </Link>
+      <EnlaceEscritura to="/estado-cuenta" className="inicio__secundario">
+        <Icon nombre="subir" tamano={18} />
+        Subir estado de cuenta
+      <EtiquetaCupo cupo={cupo} />
+      </EnlaceEscritura>
+    </div>
+  )
 
   return (
-    <div className="home">
-      <header className="home__encabezado">
+    <div className="inicio">
+      <header className="inicio__saludo">
         <h1>Hola, {usuario?.nombre.split(' ')[0]}</h1>
-        <p className="home__subtitle">Así va tu dinero en {mesLargo(mes)}.</p>
+        <p>{mesLargo(mes)}</p>
       </header>
 
-      {/* Cada bloque carga y falla por su cuenta: si uno no responde, los demás se siguen viendo. */}
-      <BloqueBalance mes={mes} />
-      <BloqueScore />
-
-      <nav className="home__accesos" aria-label="Accesos">
-        {ACCESOS.map((a) => (
-          <Link key={a.ruta} to={a.ruta} className="home__acceso home__acceso--compacto">
-            <Icon nombre={a.icono} />
-            <span>
-              <strong>{a.titulo}</strong>
-              <span className="home__acceso-texto">{a.texto}</span>
-            </span>
-          </Link>
-        ))}
-      </nav>
+      {/* El orden del DOM es el que se ve en cada tamaño, para que el teclado lo siga igual. */}
+      {escritorio ? (
+        <div className="inicio__columnas">
+          <div className="inicio__columna">
+            {principal}
+            {mosaicos}
+          </div>
+          <div className="inicio__columna">
+            {pendientes}
+            {acciones}
+          </div>
+        </div>
+      ) : (
+        <div className="inicio__columna">
+          {principal}
+          {pendientes}
+          {mosaicos}
+          {acciones}
+        </div>
+      )}
     </div>
   )
 }
 
-function Esqueleto({ texto }: { texto: string }) {
+function Esqueleto({ texto, clase }: { texto: string; clase: string }) {
   return (
-    <div className="balance__contenido" aria-busy="true" aria-live="polite">
-      <span className="balance__sr">{texto}</span>
-      <div className="esqueleto esqueleto--resumen" />
+    <div className={`inicio__esqueleto ${clase}`} aria-busy="true" aria-live="polite">
+      <span className="sr-only">{texto}</span>
     </div>
   )
 }
 
 function ErrorDelBloque({ titulo, error, onReintentar }: { titulo: string; error: string | null; onReintentar: () => void }) {
   return (
-    <section className="balance__error" role="alert">
+    <section className="inicio__error" role="alert">
       <h2>{titulo}</h2>
       <p>{error}</p>
-      <button type="button" className="balance__reintentar" onClick={onReintentar}>
+      <button type="button" className="boton boton--secundario" onClick={onReintentar}>
         Reintentar
       </button>
-    </section>
-  )
-}
-
-function BloqueBalance({ mes }: { mes: string }) {
-  const { estado, data, copiaDe, error, reintentar } = useBalance(mes)
-
-  return (
-    <section className="home__bloque" aria-labelledby="home-mes">
-      <h2 id="home-mes" className="home__bloque-titulo">
-        Lo que te queda este mes
-      </h2>
-      {estado === 'ok' && <FechaCopia fecha={copiaDe} />}
-      {estado === 'cargando' && <Esqueleto texto="Cargando tu balance…" />}
-      {estado === 'error' && <ErrorDelBloque titulo="No pudimos cargar tu balance" error={error} onReintentar={reintentar} />}
-      {estado === 'ok' && data && !data.tiene_datos && <BalanceVacio />}
-      {estado === 'ok' && data && data.tiene_datos && (
-        <div className="balance__contenido">
-          <ResumenMes datos={data.resumen} />
-          <CompromisosMsi meses={recortarMeses([data.resumen, ...data.proyeccion], HORIZONTE_DEFECTO)} msi={data.msi} />
-          <Link className="home__ver-mas" to="/balance">
-            Ver balance y proyección
-          </Link>
-        </div>
-      )}
-    </section>
-  )
-}
-
-function BloqueScore() {
-  const { estado, data, copiaDe, error, reintentar } = useScore()
-  const calculado = estado === 'ok' && data && data.estado === 'calculado' && data.puntaje !== null ? data : null
-
-  return (
-    <section className="home__bloque" aria-labelledby="home-score">
-      <h2 id="home-score" className="home__bloque-titulo">
-        Tu score
-      </h2>
-      {estado === 'ok' && <FechaCopia fecha={copiaDe} />}
-      {estado === 'cargando' && <Esqueleto texto="Cargando tu score…" />}
-      {estado === 'error' && <ErrorDelBloque titulo="No pudimos cargar tu score" error={error} onReintentar={reintentar} />}
-      {estado === 'ok' && data && data.estado === 'datos_faltantes' && (
-        <p className="home__aviso">
-          Aún no podemos calcular tu score: faltan datos. <Link to="/score">Ver qué falta</Link>
-        </p>
-      )}
-      {calculado && calculado.puntaje !== null && (
-        <div className="score-contenido">
-          <ScoreResumen
-            puntaje={calculado.puntaje}
-            nivelTexto={calculado.nivel_texto}
-            tono={tonoDelNivel(calculado.nivel)}
-            periodo={calculado.periodo}
-            suman={calculado.factores.filter((f) => efectoDe(f) === 'suma').length}
-            restan={calculado.factores.filter((f) => efectoDe(f) === 'resta').length}
-            puntajeBruto={calculado.tope_aplicado ? calculado.puntaje_bruto : null}
-            textoTope={calculado.tope_aplicado && calculado.motivo_tope ? TEXTO_TOPE[calculado.motivo_tope] : null}
-          />
-          <Link className="home__ver-mas" to="/score">
-            Ver el desglose del score
-          </Link>
-        </div>
-      )}
     </section>
   )
 }

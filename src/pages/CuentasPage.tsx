@@ -1,243 +1,201 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router'
+import AyudaTermino from '../components/AyudaTermino'
 import Button from '../components/Button'
+import DetalleCuenta from '../components/DetalleCuenta'
 import FechaCopia from '../components/FechaCopia'
 import FormAlert from '../components/FormAlert'
+import Icon from '../components/Icon'
+import type { NombreIcono } from '../components/Icon'
 import Modal from '../components/Modal'
-import SelectField from '../components/SelectField'
 import TextField from '../components/TextField'
 import { useConexion } from '../hooks/useConexion'
 import { useCuentas, useMovimientosCuenta } from '../hooks/useFinanzas'
 import { cuentasService } from '../services/cuentas'
-import { NOMBRES_TIPO_CUENTA, TIPOS_DE_MOVIMIENTO } from '../types/cuenta'
-import type { Cuenta, MovimientoCuenta, TipoCuentaNueva, TipoMovimientoCuenta } from '../types/cuenta'
+import { NOMBRES_TIPO_CUENTA } from '../types/cuenta'
+import type { Cuenta, TipoCuentaNueva } from '../types/cuenta'
+import { agruparCuentas, deudaEnTarjetas, dineroDisponible, esCredito, saldoDe } from '../utils/cuentas'
 import { mensajeError } from '../utils/errores'
-import { formatMoney } from '../utils/formatMoney'
-import { mesActual, mesLargo, sumarMeses } from '../utils/formatMes'
-import './MovimientosPage.css'
+import { mesActual } from '../utils/formatMes'
+import { pesos } from '../utils/pesos'
+import './BalancePage.css'
+import '../components/CuentasForm.css'
 import './CuentasPage.css'
 
-const dinero = (n: number) => formatMoney(n, 'MXN', 'es-MX')
-const hoyIso = () => new Date().toLocaleDateString('en-CA') // AAAA-MM-DD en hora local
 const TIPOS_NUEVA: TipoCuentaNueva[] = ['debito', 'ahorro', 'efectivo', 'monedero', 'otro']
-const ENTRADAS: TipoMovimientoCuenta[] = ['abono', 'pago']
-
-const TEXTO_TIPO: Record<TipoMovimientoCuenta, string> = {
-  abono: 'Abono',
-  cargo: 'Cargo',
-  pago: 'Pago',
-  interes: 'Interés',
-  comision: 'Comisión',
-  mensualidad_msi: 'Mensualidad MSI',
+const ICONO_TIPO: Record<Cuenta['tipo'], NombreIcono> = {
+  credito: 'tarjeta',
+  debito: 'cartera',
+  ahorro: 'cartera',
+  efectivo: 'cartera',
+  monedero: 'cartera',
+  otro: 'cartera',
 }
 
-/** Cuentas del usuario (débito, ahorro, efectivo…, y sus tarjetas de crédito) con lo que pasó en cada una. */
+/** Dónde está tu dinero y lo que debes, con lo que pasó en cada cuenta. */
 function CuentasPage() {
   const enLinea = useConexion()
-  const { datos: cuentas, copiaDe, error, cargando, recargar } = useCuentas()
+  const { datos, copiaDe, error, cargando, recargar } = useCuentas()
+  // Mientras se recarga tras guardar, se conserva lo anterior para que la pantalla no parpadee.
+  const [previas, setPrevias] = useState<Cuenta[] | null>(null)
+  if (datos && datos !== previas) setPrevias(datos)
+  const cuentas = datos ?? previas
   const [elegida, setElegida] = useState<number | null>(null)
   const [mes, setMes] = useState(mesActual)
-  const [formCuenta, setFormCuenta] = useState(false)
-  const [formMovimiento, setFormMovimiento] = useState(false)
+  const [nueva, setNueva] = useState(false)
   const [aviso, setAviso] = useState('')
+  const detalle = useRef<HTMLDivElement>(null)
 
-  const cuenta = cuentas?.find((c) => c.id === (elegida ?? cuentas[0]?.id)) ?? null
-  const { datos: lista, error: errorLista, cargando: cargandoLista, recargar: recargarLista } = useMovimientosCuenta(
-    cuenta?.id ?? null,
-    mes,
-  )
+  // Por defecto, la primera cuenta con dinero (el primer grupo que se ve).
+  const cuenta =
+    cuentas?.find((c) => c.id === elegida) ?? cuentas?.find((c) => !esCredito(c)) ?? cuentas?.[0] ?? null
+  const movimientos = useMovimientosCuenta(cuenta?.id ?? null, mes)
 
   useEffect(() => {
     if (!aviso) return
-    const timer = setTimeout(() => setAviso(''), 2500)
+    const timer = setTimeout(() => setAviso(''), 3500)
     return () => clearTimeout(timer)
   }, [aviso])
 
-  async function eliminarMovimiento(m: MovimientoCuenta) {
-    try {
-      await cuentasService.eliminarMovimiento(m.cuenta_id, m.id)
-      setAviso('Movimiento eliminado')
-      recargarLista()
-    } catch (err) {
-      setAviso(mensajeError(err))
+  function elegir(id: number) {
+    setElegida(id)
+    // En una pantalla angosta el detalle queda abajo: se lleva a la vista.
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      requestAnimationFrame(() => detalle.current?.scrollIntoView({ block: 'start' }))
     }
   }
 
-  async function eliminarCuenta(c: Cuenta) {
-    try {
-      await cuentasService.eliminar(c.id)
-      setElegida(null)
-      setAviso('Cuenta eliminada')
-      recargar()
-    } catch (err) {
-      setAviso(mensajeError(err))
-    }
+  function cambio(mensaje: string) {
+    setAviso(mensaje)
+    recargar()
+    movimientos.recargar()
   }
 
-  return (
-    <main className="movements cuentas">
-      <h1>Cuentas</h1>
-      <p className="cuentas__intro">Débito, ahorro, efectivo… y tus tarjetas. Aquí ves lo que pasó en cada una.</p>
+  const grupos = cuentas ? agruparCuentas(cuentas) : null
 
-      {copiaDe && <FechaCopia fecha={copiaDe} />}
-      {cargando && (
-        <p role="status" className="movements__estado">
-          Cargando…
-        </p>
-      )}
-      {error && (
-        <div className="movements__warn" role="alert">
-          <p>{error}</p>
-          <button type="button" className="btn btn--ghost" onClick={recargar}>
-            Reintentar
-          </button>
-        </div>
-      )}
-
-      {cuentas && cuentas.length === 0 && <p className="cuentas__vacio">Todavía no tienes cuentas. Agrega la primera.</p>}
-
-      {cuentas && cuentas.length > 0 && (
-        <ul className="cuentas__lista" aria-label="Tus cuentas">
-          {cuentas.map((c) => (
+  const grupo = (titulo: string, lista: Cuenta[]) =>
+    lista.length > 0 && (
+      <section aria-label={titulo}>
+        <h2 className="cuentas__grupo">{titulo}</h2>
+        <ul className="cuentas__lista">
+          {lista.map((c) => (
             <li key={c.id}>
-              <button
-                type="button"
-                className="cuentas__cuenta"
-                aria-pressed={c.id === cuenta?.id}
-                onClick={() => setElegida(c.id)}
-              >
+              <button type="button" className="cuentas__cuenta" aria-pressed={c.id === cuenta?.id} onClick={() => elegir(c.id)}>
+                <span className="cuentas__icono" aria-hidden="true">
+                  <Icon nombre={ICONO_TIPO[c.tipo]} tamano={20} />
+                </span>
                 <strong>{c.nombre}</strong>
-                <span>
+                <small>
                   {NOMBRES_TIPO_CUENTA[c.tipo]}
                   {c.ultimos_4 ? ` ····${c.ultimos_4}` : ''}
-                </span>
+                </small>
                 <span className="cuentas__saldo">
-                  {c.tipo === 'credito' ? `Debes ${dinero(c.saldo_actual ?? 0)}` : dinero(c.saldo_disponible ?? 0)}
+                  {esCredito(c) && <small>Debes </small>}
+                  {pesos(saldoDe(c))}
                 </span>
               </button>
             </li>
           ))}
         </ul>
-      )}
+      </section>
+    )
 
-      {cuenta && (
-        <section aria-label={`Movimientos de ${cuenta.nombre}`}>
-          <div className="movements__mes">
-            <button type="button" onClick={() => setMes(sumarMeses(mes, -1))} aria-label="Mes anterior">
-              ‹
+  return (
+    <main className="balance balance--t20 balance--cuentas">
+      <div className="balance__ancho">
+        <header className="balance__cabecera">
+          <h1>Cuentas</h1>
+          <Button variante="secundario" className="cuentas__nueva" disabled={!enLinea} onClick={() => setNueva(true)}>
+            <Icon nombre="mas" tamano={18} />
+            Agregar cuenta
+          </Button>
+        </header>
+
+        {copiaDe && <FechaCopia fecha={copiaDe} />}
+        {cargando && !cuentas && <p role="status">Cargando tus cuentas…</p>}
+        {error && (
+          <section className="balance__error" role="alert">
+            <h2>No pudimos cargar tus cuentas</h2>
+            <p>{error}</p>
+            <button type="button" className="balance__reintentar" onClick={recargar}>
+              Reintentar
             </button>
-            <p aria-live="polite">{mesLargo(mes)}</p>
-            <button type="button" onClick={() => setMes(sumarMeses(mes, 1))} aria-label="Mes siguiente">
-              ›
-            </button>
-          </div>
+          </section>
+        )}
 
-          {errorLista && (
-            <p className="movements__warn" role="alert">
-              {errorLista}
-            </p>
-          )}
-          {cargandoLista && !lista && <p role="status">Cargando…</p>}
+        {cuentas && cuentas.length === 0 && (
+          <section className="cuentas__vacio">
+            <h2>Todavía no tienes cuentas</h2>
+            <p>Agrega dónde tienes tu dinero: débito, ahorro o efectivo. Las tarjetas de crédito se agregan en Tarjetas.</p>
+            <Button disabled={!enLinea} onClick={() => setNueva(true)}>
+              Agregar cuenta
+            </Button>
+          </section>
+        )}
 
-          {lista && (
-            <>
-              <dl className="cuentas__totales">
+        {cuentas && grupos && cuentas.length > 0 && (
+          <div className="cuentas__columnas">
+            <div className="cuentas__lado">
+              <dl className="cuentas__resumen">
                 <div>
-                  <dt>Entradas</dt>
-                  <dd>{dinero(lista.totales.entradas)}</dd>
+                  <dt>
+                    <AyudaTermino termino="dineroHoy">Tu dinero hoy</AyudaTermino>
+                  </dt>
+                  <dd>{pesos(dineroDisponible(cuentas))}</dd>
                 </div>
                 <div>
-                  <dt>Salidas</dt>
-                  <dd>{dinero(lista.totales.salidas)}</dd>
-                </div>
-                <div>
-                  <dt>Neto</dt>
-                  <dd>{dinero(lista.totales.neto)}</dd>
+                  <dt>Debes en tarjetas</dt>
+                  <dd>{pesos(deudaEnTarjetas(cuentas))}</dd>
+                  <dd>
+                    <Link to="/ranking">Ver deudas</Link>
+                  </dd>
                 </div>
               </dl>
-              {lista.movimientos.length === 0 ? (
-                <p className="cuentas__vacio">Sin movimientos este mes.</p>
-              ) : (
-                <ul className="cuentas__movimientos">
-                  {lista.movimientos.map((m) => (
-                    <li key={m.id}>
-                      <span>
-                        <strong>{m.descripcion}</strong>
-                        <small>
-                          {m.fecha} · {TEXTO_TIPO[m.tipo]}
-                        </small>
-                      </span>
-                      <span className={ENTRADAS.includes(m.tipo) ? 'cuentas__entra' : 'cuentas__sale'}>
-                        {ENTRADAS.includes(m.tipo) ? '+' : '−'}
-                        {dinero(m.monto)}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn btn--ghost"
-                        disabled={!enLinea}
-                        aria-label={`Eliminar ${m.descripcion}`}
-                        onClick={() => eliminarMovimiento(m)}
-                      >
-                        Eliminar
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+              {grupo('Tu dinero', grupos.dinero)}
+              {grupo('Tarjetas de crédito', grupos.tarjetas)}
+            </div>
+
+            <div ref={detalle} className="cuentas__detalle">
+              {cuenta && (
+                <DetalleCuenta
+                  key={cuenta.id}
+                  cuenta={cuenta}
+                  mes={mes}
+                  onMes={setMes}
+                  lista={movimientos.datos}
+                  cargando={movimientos.cargando}
+                  error={movimientos.error}
+                  onCambio={cambio}
+                  onEliminada={() => {
+                    setElegida(null)
+                    setAviso('Cuenta eliminada')
+                    recargar()
+                  }}
+                />
               )}
-            </>
-          )}
-
-          <div className="cuentas__acciones">
-            <button type="button" className="btn btn--primary" disabled={!enLinea} onClick={() => setFormMovimiento(true)}>
-              + Agregar movimiento
-            </button>
-            {cuenta.tipo !== 'credito' && (
-              <button type="button" className="btn btn--ghost" disabled={!enLinea} onClick={() => eliminarCuenta(cuenta)}>
-                Eliminar cuenta
-              </button>
-            )}
+            </div>
           </div>
-        </section>
-      )}
+        )}
 
-      <div className="movements__bar">
-        <button type="button" className="btn btn--primary" disabled={!enLinea} onClick={() => setFormCuenta(true)}>
-          + Agregar cuenta
-        </button>
+        <Modal open={nueva} title="Nueva cuenta" onClose={() => setNueva(false)}>
+          {nueva && (
+            <FormularioCuenta
+              onListo={() => {
+                setNueva(false)
+                setAviso('Cuenta guardada')
+                recargar()
+              }}
+              onCancelar={() => setNueva(false)}
+            />
+          )}
+        </Modal>
+        {aviso && (
+          <div className="cuentas__aviso" role="status">
+            {aviso}
+          </div>
+        )}
       </div>
-
-      <Modal open={formCuenta} title="Nueva cuenta" onClose={() => setFormCuenta(false)}>
-        {formCuenta && (
-          <FormularioCuenta
-            onListo={() => {
-              setFormCuenta(false)
-              setAviso('Cuenta guardada')
-              recargar()
-            }}
-            onCancelar={() => setFormCuenta(false)}
-          />
-        )}
-      </Modal>
-
-      <Modal open={formMovimiento} title="Nuevo movimiento" onClose={() => setFormMovimiento(false)}>
-        {formMovimiento && cuenta && (
-          <FormularioMovimiento
-            cuenta={cuenta}
-            onListo={() => {
-              setFormMovimiento(false)
-              setAviso('Movimiento guardado')
-              recargarLista()
-            }}
-            onCancelar={() => setFormMovimiento(false)}
-          />
-        )}
-      </Modal>
-
-      {aviso && (
-        <div className="movements__toast" role="status">
-          {aviso}
-        </div>
-      )}
     </main>
   )
 }
@@ -272,67 +230,25 @@ function FormularioCuenta({ onListo, onCancelar }: { onListo: () => void; onCanc
   }
 
   return (
-    <form onSubmit={enviar} noValidate className="cuentas__form">
+    <form onSubmit={enviar} noValidate className="cform">
       {error && <FormAlert tipo="critico">{error}</FormAlert>}
-      <SelectField
-        etiqueta="Tipo"
-        value={tipo}
-        onChange={(e) => setTipo(e.target.value as TipoCuentaNueva)}
-        opciones={TIPOS_NUEVA.map((t) => ({ valor: t, texto: NOMBRES_TIPO_CUENTA[t] }))}
-      />
+      <div className="cform__opciones" role="group" aria-label="Tipo de cuenta">
+        {TIPOS_NUEVA.map((t) => (
+          <button key={t} type="button" aria-pressed={tipo === t} onClick={() => setTipo(t)}>
+            {NOMBRES_TIPO_CUENTA[t]}
+          </button>
+        ))}
+      </div>
       <TextField etiqueta="Nombre" value={nombre} maxLength={60} onChange={(e) => setNombre(e.target.value)} />
       <TextField etiqueta="Banco (opcional)" value={banco} maxLength={60} onChange={(e) => setBanco(e.target.value)} />
-      <TextField etiqueta="Saldo actual" inputMode="decimal" value={saldo} onChange={(e) => setSaldo(e.target.value)} />
-      <div className="movements__confirm">
-        <Button type="button" variante="secundario" onClick={onCancelar} disabled={enviando}>
-          Cancelar
-        </Button>
-        <Button type="submit" cargando={enviando}>
-          Guardar
-        </Button>
-      </div>
-    </form>
-  )
-}
-
-function FormularioMovimiento({ cuenta, onListo, onCancelar }: { cuenta: Cuenta; onListo: () => void; onCancelar: () => void }) {
-  const tipos = TIPOS_DE_MOVIMIENTO[cuenta.tipo === 'credito' ? 'credito' : 'otras']
-  const [tipo, setTipo] = useState<TipoMovimientoCuenta>(tipos[0].valor)
-  const [descripcion, setDescripcion] = useState('')
-  const [monto, setMonto] = useState('')
-  const [fecha, setFecha] = useState(hoyIso)
-  const [error, setError] = useState<string | null>(null)
-  const [enviando, setEnviando] = useState(false)
-
-  async function enviar(e: FormEvent) {
-    e.preventDefault()
-    const valor = Number(monto)
-    if (!descripcion.trim()) return setError('Describe el movimiento.')
-    if (!monto.trim() || Number.isNaN(valor) || valor <= 0) return setError('El monto debe ser mayor a cero.')
-    setEnviando(true)
-    setError(null)
-    try {
-      await cuentasService.crearMovimiento(cuenta.id, { fecha, descripcion: descripcion.trim(), monto: valor, tipo })
-      onListo()
-    } catch (err) {
-      setError(mensajeError(err))
-      setEnviando(false)
-    }
-  }
-
-  return (
-    <form onSubmit={enviar} noValidate className="cuentas__form">
-      {error && <FormAlert tipo="critico">{error}</FormAlert>}
-      <SelectField
-        etiqueta="Tipo"
-        value={tipo}
-        onChange={(e) => setTipo(e.target.value as TipoMovimientoCuenta)}
-        opciones={tipos.map((t) => ({ valor: t.valor, texto: t.texto }))}
+      <TextField
+        etiqueta="¿Cuánto tienes hoy?"
+        inputMode="decimal"
+        value={saldo}
+        ayuda="Lo usamos como tu dinero de hoy en Balance."
+        onChange={(e) => setSaldo(e.target.value)}
       />
-      <TextField etiqueta="Descripción" value={descripcion} maxLength={255} onChange={(e) => setDescripcion(e.target.value)} />
-      <TextField etiqueta="Monto" inputMode="decimal" value={monto} onChange={(e) => setMonto(e.target.value)} />
-      <TextField etiqueta="Fecha" type="date" value={fecha} max={hoyIso()} onChange={(e) => setFecha(e.target.value)} />
-      <div className="movements__confirm">
+      <div className="cform__acciones">
         <Button type="button" variante="secundario" onClick={onCancelar} disabled={enviando}>
           Cancelar
         </Button>

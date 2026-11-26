@@ -41,6 +41,13 @@ export interface MovimientoCuenta {
   tipo: TipoMovimientoCuenta
   categoria_id: number | null
   plan_msi_id: number | null
+  /** Tiene su gasto o ingreso en Balance. */
+  en_balance?: boolean
+  /** Pago de tarjeta o préstamo: se elimina, no se edita. */
+  es_pago?: boolean
+  /** Solo al crear o editar. */
+  saldo_cuenta?: number | null
+  saldo_negativo?: boolean
 }
 
 export interface TotalesCuenta {
@@ -63,6 +70,31 @@ export interface MovimientoCuentaPayload {
   descripcion: string
   monto: number
   tipo: TipoMovimientoCuenta
+  /** Obligatoria en un gasto de una cuenta con dinero. */
+  categoria_id?: number
+}
+
+/** Cuerpo de PUT /api/v1/cuentas/{id}. */
+export interface CuentaEdicion {
+  nombre?: string
+  saldo_disponible?: number
+}
+
+/** Cuerpo de POST /api/v1/tarjetas/{id}/pagos y /api/v1/deudas/{id}/pagos. */
+export interface PagoPayload {
+  monto: number
+  fecha: string
+  desde_cuenta_id: number
+}
+
+export interface PagoResultado {
+  movimiento_id: number
+  cuenta_id: number
+  monto: number
+  aplicado: number
+  saldo_deuda: number
+  saldo_origen: number
+  saldo_negativo: boolean
 }
 
 /** Qué tipos admite cada clase de cuenta (misma regla que el backend). */

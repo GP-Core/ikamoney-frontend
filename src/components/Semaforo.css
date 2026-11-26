@@ -1,0 +1,17 @@
+/* Etiqueta del semáforo de T20: color, forma (IconoSemaforo) y texto. */
+.semaforo {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.semaforo--sano { color: var(--sano); background: var(--sano-fondo); }
+.semaforo--precaucion { color: var(--precaucion); background: var(--precaucion-fondo); }
+.semaforo--riesgo { color: var(--riesgo); background: var(--riesgo-fondo); }
+.semaforo--critico { color: var(--critico); background: var(--critico-fondo); }

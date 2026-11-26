@@ -1,0 +1,117 @@
+.lateral {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  overflow-y: auto;
+  padding: 16px 12px;
+  border-right: 1px solid var(--arena-oscura);
+  background: var(--crema);
+}
+
+.lateral__marca {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 48px;
+  padding: 0 10px;
+  text-decoration: none;
+}
+
+.lateral__grupo {
+  margin-top: 18px;
+}
+
+.lateral__titulo {
+  padding: 0 12px 4px;
+  color: var(--gris-azulado);
+  font-size: 13px;
+}
+
+.lateral ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lateral__opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  color: var(--azul);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.lateral__opcion svg {
+  flex: none;
+}
+
+/* El hover solo existe con puntero: en táctil se quedaba "pegado" y parecía otra opción marcada. */
+@media (hover: hover) {
+  .lateral__opcion:hover {
+    background: color-mix(in srgb, var(--arena) 55%, transparent);
+  }
+}
+
+.lateral__opcion:active,
+.lateral__opcion--activa {
+  background: var(--arena);
+}
+
+.lateral__opcion--activa {
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--dorado);
+}
+
+.lateral__pie {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/* El dorado solo va en el ícono: como texto sobre crema no se lee. */
+.lateral__salir {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--precaucion);
+  font: 700 15px var(--sans);
+  cursor: pointer;
+}
+
+.lateral__salir svg {
+  color: var(--dorado);
+}
+
+@media (hover: hover) {
+  .lateral__salir:hover {
+    background: var(--arena);
+  }
+}
+
+.lateral__legales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  margin-top: 8px;
+  padding: 0 12px;
+  color: var(--gris-azulado);
+  font-size: 13px;
+}
+
+.lateral__legales a {
+  color: var(--gris-azulado);
+  font-weight: 400;
+}

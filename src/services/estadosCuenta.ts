@@ -79,7 +79,7 @@ export async function guardarEstadoCuenta(
     if (faltan.length > 0) throw new ApiError(0, `Para crear la tarjeta falta ${faltan.join(', ')}.`)
   }
   const r = await escribir(() =>
-    apiFetch<{ estadoCuentaId: number; tarjetaId: number; tarjetaNueva: boolean; planesCreados: number; movimientosGuardados: number }>(
+    apiFetch<ResultadoGuardado>(
       '/v1/estados-cuenta/confirmar',
       {
         method: 'POST',

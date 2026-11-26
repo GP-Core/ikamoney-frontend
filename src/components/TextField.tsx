@@ -7,13 +7,15 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id
   etiqueta: string
   error?: string | null
   ayuda?: string
+  /** Texto fijo antes del valor, como "$". */
+  prefijo?: string
 }
 
 /**
  * Campo de formulario con etiqueta visible y mensaje de error bajo el campo (IU-10).
  * Si es de tipo contraseña, incluye un botón para mostrarla u ocultarla.
  */
-function TextField({ etiqueta, error, ayuda, type = 'text', ...resto }: TextFieldProps) {
+function TextField({ etiqueta, error, ayuda, prefijo, type = 'text', ...resto }: TextFieldProps) {
   const id = useId()
   const [visible, setVisible] = useState(false)
   const esContrasena = type === 'password'
@@ -25,7 +27,12 @@ function TextField({ etiqueta, error, ayuda, type = 'text', ...resto }: TextFiel
       <label htmlFor={id} className="campo__etiqueta">
         {etiqueta}
       </label>
-      <div className="campo__control">
+      <div className={`campo__control ${prefijo ? 'campo__control--prefijo' : ''}`}>
+        {prefijo && (
+          <span className="campo__prefijo" aria-hidden="true">
+            {prefijo}
+          </span>
+        )}
         <input
           id={id}
           type={esContrasena && visible ? 'text' : type}

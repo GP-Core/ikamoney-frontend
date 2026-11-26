@@ -1,9 +1,10 @@
 .msi {
   grid-area: msi;
-  padding: 18px 16px;
-  border: 1px solid var(--b-msi-borde);
-  border-radius: 22px;
-  background: var(--b-msi-fondo);
+  padding: 16px;
+  border: 1px solid var(--arena-oscura);
+  border-top: 4px solid var(--c-msi);
+  border-radius: var(--radio);
+  background: var(--crema);
 }
 
 .msi__titulo {
@@ -17,24 +18,20 @@
   line-height: 1.4;
 }
 
+.msi__subtitulo {
+  margin: 0 0 10px;
+  color: var(--gris-azulado);
+  font-size: 0.875rem;
+}
+
+.msi__porcentaje {
+  margin-bottom: 10px;
+}
+
 .msi__porcentaje strong {
   color: var(--c-msi);
-  font-size: 1.75rem;
+  font-size: 1.375rem;
   letter-spacing: -0.02em;
-}
-
-.msi__barra {
-  height: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-  background: var(--b-msi-pista);
-}
-
-.msi__relleno {
-  display: block;
-  height: 100%;
-  background: repeating-linear-gradient(45deg, var(--c-msi) 0 3px, var(--c-msi-claro) 3px 6px);
 }
 
 .msi__montos {
@@ -64,10 +61,10 @@
 .msi__aviso {
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 0.875rem;
   line-height: 1.4;
-  background: var(--surface);
+  background: var(--arena);
 }
 
 .msi__vacio {
